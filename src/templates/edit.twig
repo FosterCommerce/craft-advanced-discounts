@@ -107,6 +107,91 @@
             errors: coupon.getErrors('orderCondition')
         }, orderCondition) }}
 
+        <hr />
+
+        <h3>{{ 'Set order actions'|t('coupons') }}</h3>
+
+        {{ forms.selectField({
+            label: "Discount Type"|t('coupons'),
+            instructions: "Choose whether to give a percentage or flat amount off"|t('coupons'),
+            id: 'discountType',
+            name: 'discountType',
+            options: discountTypes,
+            value: coupon.discountType,
+        }) }}
+
+        {{ forms.textField({
+            label: "Discount amount"|t('coupons'),
+            instructions: "The discount amount to apply"|t('coupons'),
+            id: 'discountAmount',
+            name: 'discountAmount',
+            value: coupon.discountAmount,
+            type: 'number',
+            errors: coupon.getErrors('discountAmount'),
+            tip: "Leaving this blank will disable order discounts"|t('coupons'),
+        }) }}
+
+        {{ forms.selectField({
+            label: "Apply to"|t('coupons'),
+            instructions: "Apply the discount to the order, trigger items, or conditional items configured below."|t('coupons'),
+            id: 'applyTo',
+            name: 'applyTo',
+            options: applyTo,
+            value: coupon.applyTo,
+        }) }}
+
+        {{ forms.textField({
+            label: "Item limit"|t('coupons'),
+            instructions: "Limit the number of items the discount can be applied to"|t('coupons'),
+            id: 'itemLimit',
+            name: 'itemLimit',
+            value: coupon.itemLimit,
+            type: 'number',
+            errors: coupon.getErrors('itemLimit'),
+            tip: "Leave blank for unlimited amount of items"|t('coupons'),
+        }) }}
+
+        {% set applyCondition %}
+            {{ coupon.applyCondition.getBuilderHtml()|raw }}
+        {% endset %}
+
+        {{ forms.field({
+            label: 'Apply condition'|t('coupons'),
+            instructions: 'Create rules to match items the discount will be applied to.'|t('coupons'),
+            errors: coupon.getErrors('applyCondition'),
+        }, applyCondition) }}
+
+        <h3>{{ 'Set shipping actions'|t('coupons') }}</h3>
+
+        {{ forms.selectField({
+            label: "Shipping discount Type"|t('coupons'),
+            instructions: "Choose whether to give a percentage or flat amount off"|t('coupons'),
+            id: 'shippingDiscountType',
+            name: 'shippingDiscountType',
+            options: discountTypes,
+            value: coupon.shippingDiscountType,
+        }) }}
+
+        {{ forms.textField({
+            label: "Shipping discount amount"|t('coupons'),
+            instructions: "The discount amount to apply to shipping methods"|t('coupons'),
+            id: 'shippingDiscountAmount',
+            name: 'shippingDiscountAmount',
+            value: coupon.shippingDiscountAmount,
+            type: 'number',
+            errors: coupon.getErrors('shippingDiscountAmount'),
+            tip: "Leaving this blank will disable shipping discounts"|t('coupons'),
+        }) }}
+
+        {{ forms.selectField({
+            label: "Apply to shipping method"|t('coupons'),
+            instructions: "Apply a discount to the selected shipping method"|t('coupons'),
+            id: 'applyShipping',
+            name: 'applyShipping',
+            options: applyShipping,
+            value: coupon.applyShipping,
+        }) }}
+
         <input type="submit" class="hidden">
     </form>
 {% endset %}
