@@ -95,6 +95,18 @@
 
         <hr />
 
+        <h3>{{ 'Configure conditions'|t('coupons') }}</h3>
+
+        {% set orderCondition %}
+            {{ coupon.orderCondition.getBuilderHtml()|raw }}
+        {% endset %}
+
+        {{ forms.field({
+            label: 'Order conditions'|t('coupons'),
+            instructions: 'Create conditions on an order that contains trigger items'|t('coupons'),
+            errors: coupon.getErrors('orderCondition')
+        }, orderCondition) }}
+
         <input type="submit" class="hidden">
     </form>
 {% endset %}

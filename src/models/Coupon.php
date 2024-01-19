@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
+use fostercommerce\coupons\elements\conditions\OrderCondition;
 use fostercommerce\coupons\elements\conditions\PurchasablesCondition;
 use fostercommerce\coupons\elements\conditions\RelatedToCondition;
 use fostercommerce\coupons\records\Coupon as CouponRecord;
@@ -53,6 +54,13 @@ class Coupon extends Model
      * @see setPurchasablesCondition()
      */
     public null|ElementConditionInterface $_purchasablesCondition = null;
+
+    /**
+     * @var ElementConditionInterface|null
+     * @see getOrderCondition()
+     * @see setOrderCondition()
+     */
+    public null|ElementConditionInterface $_orderCondition = null;
 
     /**
      * @return ElementConditionInterface
@@ -116,6 +124,38 @@ class Coupon extends Model
         $condition->forProjectConfig = false;
 
         $this->_purchasablesCondition = $condition;
+    }
+
+    /**
+     * @return ElementConditionInterface
+     */
+    public function getOrderCondition(): ElementConditionInterface
+    {
+        $condition = $this->_orderCondition ?? new OrderCondition();
+        $condition->mainTag = 'div';
+        $condition->name = 'orderCondition';
+
+        return $condition;
+    }
+
+    /**
+     * @param ElementConditionInterface|string|array $condition
+     * @return void
+     */
+    public function setOrderCondition(ElementConditionInterface|string|array $condition): void
+    {
+        if (is_string($condition)) {
+            $condition = Json::decodeIfJson($condition);
+        }
+
+        if (!$condition instanceof ElementConditionInterface) {
+            $condition['class'] = OrderCondition::class;
+            /** @var OrderCondition $condition */
+            $condition = Craft::$app->getConditions()->createCondition($condition);
+        }
+        $condition->forProjectConfig = false;
+
+        $this->_orderCondition = $condition;
     }
 
     protected function defineRules(): array
