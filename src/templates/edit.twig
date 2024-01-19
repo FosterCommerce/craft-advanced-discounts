@@ -1,0 +1,100 @@
+{% extends '_layouts/cp' %}
+
+{% set crumbs = [
+    { label: "Coupons"|t('coupons'), url: url('coupons') },
+] %}
+{% set title = "Create Coupon"|t('coupons') %}
+{% import '_includes/forms.twig' as forms %}
+
+{% set hiddenInputs %}
+    {{ csrfInput() }}
+{% endset %}
+
+{% block actionButton %}
+    <button type="button" class="btn submit formsubmit" data-form="couponform">{{ 'Save Coupon'|t('coupons') }}</button>
+{% endblock %}
+
+{% set content %}
+    {% set formAttributes = {
+        id: 'couponform',
+        method: 'post',
+        'accept-charset': 'UTF-8',
+        data: {
+            saveshortcut: true,
+            'confirm-unload': true,
+        },
+    } %}
+    <form {{ attr(formAttributes) }}>
+        {{ actionInput('coupons/save-coupon') }}
+        {{ redirectInput('coupons') }}
+        {{ hiddenInputs }}
+
+        {{ forms.textField({
+            label: "Coupon Name"|t('coupons'),
+            id: 'name',
+            name: 'name',
+            value: '',
+            type: 'text',
+            inputAttributes: {
+                data: {lpignore: 'true'},
+            },
+        }) }}
+
+        {{ forms.textField({
+            label: "Coupon Code"|t('coupons'),
+            id: 'code',
+            name: 'code',
+            value: '',
+            type: 'text',
+            inputAttributes: {
+                data: {lpignore: 'true'},
+            },
+        }) }}
+
+        <hr />
+
+        <h3>{{ 'Select trigger items'|t('coupons') }}</h3>
+
+        {{ forms.selectField({
+            label: "Related to"|t('coupons'),
+            instructions: "Choose whether all related items, some related items or none of the related items trigger a coupon"|t('coupons'),
+            id: 'relatedTo',
+            name: 'relatedTo',
+            options: relatedTo,
+            value: coupon.relatedTo,
+        }) }}
+
+        {% set relatedToCondition %}
+            {{ coupon.relatedToCondition.getBuilderHtml()|raw }}
+        {% endset %}
+
+        {{ forms.field({
+            label: 'Match related'|t('coupons'),
+            instructions: 'Create rules that allow this coupon to match the order based on related entries.'|t('coupons'),
+            errors: coupon.getErrors('relatedToCondition')
+        }, relatedToCondition) }}
+
+        {{ forms.selectField({
+            label: "Purchasables"|t('coupons'),
+            instructions: "Choose whether all purchasables, some purchasables or none of the purchasables trigger a coupon"|t('coupons'),
+            id: 'purchasables',
+            name: 'purchasables',
+            options: purchasables,
+            value: coupon.purchasables,
+        }) }}
+
+        {% set purchasablesCondition %}
+            {{ coupon.purchasablesCondition.getBuilderHtml()|raw }}
+        {% endset %}
+
+        {{ forms.field({
+            label: 'Match purchasables'|t('coupons'),
+            instructions: 'Create rules that allow this coupon to match the order based on purchasables.'|t('coupons'),
+            errors: coupon.getErrors('purchasablesCondition')
+        }, purchasablesCondition) }}
+
+        <hr />
+
+        <input type="submit" class="hidden">
+    </form>
+{% endset %}

@@ -73,7 +73,9 @@ class Plugin extends BasePlugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             static function(RegisterUrlRulesEvent $registerUrlRulesEvent): void {
-
+                $registerUrlRulesEvent->rules['coupons'] = 'coupons/manage/index';
+                $registerUrlRulesEvent->rules['coupons/new'] = 'coupons/manage/edit';
+                $registerUrlRulesEvent->rules['coupons/<id:\d+>'] = 'coupons/manage/edit';
             }
         );
     }
