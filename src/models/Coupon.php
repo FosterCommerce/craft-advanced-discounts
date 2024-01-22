@@ -6,10 +6,12 @@ use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
+use fostercommerce\coupons\elements\conditions\AndTriggerCondition;
 use fostercommerce\coupons\elements\conditions\ApplyCondition;
 use fostercommerce\coupons\elements\conditions\OrderCondition;
-use fostercommerce\coupons\elements\conditions\PurchasablesCondition;
 use fostercommerce\coupons\elements\conditions\RelatedToCondition;
+use fostercommerce\coupons\elements\conditions\TriggerCondition;
+use fostercommerce\coupons\elements\conditions\TriggerConditionRule;
 use fostercommerce\coupons\records\Coupon as CouponRecord;
 
 /**
@@ -33,35 +35,11 @@ class Coupon extends Model
     public string $code = '';
 
     /**
-     * @var string Whether all related items, some related items or none of the related items trigger a coupon
-     */
-    public string $relatedTo = CouponRecord::RELATED_TO_ANY;
-
-    /**
      * @var ElementConditionInterface|null
-     * @see getRelatedToCondition()
-     * @see setRelatedToCondition()
+     * @see getTriggerCondition()
+     * @see setTriggerCondition()
      */
-    public null|ElementConditionInterface $_relatedToCondition = null;
-
-    /**
-     * @var string Whether all purchasables, some purchasables or none of the purchasables trigger a coupon
-     */
-    public string $purchasables = CouponRecord::PURCHASABLES_ANY;
-
-    /**
-     * @var ElementConditionInterface|null
-     * @see getPurchasablesCondition()
-     * @see setPurchasablesCondition()
-     */
-    public null|ElementConditionInterface $_purchasablesCondition = null;
-
-    /**
-     * @var ElementConditionInterface|null
-     * @see getOrderCondition()
-     * @see setOrderCondition()
-     */
-    public null|ElementConditionInterface $_orderCondition = null;
+    public null|ElementConditionInterface $_triggerCondition = null;
 
     /**
      * @var string The type of discount to apply for this coupon.
@@ -108,11 +86,11 @@ class Coupon extends Model
     /**
      * @return ElementConditionInterface
      */
-    public function getRelatedToCondition(): ElementConditionInterface
+    public function getTriggerCondition(): ElementConditionInterface
     {
-        $condition = $this->_relatedToCondition ?? new RelatedToCondition();
+        $condition = $this->_triggerCondition ?? new AndTriggerCondition();
         $condition->mainTag = 'div';
-        $condition->name = 'relatedToCondition';
+        $condition->name = 'triggerCondition';
 
         return $condition;
     }
@@ -121,85 +99,22 @@ class Coupon extends Model
      * @param ElementConditionInterface|string|array $condition
      * @return void
      */
-    public function setRelatedToCondition(ElementConditionInterface|string|array $condition): void
+    public function setTriggerCondition(ElementConditionInterface|string|array $condition): void
     {
         if (is_string($condition)) {
             $condition = Json::decodeIfJson($condition);
         }
 
         if (!$condition instanceof ElementConditionInterface) {
-            $condition['class'] = RelatedToCondition::class;
-            /** @var RelatedToCondition $condition */
+            $condition['class'] = AndTriggerCondition::class;
+            /** @var AndTriggerCondition $condition */
             $condition = Craft::$app->getConditions()->createCondition($condition);
         }
         $condition->forProjectConfig = false;
 
-        $this->_relatedToCondition = $condition;
+        $this->_triggerCondition = $condition;
     }
 
-    /**
-     * @return ElementConditionInterface
-     */
-    public function getPurchasablesCondition(): ElementConditionInterface
-    {
-        $condition = $this->_relatedToCondition ?? new PurchasablesCondition();
-        $condition->mainTag = 'div';
-        $condition->name = 'purchasablesCondition';
-
-        return $condition;
-    }
-
-    /**
-     * @param ElementConditionInterface|string|array $condition
-     * @return void
-     */
-    public function setPurchasablesCondition(ElementConditionInterface|string|array $condition): void
-    {
-        if (is_string($condition)) {
-            $condition = Json::decodeIfJson($condition);
-        }
-
-        if (!$condition instanceof ElementConditionInterface) {
-            $condition['class'] = PurchasablesCondition::class;
-            /** @var PurchasablesCondition $condition */
-            $condition = Craft::$app->getConditions()->createCondition($condition);
-        }
-        $condition->forProjectConfig = false;
-
-        $this->_purchasablesCondition = $condition;
-    }
-
-    /**
-     * @return ElementConditionInterface
-     */
-    public function getOrderCondition(): ElementConditionInterface
-    {
-        $condition = $this->_orderCondition ?? new OrderCondition();
-        $condition->mainTag = 'div';
-        $condition->name = 'orderCondition';
-
-        return $condition;
-    }
-
-    /**
-     * @param ElementConditionInterface|string|array $condition
-     * @return void
-     */
-    public function setOrderCondition(ElementConditionInterface|string|array $condition): void
-    {
-        if (is_string($condition)) {
-            $condition = Json::decodeIfJson($condition);
-        }
-
-        if (!$condition instanceof ElementConditionInterface) {
-            $condition['class'] = OrderCondition::class;
-            /** @var OrderCondition $condition */
-            $condition = Craft::$app->getConditions()->createCondition($condition);
-        }
-        $condition->forProjectConfig = false;
-
-        $this->_orderCondition = $condition;
-    }
     /**
      * @return ElementConditionInterface
      */

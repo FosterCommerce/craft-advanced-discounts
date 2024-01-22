@@ -7,8 +7,9 @@ use craft\commerce\elements\conditions\orders\TotalConditionRule;
 use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
 use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\elements\conditions\ElementCondition;
+use fostercommerce\coupons\elements\conditions\RelatedToConditionRule;
 
-class OrderCondition extends ElementCondition
+class TriggerCondition extends ElementCondition
 {
     public ?string $addRuleLabel = "OR";
     /**
@@ -17,11 +18,8 @@ class OrderCondition extends ElementCondition
     protected function conditionRuleTypes(): array
     {
         return array_merge([
-            ItemSubtotalConditionRule::class,
-            ItemTotalConditionRule::class,
-            TotalPriceConditionRule::class,
-            TotalQtyConditionRule::class,
-            TotalConditionRule::class,
+            HasPurchasableConditionRule::class,
+            RelatedToConditionRule::class,
         ]);
     }
 }

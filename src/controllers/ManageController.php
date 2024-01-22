@@ -23,16 +23,7 @@ class ManageController extends Controller
     {
         $variables['coupon'] = new Coupon();
         $variables['isNewCoupon'] = true;
-        $variables['relatedTo'] = [
-            CouponRecord::RELATED_TO_ANY => Craft::t('coupons', 'Match any of the related items'),
-            CouponRecord::RELATED_TO_ALL => Craft::t('coupons', 'Match all of the related items'),
-            CouponRecord::RELATED_TO_NONE => Craft::t('coupons', 'Match none of the related items'),
-        ];
-        $variables['purchasables'] = [
-            CouponRecord::PURCHASABLES_ANY => Craft::t('coupons', 'Match any of the selected purchasables'),
-            CouponRecord::PURCHASABLES_ALL => Craft::t('coupons', 'Match all of the selected purchasables'),
-            CouponRecord::PURCHASABLES_NONE => Craft::t('coupons', 'Match none of the selected purchasables'),
-        ];
+
         $variables['discountTypes'] = [
             CouponRecord::DISCOUNT_TYPE_NONE => Craft::t('coupons', 'No discount'),
             CouponRecord::DISCOUNT_TYPE_PERCENTAGE => Craft::t('coupons', 'Apply a percentage discount'),
