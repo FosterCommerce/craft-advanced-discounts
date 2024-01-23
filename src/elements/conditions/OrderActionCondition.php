@@ -1,19 +1,20 @@
 <?php
 namespace fostercommerce\coupons\elements\conditions;
 
-use craft\commerce\elements\conditions\orders\HasPurchasableConditionRule;
 use craft\elements\conditions\ElementCondition;
+use fostercommerce\coupons\elements\conditions\RelatedToConditionRule;
 
-class ApplyCondition extends ElementCondition
+class OrderActionCondition extends ElementCondition
 {
+    public ?string $addRuleLabel = "Add condition";
     /**
      * @inheritdoc
      */
     protected function conditionRuleTypes(): array
     {
         return array_merge([
-            RelatedToConditionRule::class,
             HasPurchasableConditionRule::class,
+            RelatedToConditionRule::class,
         ]);
     }
 }

@@ -6,8 +6,8 @@ use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
+use fostercommerce\coupons\elements\conditions\ActionCondition;
 use fostercommerce\coupons\elements\conditions\AndTriggerCondition;
-use fostercommerce\coupons\elements\conditions\ApplyCondition;
 use fostercommerce\coupons\elements\conditions\OrderCondition;
 use fostercommerce\coupons\elements\conditions\RelatedToCondition;
 use fostercommerce\coupons\elements\conditions\TriggerCondition;
@@ -42,46 +42,11 @@ class Coupon extends Model
     public null|ElementConditionInterface $_triggerCondition = null;
 
     /**
-     * @var string The type of discount to apply for this coupon.
-     */
-    public string $discountType = CouponRecord::DISCOUNT_TYPE_NONE;
-
-    /**
-     * @var double The discount value
-     */
-    public ?double $discountAmount = null;
-
-    /**
-     * @var string How to apply the discount
-     */
-    public string $applyTo = CouponRecord::APPLY_TO_ORDER;
-
-    /**
-     * @var int The optional amount of items that a discount can be applied to.
-     */
-    public ?int $itemLimit = null;
-
-    /**
      * @var ElementConditionInterface|null
-     * @see getApplyCondition()
-     * @see setApplyCondition()
+     * @see getActionCondition()
+     * @see setActionCondition()
      */
-    public null|ElementConditionInterface $_applyCondition = null;
-
-    /**
-     * @var string The type of discount to apply to shipping for this coupon.
-     */
-    public string $shippingDiscountType = CouponRecord::DISCOUNT_TYPE_NONE;
-
-    /**
-     * @var string|bool The shipping handle to discount. If it's true, then discount applies to any handle.
-     */
-    public string|bool $applyShipping = false;
-
-    /**
-     * @var double The shipping discount value
-     */
-    public ?double $shippingDiscountAmount = null;
+    public null|ElementConditionInterface $_actionCondition = null;
 
     /**
      * @return ElementConditionInterface
@@ -118,11 +83,11 @@ class Coupon extends Model
     /**
      * @return ElementConditionInterface
      */
-    public function getApplyCondition(): ElementConditionInterface
+    public function getActionCondition(): ElementConditionInterface
     {
-        $condition = $this->_applyCondition ?? new ApplyCondition();
+        $condition = $this->_actionCondition ?? new ActionCondition();
         $condition->mainTag = 'div';
-        $condition->name = 'applyCondition';
+        $condition->name = 'actionCondition';
 
         return $condition;
     }
@@ -131,20 +96,20 @@ class Coupon extends Model
      * @param ElementConditionInterface|string|array $condition
      * @return void
      */
-    public function setApplyCondition(ElementConditionInterface|string|array $condition): void
+    public function setActionCondition(ElementConditionInterface|string|array $condition): void
     {
         if (is_string($condition)) {
             $condition = Json::decodeIfJson($condition);
         }
 
         if (!$condition instanceof ElementConditionInterface) {
-            $condition['class'] = ApplyCondition::class;
-            /** @var ApplyCondition $condition */
+            $condition['class'] = ActionCondition::class;
+            /** @var ActionCondition $condition */
             $condition = Craft::$app->getConditions()->createCondition($condition);
         }
         $condition->forProjectConfig = false;
 
-        $this->_applyCondition = $condition;
+        $this->_actionCondition = $condition;
     }
 
     protected function defineRules(): array

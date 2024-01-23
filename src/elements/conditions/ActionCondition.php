@@ -5,11 +5,11 @@ use Craft;
 use craft\elements\conditions\ElementCondition;
 use fostercommerce\coupons\elements\conditions\RelatedToConditionRule;
 
-class AndTriggerCondition extends ElementCondition
+class ActionCondition extends ElementCondition
 {
     public function init(): void
     {
-        $this->addRuleLabel = Craft::t('coupons', 'AND');
+        $this->addRuleLabel = Craft::t('coupons', 'Add an action');
         parent::init();
     }
 
@@ -18,9 +18,9 @@ class AndTriggerCondition extends ElementCondition
      */
     protected function conditionRuleTypes(): array
     {
-        return [
-            TriggerConditionRule::class,
-            OrderConditionRule::class,
-        ];
+        return array_merge([
+            OrderActionRule::class,
+            ShippingMethodActionRule::class,
+        ]);
     }
 }
