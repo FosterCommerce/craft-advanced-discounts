@@ -51,6 +51,7 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
     {
         $condition = $this->_orderActionCondition ?? new OrderActionCondition();
         $condition->mainTag = 'div';
+        $condition->name = 'orderActionCondition';
 
         return $condition;
     }
