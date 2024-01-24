@@ -8,6 +8,7 @@ use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\services\UserPermissions;
+use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use fostercommerce\coupons\models\Settings;
 use fostercommerce\coupons\services\Coupons;

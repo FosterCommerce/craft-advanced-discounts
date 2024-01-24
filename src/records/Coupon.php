@@ -10,7 +10,7 @@ use fostercommerce\coupons\elements\conditions\AndTriggerCondition;
 /**
  * Coupon record
  *
- * @property ?string $name
+ * @property ?string $title
  * @property string $code
  * @property ?array $triggerCondition
  * @property ?array $actionCondition

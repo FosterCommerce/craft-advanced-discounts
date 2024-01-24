@@ -3,11 +3,11 @@
 namespace fostercommerce\coupons\controllers;
 
 use Craft;
+use craft\i18n\Locale;
 use craft\web\Controller;
 use fostercommerce\coupons\models\Coupon;
 use fostercommerce\coupons\Plugin;
 use fostercommerce\coupons\records\Coupon as CouponRecord;
-use craft\commerce\Plugin as Commerce;
 use yii\web\Response;
 
 class ManageController extends Controller
@@ -19,6 +19,25 @@ class ManageController extends Controller
     {
         return $this->renderTemplate('coupons/index');
     }
+
+    public function actionList(): Response
+    {
+        $coupons = Plugin::getInstance()->coupons->getAllCoupons();
+
+        foreach ($coupons as &$coupon) {
+            $coupon = $coupon->toArray();
+            $coupon['url'] = "coupons/{$coupon['id']}";
+            $coupon['dateCreated'] =Craft::$app->getFormatter()
+                ->asDate($coupon['dateCreated'], Locale::LENGTH_SHORT);
+            $coupon['dateUpdated'] =Craft::$app->getFormatter()
+                ->asDate($coupon['dateUpdated'], Locale::LENGTH_SHORT);
+        }
+        return $this->asJson([
+            'data' => $coupons,
+            'pagination' => false,
+        ]);
+    }
+
 
     public function actionEdit(?int $id = null): Response
     {
@@ -41,11 +60,16 @@ class ManageController extends Controller
         $coupon = new Coupon();
 
         $coupon->id = $this->request->getBodyParam('id');
-        $coupon->name = $this->request->getBodyParam('name');
+        $coupon->title = $this->request->getBodyParam('title');
         $coupon->code = $this->request->getBodyParam('code');
         $coupon->setTriggerCondition($this->request->getBodyParam('triggerCondition'));
         $coupon->setActionCondition($this->request->getBodyParam('actionCondition'));
 
-        Plugin::getInstance()->coupons->saveCoupon($coupon);
+        if (Plugin::getInstance()->coupons->saveCoupon($coupon)) {
+            $this->setSuccessFlash(Craft::t('coupons', 'Coupon saved.'));
+            $this->redirectToPostedUrl($coupon);
+        } else {
+            $this->setFailFlash(Craft::t('coupons', 'Couldn’t save coupon.'));
+        }
     }
 }

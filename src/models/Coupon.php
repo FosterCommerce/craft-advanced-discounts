@@ -27,7 +27,7 @@ class Coupon extends Model
     /**
      * @var string Name of the coupon
      */
-    public string $name = '';
+    public string $title = '';
 
     /**
      * @var string The coupons unique code
@@ -68,8 +68,12 @@ class Coupon extends Model
      * @param ElementConditionInterface|string|array $condition
      * @return void
      */
-    public function setTriggerCondition(ElementConditionInterface|string|array $condition): void
+    public function setTriggerCondition(ElementConditionInterface|string|array|null $condition): void
     {
+        if ($condition === null) {
+            $condition = [];
+        }
+
         if (is_string($condition)) {
             $condition = Json::decodeIfJson($condition);
         }
@@ -100,8 +104,11 @@ class Coupon extends Model
      * @param ElementConditionInterface|string|array $condition
      * @return void
      */
-    public function setActionCondition(ElementConditionInterface|string|array $condition): void
+    public function setActionCondition(ElementConditionInterface|string|array|null $condition): void
     {
+        if ($condition === null) {
+            $condition = [];
+        }
         if (is_string($condition)) {
             $condition = Json::decodeIfJson($condition);
         }

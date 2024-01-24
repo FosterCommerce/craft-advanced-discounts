@@ -1,11 +1,40 @@
 {% extends '_layouts/cp' %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
 {% set title = "Coupons"|t('coupons') %}
 
 {% set additionalButtons %}
-    <a class="btn submit add icon" href="{{ url('coupons/new') }}">{{ "New coupon"|t('coupons') }}</a>
+	<a class="btn submit add icon" href="{{ url('coupons/new') }}">{{ "New coupon"|t('coupons') }}</a>
 {% endset %}
 
 {% set content %}
-    {# todo add content #}
+	<div id="coupons-list"></div>
 {% endset %}
+
+{% js %}
+	let columns = [
+		{ name: '__slot:title', title: Craft.t('app', 'Name') },
+		{
+			name: 'code',
+			title: Craft.t('coupons', 'Code'),
+		},
+		{
+			name: 'dateCreated',
+			title: Craft.t('coupons', 'Created'),
+			sortField: 'dateCreated',
+		},
+		{
+			name: 'dateUpdated',
+			title: Craft.t('coupons', 'Updated'),
+			sortField: 'dateUpdated',
+		},
+	];
+
+	new Craft.VueAdminTable({
+		columns,
+		container: '#coupons-list',
+		search: true,
+		tableDataEndpoint: '/admin/actions/coupons/manage/list',
+	});
+{% endjs %}

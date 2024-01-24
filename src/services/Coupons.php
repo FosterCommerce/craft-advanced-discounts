@@ -54,7 +54,7 @@ class Coupons extends Component
             return false;
         }
 
-        $record->name = $coupon->name;
+        $record->title = $coupon->title;
         $record->code = $coupon->code;
         $record->triggerCondition = $coupon->getTriggerCondition()->getConfig();
         $record->actionCondition = $coupon->getActionCondition()->getConfig();
@@ -85,7 +85,7 @@ class Coupons extends Component
         return (new Query())
             ->select([
                 '[[coupons.id]]',
-                '[[coupons.name]]',
+                '[[coupons.title]]',
                 '[[coupons.code]]',
                 '[[coupons.triggerCondition]]',
                 '[[coupons.actionCondition]]',
