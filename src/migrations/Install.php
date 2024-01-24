@@ -11,12 +11,14 @@ class Install extends Migration
     {
         $this->createTable(Coupon::TABLE_NAME, [
             'id' => $this->primaryKey(),
-            'message' => $this->string()->notNull(),
-            'userId' => $this->integer()->notNull(),
-            'username' => $this->string()->notNull(),
+            'name' => $this->string()->notNull(),
+            'code' => $this->string()->null(),
+            'triggerCondition' => $this->json()->null(),
+            'actionCondition' => $this->json()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
         ]);
-        $this->createIndex(null, Coupon::TABLE_NAME, ['dateCreated'], false);
+        $this->createIndex(null, Coupon::TABLE_NAME, ['dateUpdated'], false);
 
         return true;
     }
@@ -24,7 +26,7 @@ class Install extends Migration
     public function safeDown(): bool
     {
         if ($this->db->tableExists(Coupon::TABLE_NAME)) {
-            $this->dropIndexIfExists(Coupon::TABLE_NAME, ['dateCreated'], false);
+            $this->dropIndexIfExists(Coupon::TABLE_NAME, ['dateUpdated'], false);
             $this->dropTable(Coupon::TABLE_NAME);
         }
 

@@ -5,6 +5,7 @@ namespace fostercommerce\coupons\controllers;
 use Craft;
 use craft\web\Controller;
 use fostercommerce\coupons\models\Coupon;
+use fostercommerce\coupons\Plugin;
 use fostercommerce\coupons\records\Coupon as CouponRecord;
 use craft\commerce\Plugin as Commerce;
 use yii\web\Response;
@@ -19,29 +20,32 @@ class ManageController extends Controller
         return $this->renderTemplate('coupons/index');
     }
 
-    public function actionEdit(): Response
+    public function actionEdit(?int $id = null): Response
     {
-        $variables['coupon'] = new Coupon();
+        $variables = [];
+
+        if ($id !== null) {
+            $variables['coupon'] = Plugin::getInstance()->coupons->getCouponById($id);
+        } else {
+            $variables['coupon'] = new Coupon();
+        }
         $variables['isNewCoupon'] = true;
 
-        $variables['discountTypes'] = [
-            CouponRecord::DISCOUNT_TYPE_NONE => Craft::t('coupons', 'No discount'),
-            CouponRecord::DISCOUNT_TYPE_PERCENTAGE => Craft::t('coupons', 'Apply a percentage discount'),
-            CouponRecord::DISCOUNT_TYPE_FLAT_AMOUNT => Craft::t('coupons', 'Apply a flat amount discount'),
-        ];
-        $variables['applyTo'] = [
-            CouponRecord::APPLY_TO_ORDER => Craft::t('coupons', 'Apply discount to whole order'),
-            CouponRecord::APPLY_TO_TRIGGER_ITEMS => Craft::t('coupons', 'Apply discount to matching trigger items'),
-            CouponRecord::APPLY_TO_CONDITIONAL_ITEMS => Craft::t('coupons', 'Apply discount to matched conditional items'),
-        ];
-        $variables['applyShipping'] = [
-            'any' => Craft::t('coupons', 'Apply discount to any shipping method'),
-            ...array_merge(...array_map( // This flattens the array of shipping methods so that it can be merged into the shipping options array.
-                static fn($shippingMethod) => ["handle:{$shippingMethod->handle}" => Craft::t('coupons', 'Apply discount to ').$shippingMethod->name],
-                Commerce::getInstance()->shippingMethods->getAllShippingMethods()
-            )),
-        ];
-
         return $this->renderTemplate('coupons/edit', $variables);
+    }
+
+    public function actionSave(): void
+    {
+        $this->requirePostRequest();
+
+        $coupon = new Coupon();
+
+        $coupon->id = $this->request->getBodyParam('id');
+        $coupon->name = $this->request->getBodyParam('name');
+        $coupon->code = $this->request->getBodyParam('code');
+        $coupon->setTriggerCondition($this->request->getBodyParam('triggerCondition'));
+        $coupon->setActionCondition($this->request->getBodyParam('actionCondition'));
+
+        Plugin::getInstance()->coupons->saveCoupon($coupon);
     }
 }

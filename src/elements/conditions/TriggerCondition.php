@@ -1,6 +1,7 @@
 <?php
 namespace fostercommerce\coupons\elements\conditions;
 
+use Craft;
 use craft\elements\conditions\ElementCondition;
 use fostercommerce\coupons\elements\conditions\RelatedToConditionRule;
 

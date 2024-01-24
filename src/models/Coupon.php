@@ -48,6 +48,10 @@ class Coupon extends Model
      */
     public null|ElementConditionInterface $_actionCondition = null;
 
+    public ?\DateTime $dateCreated = null;
+
+    public ?\DateTime $dateUpdated = null;
+
     /**
      * @return ElementConditionInterface
      */

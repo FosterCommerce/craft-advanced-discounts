@@ -6,8 +6,11 @@ use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\services\UserPermissions;
 use craft\web\UrlManager;
 use fostercommerce\coupons\models\Settings;
+use fostercommerce\coupons\services\Coupons;
 use yii\base\Event;
 
 /**
@@ -15,6 +18,7 @@ use yii\base\Event;
  *
  * @method static Plugin getInstance()
  * @method Settings getSettings()
+ * @property-read Coupons $coupons
  */
 class Plugin extends BasePlugin
 {
@@ -25,9 +29,7 @@ class Plugin extends BasePlugin
     public static function config(): array
     {
         return [
-            'components' => [
-                // Define component configs here...
-            ],
+            'components' => ['coupons' => Coupons::class],
         ];
     }
 

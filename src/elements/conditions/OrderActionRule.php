@@ -39,7 +39,7 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 
     public function __construct($config = [])
     {
-        $config['orderActionCondition'] = $config['attributes']['condition']??[];
+        $config['orderActionCondition'] = $config['attributes']['orderActionCondition']??[];
 
         parent::__construct($config);
     }
@@ -49,7 +49,10 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
      */
     public function getOrderActionCondition(): ElementConditionInterface
     {
-        return $this->_orderActionCondition ?? new OrderActionCondition(null, ['mainTag' => 'div']);
+        $condition = $this->_orderActionCondition ?? new OrderActionCondition();
+        $condition->mainTag = 'div';
+
+        return $condition;
     }
 
     /**
@@ -91,8 +94,11 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
+            'itemsChoice' => $this->itemsChoice,
+            'numberOfItems' => $this->numberOfItems,
             'discountType' => $this->discountType,
             'discountValue' => $this->discountValue,
+            'orderActionCondition' => $this->getOrderActionCondition()->getConfig(),
         ]);
     }
 

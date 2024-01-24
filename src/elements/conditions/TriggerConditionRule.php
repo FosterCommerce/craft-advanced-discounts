@@ -5,6 +5,7 @@ namespace fostercommerce\coupons\elements\conditions;
 use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\conditions\BaseConditionRule;
+use craft\base\conditions\ConditionRuleInterface;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
@@ -17,7 +18,7 @@ use craft\helpers\Json;
 use craft\helpers\Typecast;
 use craft\helpers\UrlHelper;
 
-class TriggerConditionRule extends BaseConditionRule implements ElementConditionRuleInterface
+class TriggerConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
 {
     public ?ElementConditionInterface $_triggerCondition = null;
 
@@ -28,12 +29,18 @@ class TriggerConditionRule extends BaseConditionRule implements ElementCondition
         parent::__construct($config);
     }
 
+    public function getNestedCondition(): ElementConditionInterface
+    {
+        return $this->getTriggerCondition();
+    }
+
     /**
      * @return ElementConditionInterface
      */
     public function getTriggerCondition(): ElementConditionInterface
     {
-        $condition = $this->_triggerCondition ?? new TriggerCondition(null, ['mainTag' => 'div']);
+        $condition = $this->_triggerCondition ?? new TriggerCondition();
+        $condition->mainTag = 'div';
 
         return $condition;
     }

@@ -25,15 +25,19 @@
         },
     } %}
     <form {{ attr(formAttributes) }}>
-        {{ actionInput('coupons/save-coupon') }}
+        {{ actionInput('coupons/manage/save') }}
         {{ redirectInput('coupons') }}
         {{ hiddenInputs }}
+
+				 {% if coupon.id %}
+					 <input type="hidden" name="id" value="{{ coupon.id }}">
+				 {% endif %}
 
         {{ forms.textField({
             label: "Coupon Name"|t('coupons'),
             id: 'name',
             name: 'name',
-            value: '',
+            value: coupon.name,
             type: 'text',
             inputAttributes: {
                 data: {lpignore: 'true'},
@@ -44,7 +48,7 @@
             label: "Coupon Code"|t('coupons'),
             id: 'code',
             name: 'code',
-            value: '',
+            value: coupon.code,
             type: 'text',
             inputAttributes: {
                 data: {lpignore: 'true'},
