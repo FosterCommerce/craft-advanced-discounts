@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\ecs\SetList;
+use fostercommerce\ecs\SetList;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return static function(ECSConfig $ecsConfig): void {

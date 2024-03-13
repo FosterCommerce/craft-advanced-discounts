@@ -1,44 +1,47 @@
 {
-    "name": "fostercommerce/craft-coupons",
-    "description": "Craft coupons",
-    "type": "craft-plugin",
-    "license": "proprietary",
-    "support": {
-        "email": "support@fostercommerce.com"
-    },
-    "require": {
-        "php": ">=8.1",
-        "craftcms/cms": "^4.6.0"
-    },
-    "require-dev": {
-        "craftcms/ecs": "dev-main",
-        "craftcms/phpstan": "dev-main"
-    },
-    "autoload": {
-        "psr-4": {
-            "fostercommerce\\coupons\\": "src/"
-        }
-    },
-    "extra": {
-        "handle": "coupons",
-        "name": "Coupons",
-        "developer": "Foster Commerce",
-        "documentationUrl": ""
-    },
-    "scripts": {
-        "check-cs": "ecs check --ansi",
-        "fix-cs": "ecs check --ansi --fix",
-        "phpstan": "phpstan --memory-limit=1G"
-    },
-    "config": {
-        "sort-packages": true,
-        "platform": {
-            "php": "8.0.2"
-        },
-        "allow-plugins": {
-            "yiisoft/yii2-composer": true,
-            "craftcms/plugin-installer": true
-        }
+  "name": "fostercommerce/craft-coupons",
+  "description": "Craft coupons",
+  "type": "craft-plugin",
+  "license": "proprietary",
+  "support": {
+    "email": "support@fostercommerce.com"
+  },
+  "require": {
+    "php": ">=8.1",
+    "craftcms/cms": "^4.6.0",
+    "craftcms/commerce": "^4.2.0"
+  },
+  "require-dev": {
+    "fostercommerce/ecs": "dev-main",
+    "fostercommerce/phpstan": "dev-main",
+    "fostercommerce/rector": "dev-main",
+    "roave/security-advisories": "dev-latest"
+  },
+  "autoload": {
+    "psr-4": {
+      "fostercommerce\\coupons\\": "src/"
     }
+  },
+  "extra": {
+    "handle": "coupons",
+    "name": "Coupons",
+    "developer": "Foster Commerce",
+    "documentationUrl": ""
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  },
+  "prefer-stable": true,
+  "minimum-stability": "dev",
+  "scripts": {
+    "phpstan": "phpstan --memory-limit=1G",
+    "ecs-check": "ecs check --ansi --memory-limit=1G",
+    "ecs-fix": "ecs check --ansi --fix --memory-limit=1G",
+    "rector": "rector process --config rector.php",
+    "rector-dry-run": "rector process --dry-run --config rector.php"
+  }
 }
-
