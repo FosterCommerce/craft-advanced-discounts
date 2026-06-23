@@ -16,7 +16,7 @@ class OrderCondition extends ElementCondition
 	/**
 	 * @return array<int, class-string>
 	 */
-	protected function conditionRuleTypes(): array
+	protected function selectableConditionRules(): array
 	{
 		return array_merge([
 			ItemSubtotalConditionRule::class,
