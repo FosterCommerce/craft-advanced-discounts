@@ -22,6 +22,8 @@ use yii\db\QueryInterface;
 
 class OrderActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
+    protected array $_values = [];
+
     public string $discountType = DiscountType::FlatAmount;
     public ?float $discountValue = null;
     public string $itemsChoice = ItemsChoice::AllItems;

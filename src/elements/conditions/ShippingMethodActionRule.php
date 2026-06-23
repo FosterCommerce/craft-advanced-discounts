@@ -111,6 +111,8 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
             $discountTypeLabel = Craft::t('coupons', 'Flat Amount');
         } else if ($this->discountType === DiscountType::Percentage) {
             $discountTypeLabel = Craft::t('coupons', 'Percentage');
+        } else {
+            $discountTypeLabel = '';
         }
 
         return
@@ -171,7 +173,9 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
     protected function matchValue(array|string|null $value): bool
     {
         // todo override this correctly
-        if (!$this->_values) {
+        $values = $this->getValues();
+
+        if (!$values) {
             return true;
         }
 
@@ -182,8 +186,8 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
         }
 
         return match ($this->operator) {
-            self::OPERATOR_IN => !empty(array_intersect($value, $this->_values)),
-            self::OPERATOR_NOT_IN => empty(array_intersect($value, $this->_values)),
+            self::OPERATOR_IN => !empty(array_intersect($value, $values)),
+            self::OPERATOR_NOT_IN => empty(array_intersect($value, $values)),
             default => throw new InvalidConfigException("Invalid operator: $this->operator"),
         };
     }
