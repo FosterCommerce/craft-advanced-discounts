@@ -15,7 +15,6 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use fostercommerce\coupons\enums\DiscountType;
 use yii\base\InvalidConfigException;
-use yii\db\QueryInterface;
 
 class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
@@ -56,7 +55,7 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 		]);
 	}
 
-	public function modifyQuery(QueryInterface $query): void
+	public function modifyQuery(\craft\elements\db\ElementQueryInterface $query): void
 	{
 		// todo
 		/** @var orderquery $query */

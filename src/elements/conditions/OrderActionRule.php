@@ -16,7 +16,6 @@ use craft\helpers\UrlHelper;
 use fostercommerce\coupons\enums\DiscountType;
 use fostercommerce\coupons\enums\ItemsChoice;
 use yii\base\InvalidConfigException;
-use yii\db\QueryInterface;
 
 class OrderActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
@@ -91,7 +90,7 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 		]);
 	}
 
-	public function modifyQuery(QueryInterface $query): void
+	public function modifyQuery(\craft\elements\db\ElementQueryInterface $query): void
 	{
 		// todo
 		/** @var orderquery $query */
