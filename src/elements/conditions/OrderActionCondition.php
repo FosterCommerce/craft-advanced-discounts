@@ -8,6 +8,9 @@ class OrderActionCondition extends ElementCondition
 {
 	public ?string $addRuleLabel = 'Add condition';
 
+	/**
+	 * @return array<int, class-string>
+	 */
 	protected function conditionRuleTypes(): array
 	{
 		return array_merge([

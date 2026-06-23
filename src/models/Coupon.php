@@ -54,6 +54,9 @@ class Coupon extends Model
 		return $condition;
 	}
 
+	/**
+	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
+	 */
 	public function setTriggerCondition(ElementConditionInterface|string|array|null $condition): void
 	{
 		if ($condition === null) {
@@ -66,8 +69,9 @@ class Coupon extends Model
 
 		if (! $condition instanceof ElementConditionInterface) {
 			$condition['class'] = AndTriggerCondition::class;
-			/** @var AndTriggerCondition $condition */
+			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
+			/** @var ElementConditionInterface $condition */
 		}
 		$condition->forProjectConfig = false;
 
@@ -83,6 +87,9 @@ class Coupon extends Model
 		return $condition;
 	}
 
+	/**
+	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
+	 */
 	public function setActionCondition(ElementConditionInterface|string|array|null $condition): void
 	{
 		if ($condition === null) {
@@ -94,14 +101,18 @@ class Coupon extends Model
 
 		if (! $condition instanceof ElementConditionInterface) {
 			$condition['class'] = ActionCondition::class;
-			/** @var ActionCondition $condition */
+			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
+			/** @var ElementConditionInterface $condition */
 		}
 		$condition->forProjectConfig = false;
 
 		$this->_actionCondition = $condition;
 	}
 
+	/**
+	 * @return array<int, mixed>
+	 */
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [

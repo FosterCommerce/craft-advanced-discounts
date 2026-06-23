@@ -33,12 +33,16 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 		return $condition;
 	}
 
+	/**
+	 * @param ElementConditionInterface|array<string, mixed> $condition
+	 */
 	public function setOrderCondition(ElementConditionInterface|array $condition): void
 	{
 		if (! $condition instanceof ElementConditionInterface) {
 			$condition['class'] = OrderCondition::class;
-			/** @var OrderCondition $condition */
+			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
+			/** @var ElementConditionInterface $condition */
 		}
 		$condition->forProjectConfig = false;
 
@@ -64,6 +68,9 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 				}*/
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
@@ -88,6 +95,9 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 		return Html::tag('div', $this->getOrderCondition()->getBuilderHtml());
 	}
 
+	/**
+	 * @return array<int, mixed>
+	 */
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [

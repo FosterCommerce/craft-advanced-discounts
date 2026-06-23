@@ -13,6 +13,9 @@ class OrderCondition extends ElementCondition
 {
 	public ?string $addRuleLabel = 'OR';
 
+	/**
+	 * @return array<int, class-string>
+	 */
 	protected function conditionRuleTypes(): array
 	{
 		return array_merge([

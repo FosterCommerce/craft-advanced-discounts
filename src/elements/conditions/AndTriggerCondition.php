@@ -16,6 +16,9 @@ class AndTriggerCondition extends ElementCondition
 		parent::init();
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function getConfig(): array
 	{
 		$conditionRules = Collection::make($this->getConditionRules());
@@ -42,6 +45,9 @@ class AndTriggerCondition extends ElementCondition
 		]);
 	}
 
+	/**
+	 * @return array<int, class-string>
+	 */
 	protected function conditionRuleTypes(): array
 	{
 		return [

@@ -13,6 +13,9 @@ class ActionCondition extends ElementCondition
 		parent::init();
 	}
 
+	/**
+	 * @return array<int, class-string>
+	 */
 	protected function conditionRuleTypes(): array
 	{
 		return array_merge([

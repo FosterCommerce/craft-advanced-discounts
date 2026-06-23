@@ -77,11 +77,17 @@ class Coupons extends Component
 		return true;
 	}
 
+	/**
+	 * @param array<string, mixed> $record
+	 */
 	private function _populateCoupon(array $record): Coupon
 	{
 		return new Coupon($record);
 	}
 
+	/**
+	 * @return Query<int, array<string, mixed>>
+	 */
 	private function _createCouponQuery(): Query
 	{
 		return (new Query())

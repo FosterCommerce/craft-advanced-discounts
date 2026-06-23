@@ -33,6 +33,9 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 	 */
 	public null|ElementConditionInterface $_orderActionCondition = null;
 
+	/**
+	 * @var array<int, mixed>
+	 */
 	protected array $_values = [];
 
 	protected bool $reloadOnOperatorChange = true;
@@ -53,6 +56,9 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 		return $condition;
 	}
 
+	/**
+	 * @param ElementConditionInterface|string|array<string, mixed> $condition
+	 */
 	public function setOrderActionCondition(ElementConditionInterface|string|array $condition): void
 	{
 		if (is_string($condition)) {
@@ -61,8 +67,9 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 
 		if (! $condition instanceof ElementConditionInterface) {
 			$condition['class'] = OrderActionCondition::class;
-			/** @var OrderActionCondition $condition */
+			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
+			/** @var ElementConditionInterface $condition */
 		}
 		$condition->forProjectConfig = false;
 
@@ -79,6 +86,9 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 		return [];
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
@@ -189,6 +199,9 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 		return null;
 	}
 
+	/**
+	 * @return array<int, mixed>
+	 */
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
@@ -196,6 +209,9 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 		]);
 	}
 
+	/**
+	 * @param array<int, mixed>|string|null $value
+	 */
 	protected function matchValue(array|string|null $value): bool
 	{
 		// todo override this correctly

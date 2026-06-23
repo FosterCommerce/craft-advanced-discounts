@@ -47,6 +47,9 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 		}
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
@@ -69,6 +72,9 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 		return $this->matchValue($element->shippingMethodHandle);
 	}
 
+	/**
+	 * @return array<int, string>
+	 */
 	protected function operators(): array
 	{
 		return [
@@ -136,6 +142,9 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 			]);
 	}
 
+	/**
+	 * @return array<int, mixed>
+	 */
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
@@ -165,6 +174,9 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 		};
 	}
 
+	/**
+	 * @return array<string, string>
+	 */
 	private function shippingMethodOptions(bool $includeAny = false): array
 	{
 		$shippingMethods = ArrayHelper::map(Plugin::getInstance()->getShippingMethods()->getAllShippingMethods()->toArray(), 'handle', 'name');

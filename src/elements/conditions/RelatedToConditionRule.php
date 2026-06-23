@@ -37,6 +37,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 		}
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
@@ -91,6 +94,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 			);
 	}
 
+	/**
+	 * @return array<int, mixed>
+	 */
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
@@ -98,6 +104,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 		]);
 	}
 
+	/**
+	 * @return array<int, array{value: string, label: string}>
+	 */
 	private function _elementTypeOptions(): array
 	{
 		$options = [

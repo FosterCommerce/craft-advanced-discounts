@@ -15,7 +15,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use yii\base\InvalidConfigException;
 
 /**
  * @method array|string|null paramValue(?callable $normalizeValue = null)
@@ -52,6 +51,9 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 			->exists();
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
@@ -64,6 +66,9 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		return $this->purchasableType;
 	}
 
+	/**
+	 * @return array<int, mixed>
+	 */
 	protected function defineRules(): array
 	{
 		$rules = parent::defineRules();
@@ -104,7 +109,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 	}
 
 	/**
-	 * @throws InvalidConfigException
+	 * @return array<int, array{value: string, label: string}>
 	 */
 	private function _purchasableTypeOptions(): array
 	{

@@ -33,12 +33,16 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 		return $condition;
 	}
 
+	/**
+	 * @param ElementConditionInterface|array<string, mixed> $condition
+	 */
 	public function setTriggerCondition(ElementConditionInterface|array $condition): void
 	{
 		if (! $condition instanceof ElementConditionInterface) {
 			$condition['class'] = TriggerCondition::class;
-			/** @var TriggerCondition $condition */
+			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
+			/** @var ElementConditionInterface $condition */
 		}
 		$condition->forProjectConfig = false;
 
@@ -64,6 +68,9 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 				}*/
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
@@ -88,6 +95,9 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 		return Html::tag('div', $this->getTriggerCondition()->getBuilderHtml());
 	}
 
+	/**
+	 * @return array<int, mixed>
+	 */
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
