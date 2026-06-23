@@ -31,11 +31,13 @@ class Coupons extends Component
 		return $this->_discounts;
 	}
 
-	public function getCouponById(int $id): Coupon
+	public function getCouponById(int $id): ?Coupon
 	{
-		return $this->_populateCoupon($this->_createCouponQuery()->andWhere([
+		$record = $this->_createCouponQuery()->andWhere([
 			'[[coupons.id]]' => $id,
-		])->one());
+		])->one();
+
+		return $record !== null ? $this->_populateCoupon($record) : null;
 	}
 
 	public function saveCoupon(Coupon $coupon, bool $runValidation = true): bool

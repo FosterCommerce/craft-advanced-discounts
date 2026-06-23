@@ -179,7 +179,7 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 	 */
 	private function shippingMethodOptions(bool $includeAny = false): array
 	{
-		$shippingMethods = ArrayHelper::map(Plugin::getInstance()->getShippingMethods()->getAllShippingMethods()->toArray(), 'handle', 'name');
+		$shippingMethods = ArrayHelper::map(Plugin::getInstance()?->getShippingMethods()->getAllShippingMethods()->toArray() ?? [], 'handle', 'name');
 
 		if ($includeAny) {
 			return [

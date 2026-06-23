@@ -61,7 +61,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		]);
 	}
 
-	protected function elementType(): string
+    protected function elementType(): string
 	{
 		return $this->purchasableType;
 	}
@@ -115,7 +115,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 	{
 		$options = [];
 
-		foreach (Plugin::getInstance()->getPurchasables()->getAllPurchasableElementTypes() as $elementType) {
+		foreach ((Plugin::getInstance()?->getPurchasables()->getAllPurchasableElementTypes() ?? []) as $elementType) {
 			/** @var string|ElementInterface $elementType */
 			/** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
 			$options[] = [
