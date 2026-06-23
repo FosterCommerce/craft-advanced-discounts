@@ -109,6 +109,8 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
             $discountTypeLabel = Craft::t('coupons', 'Flat Amount');
         } else if ($this->discountType === DiscountType::Percentage) {
             $discountTypeLabel = Craft::t('coupons', 'Percentage');
+        } else {
+            $discountTypeLabel = '';
         }
 
         $itemsChoiceHtml = '';
@@ -178,6 +180,11 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
             Html::endTag('div') .
             $this->getOrderActionCondition()->getBuilderHtml() .
             Html::endTag('div');
+    }
+
+    protected function paramValue(): mixed
+    {
+        return null;
     }
 
     /**
