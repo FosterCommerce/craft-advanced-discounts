@@ -40,14 +40,14 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		}
 
 		/** @var OrderQuery $query */
-		$query->hasPurchasables([$this->getElementId()]);
+		$query->hasPurchasables([(int) $this->getElementId()]);
 	}
 
 	public function matchElement(ElementInterface $element): bool
 	{
 		return Order::find()
 			->id($element->id)
-			->hasPurchasables([$this->getElementId()])
+			->hasPurchasables([(int) $this->getElementId()])
 			->exists();
 	}
 
