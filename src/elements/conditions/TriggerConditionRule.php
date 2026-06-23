@@ -13,13 +13,6 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 {
 	public ?ElementConditionInterface $_triggerCondition = null;
 
-	public function __construct($config = [])
-	{
-		$config['triggerCondition'] = $config['attributes']['condition'] ?? [];
-
-		parent::__construct($config);
-	}
-
 	public function getNestedCondition(): ElementConditionInterface
 	{
 		return $this->getTriggerCondition();
@@ -38,7 +31,10 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 	 */
 	public function setTriggerCondition(ElementConditionInterface|array $condition): void
 	{
-		if (! $condition instanceof ElementConditionInterface) {
+		if (is_array($condition)) {
+			if (empty($condition)) {
+				return;
+			}
 			$condition['class'] = TriggerCondition::class;
 			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
@@ -74,6 +70,7 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
+			'triggerCondition' => $this->_triggerCondition?->getConfig() ?? [],
 		]);
 	}
 

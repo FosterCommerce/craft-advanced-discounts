@@ -30,10 +30,7 @@ class AndTriggerCondition extends ElementCondition
 						return null;
 					}
 					try {
-						return [
-							...$rule->getConfig(),
-							'condition' => $rule->getNestedCondition()->getConfig(),
-						];
+						return $rule->getConfig();
 					} catch (InvalidConfigException) {
 						// The rule is misconfigured
 						return null;

@@ -13,13 +13,6 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 {
 	public ?ElementConditionInterface $_orderCondition = null;
 
-	public function __construct($config = [])
-	{
-		$config['orderCondition'] = $config['attributes']['condition'] ?? [];
-
-		parent::__construct($config);
-	}
-
 	public function getNestedCondition(): ElementConditionInterface
 	{
 		return $this->getOrderCondition();
@@ -38,7 +31,10 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 	 */
 	public function setOrderCondition(ElementConditionInterface|array $condition): void
 	{
-		if (! $condition instanceof ElementConditionInterface) {
+		if (is_array($condition)) {
+			if (empty($condition)) {
+				return;
+			}
 			$condition['class'] = OrderCondition::class;
 			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
@@ -74,6 +70,7 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
+			'orderCondition' => $this->_orderCondition?->getConfig() ?? [],
 		]);
 	}
 
