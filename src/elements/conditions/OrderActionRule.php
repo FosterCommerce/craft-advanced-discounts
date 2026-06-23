@@ -37,8 +37,6 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 
     protected bool $reloadOnOperatorChange = true;
 
-    private const ANY_VALUE = '';
-
     public function __construct($config = [])
     {
         $config['orderActionCondition'] = $config['attributes']['orderActionCondition']??[];
