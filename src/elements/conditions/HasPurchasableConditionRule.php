@@ -61,7 +61,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		]);
 	}
 
-    protected function elementType(): string
+	protected function elementType(): string
 	{
 		return $this->purchasableType;
 	}
