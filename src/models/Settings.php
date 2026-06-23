@@ -2,7 +2,6 @@
 
 namespace fostercommerce\coupons\models;
 
-use Craft;
 use craft\base\Model;
 
 /**

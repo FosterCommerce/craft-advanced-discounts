@@ -1,4 +1,5 @@
 <?php
+
 namespace fostercommerce\coupons\elements\conditions;
 
 use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
@@ -10,18 +11,16 @@ use craft\elements\conditions\ElementCondition;
 
 class OrderCondition extends ElementCondition
 {
-    public ?string $addRuleLabel = "OR";
-    /**
-     * @inheritdoc
-     */
-    protected function conditionRuleTypes(): array
-    {
-        return array_merge([
-            ItemSubtotalConditionRule::class,
-            ItemTotalConditionRule::class,
-            TotalPriceConditionRule::class,
-            TotalQtyConditionRule::class,
-            TotalConditionRule::class,
-        ]);
-    }
+	public ?string $addRuleLabel = 'OR';
+
+	protected function conditionRuleTypes(): array
+	{
+		return array_merge([
+			ItemSubtotalConditionRule::class,
+			ItemTotalConditionRule::class,
+			TotalPriceConditionRule::class,
+			TotalQtyConditionRule::class,
+			TotalConditionRule::class,
+		]);
+	}
 }

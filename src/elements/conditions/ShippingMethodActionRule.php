@@ -19,176 +19,163 @@ use yii\db\QueryInterface;
 
 class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    public string $operator = self::OPERATOR_EQ;
-    public string $discountType = DiscountType::FlatAmount;
-    public ?float $discountValue = null;
+	private const ANY_VALUE = '';
 
-    protected bool $reloadOnOperatorChange = true;
+	public string $operator = self::OPERATOR_EQ;
 
-    private const ANY_VALUE = '';
+	public string $discountType = DiscountType::FlatAmount;
 
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return Craft::t('coupons', 'Shipping Method');
-    }
+	public ?float $discountValue = null;
 
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return [];
-    }
+	protected bool $reloadOnOperatorChange = true;
 
-    public function setValues(array|string $values): void
-    {
-        if ($this->operator === self::OPERATOR_EQ && $values === '') {
-            parent::setValues([self::ANY_VALUE]);
-        } else {
-            parent::setValues($values);
-        }
-    }
+	public function getLabel(): string
+	{
+		return Craft::t('coupons', 'Shipping Method');
+	}
 
-    public function getConfig(): array
-    {
-        return array_merge(parent::getConfig(), [
-            'discountType' => $this->discountType,
-            'discountValue' => $this->discountValue,
-        ]);
-    }
+	public function getExclusiveQueryParams(): array
+	{
+		return [];
+	}
 
-    protected function operators(): array
-    {
-        return [
-            self::OPERATOR_EQ,
-            ...parent::operators(),
-        ];
-    }
-    /**
-     * @inheritdoc
-     */
-    protected function options(): array
-    {
-        return $this->shippingMethodOptions(false);
-    }
+	public function setValues(array|string $values): void
+	{
+		if ($this->operator === self::OPERATOR_EQ && $values === '') {
+			parent::setValues([self::ANY_VALUE]);
+		} else {
+			parent::setValues($values);
+		}
+	}
 
-    private function shippingMethodOptions(bool $includeAny = false): array
-    {
-        $shippingMethods = ArrayHelper::map(Plugin::getInstance()->getShippingMethods()->getAllShippingMethods()->toArray(), 'handle', 'name');
+	public function getConfig(): array
+	{
+		return array_merge(parent::getConfig(), [
+			'discountType' => $this->discountType,
+			'discountValue' => $this->discountValue,
+		]);
+	}
 
-        if ($includeAny) {
-            return [
-                self::ANY_VALUE => 'Any',
-                ...$shippingMethods,
-            ];
-        } else {
-            return $shippingMethods;
-        }
-    }
+	public function modifyQuery(QueryInterface $query): void
+	{
+		// todo
+		/** @var orderquery $query */
+		$query->shippingMethodHandle($this->paramValue());
+	}
 
-    protected function inputHtml(): string
-    {
-        if ($this->operator === self::OPERATOR_EQ) {
-            $selectId = 'select';
+	public function matchElement(ElementInterface $element): bool
+	{
+		// todo
+		/** @var Order $element */
+		return $this->matchValue($element->shippingMethodHandle);
+	}
 
-            $value = $this->getValues()[0] ?? self::ANY_VALUE;
-            $selectHtml =
-                Html::hiddenLabel(Html::encode($this->getLabel()), $selectId) .
-                Cp::selectHtml([
-                    'id' => $selectId,
-                    'name' => 'values',
-                    'options' => $this->shippingMethodOptions(true),
-                    'value' => $value,
-                ]);
-        } else {
-            $selectHtml = parent::inputHtml();
-        }
+	protected function operators(): array
+	{
+		return [
+			self::OPERATOR_EQ,
+			...parent::operators(),
+		];
+	}
 
-        if ($this->discountType === DiscountType::FlatAmount) {
-            $discountTypeLabel = Craft::t('coupons', 'Flat Amount');
-        } else if ($this->discountType === DiscountType::Percentage) {
-            $discountTypeLabel = Craft::t('coupons', 'Percentage');
-        } else {
-            $discountTypeLabel = '';
-        }
+	protected function options(): array
+	{
+		return $this->shippingMethodOptions(false);
+	}
 
-        return
-            $selectHtml .
-            Html::hiddenLabel(Craft::t('coupons', 'Discount Type'), 'discountType') .
-            Cp::selectHtml([
-                'id' => 'discountType',
-                'name' => 'discountType',
-                'options' => [
-                    DiscountType::FlatAmount => Craft::t('coupons', 'Discount a flat amount'),
-                    DiscountType::Percentage => Craft::t('coupons', 'Discount a percentage'),
-                ],
-                'value' => $this->discountType,
-                'inputAttributes' => [
-                    'hx' => [
-                        'post' => UrlHelper::actionUrl('conditions/render'),
-                    ],
-                ],
-            ]) .
-            Html::hiddenLabel(Craft::t('coupons', 'Discount value'), 'discountValue') .
-            Cp::textHtml([
-                'type' => 'number',
-                'id' => 'discountValue',
-                'name' => 'discountValue',
-                'value' => $this->discountValue,
-                'autocomplete' => false,
-                'placeholder' => $discountTypeLabel,
-                'class' => 'flex-grow flex-shrink',
-            ]);
-    }
+	protected function inputHtml(): string
+	{
+		if ($this->operator === self::OPERATOR_EQ) {
+			$selectId = 'select';
 
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(QueryInterface $query): void
-    {
-        // todo
-        /** @var orderquery $query */
-        $query->shippingMethodHandle($this->paramValue());
-    }
+			$value = $this->getValues()[0] ?? self::ANY_VALUE;
+			$selectHtml =
+				Html::hiddenLabel(Html::encode($this->getLabel()), $selectId) .
+				Cp::selectHtml([
+					'id' => $selectId,
+					'name' => 'values',
+					'options' => $this->shippingMethodOptions(true),
+					'value' => $value,
+				]);
+		} else {
+			$selectHtml = parent::inputHtml();
+		}
 
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        // todo
-        /** @var Order $element */
-        return $this->matchValue($element->shippingMethodHandle);
-    }
+		if ($this->discountType === DiscountType::FlatAmount) {
+			$discountTypeLabel = Craft::t('coupons', 'Flat Amount');
+		} elseif ($this->discountType === DiscountType::Percentage) {
+			$discountTypeLabel = Craft::t('coupons', 'Percentage');
+		} else {
+			$discountTypeLabel = '';
+		}
 
-    protected function defineRules(): array
-    {
-        return array_merge(parent::defineRules(), [
-            [['values', 'discountType', 'discountValue'], 'safe'],
-        ]);
-    }
-    protected function matchValue(array|string|null $value): bool
-    {
-        // todo override this correctly
-        $values = $this->getValues();
+		return $selectHtml .
+			Html::hiddenLabel(Craft::t('coupons', 'Discount Type'), 'discountType') .
+			Cp::selectHtml([
+				'id' => 'discountType',
+				'name' => 'discountType',
+				'options' => [
+					DiscountType::FlatAmount => Craft::t('coupons', 'Discount a flat amount'),
+					DiscountType::Percentage => Craft::t('coupons', 'Discount a percentage'),
+				],
+				'value' => $this->discountType,
+				'inputAttributes' => [
+					'hx' => [
+						'post' => UrlHelper::actionUrl('conditions/render'),
+					],
+				],
+			]) .
+			Html::hiddenLabel(Craft::t('coupons', 'Discount value'), 'discountValue') .
+			Cp::textHtml([
+				'type' => 'number',
+				'id' => 'discountValue',
+				'name' => 'discountValue',
+				'value' => $this->discountValue,
+				'autocomplete' => false,
+				'placeholder' => $discountTypeLabel,
+				'class' => 'flex-grow flex-shrink',
+			]);
+	}
 
-        if (!$values) {
-            return true;
-        }
+	protected function defineRules(): array
+	{
+		return array_merge(parent::defineRules(), [
+			[['values', 'discountType', 'discountValue'], 'safe'],
+		]);
+	}
 
-        if ($value === '' || $value === null) {
-            $value = [];
-        } else {
-            $value = (array)$value;
-        }
+	protected function matchValue(array|string|null $value): bool
+	{
+		// todo override this correctly
+		$values = $this->getValues();
 
-        return match ($this->operator) {
-            self::OPERATOR_IN => !empty(array_intersect($value, $values)),
-            self::OPERATOR_NOT_IN => empty(array_intersect($value, $values)),
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
-        };
-    }
+		if (! $values) {
+			return true;
+		}
+
+		if ($value === '' || $value === null) {
+			$value = [];
+		} else {
+			$value = (array) $value;
+		}
+
+		return match ($this->operator) {
+			self::OPERATOR_IN => ! empty(array_intersect($value, $values)),
+			self::OPERATOR_NOT_IN => empty(array_intersect($value, $values)),
+			default => throw new InvalidConfigException("Invalid operator: {$this->operator}"),
+		};
+	}
+
+	private function shippingMethodOptions(bool $includeAny = false): array
+	{
+		$shippingMethods = ArrayHelper::map(Plugin::getInstance()->getShippingMethods()->getAllShippingMethods()->toArray(), 'handle', 'name');
+
+		if ($includeAny) {
+			return [
+				self::ANY_VALUE => 'Any',
+				...$shippingMethods,
+			];
+		}
+		return $shippingMethods;
+	}
 }
