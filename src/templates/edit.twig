@@ -42,6 +42,8 @@
             inputAttributes: {
                 data: {lpignore: 'true'},
             },
+            required: true,
+            errors: coupon.getErrors('title'),
         }) }}
 
         {{ forms.textField({
@@ -53,6 +55,8 @@
             inputAttributes: {
                 data: {lpignore: 'true'},
             },
+            required: true,
+            errors: coupon.getErrors('code'),
         }) }}
 
         {% set triggerCondition %}
