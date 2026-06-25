@@ -65,11 +65,13 @@ class ManageController extends Controller
 		$coupon->setActionCondition($this->request->getBodyParam('actionCondition'));
 
 		if (Plugin::getInstance()->coupons->saveCoupon($coupon)) {
-			$this->setSuccessFlash(Craft::t(‘coupons’, ‘Coupon saved.’));
+			$this->setSuccessFlash(Craft::t('coupons', 'Coupon saved.'));
 			$this->redirectToPostedUrl($coupon);
 		} else {
-			$this->setFailFlash(Craft::t(‘coupons’, "Couldn’t save coupon."));
-			Craft::$app->getUrlManager()->setRouteParams([‘coupon’ => $coupon]);
+			$this->setFailFlash(Craft::t('coupons', "Couldn\'t save coupon."));
+			Craft::$app->getUrlManager()->setRouteParams([
+				'coupon' => $coupon,
+			]);
 		}
 	}
 }

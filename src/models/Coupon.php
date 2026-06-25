@@ -117,7 +117,9 @@ class Coupon extends Model
 	{
 		return array_merge(parent::defineRules(), [
 			[['title', 'code'], 'required'],
-			[['title', 'code'], 'string', 'max' => 255],
+			[['title', 'code'],
+				'string',
+				'max' => 255],
 		]);
 	}
 }
