@@ -117,10 +117,12 @@ class Coupon extends Model
 	{
 		return array_merge(parent::defineRules(), [
 			[['title', 'code'], 'required'],
-			[['title', 'code'], 'string', 'max' => 255],
+			[['title', 'code'],
+				'string',
+				'max' => 255],
 			[
 				'triggerCondition',
-				function(string $attribute): void {
+				function (string $attribute): void {
 					if (empty($this->getTriggerCondition()->getConditionRules())) {
 						$this->addError($attribute, Craft::t('coupons', 'At least one condition is required.'));
 					}
@@ -128,7 +130,7 @@ class Coupon extends Model
 			],
 			[
 				'actionCondition',
-				function(string $attribute): void {
+				function (string $attribute): void {
 					if (empty($this->getActionCondition()->getConditionRules())) {
 						$this->addError($attribute, Craft::t('coupons', 'At least one action rule is required.'));
 					}

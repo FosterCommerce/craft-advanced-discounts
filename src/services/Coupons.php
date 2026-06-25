@@ -40,6 +40,19 @@ class Coupons extends Component
 		return $record !== null ? $this->_populateCoupon($record) : null;
 	}
 
+	public function deleteCoupon(int $id): bool
+	{
+		$record = CouponRecord::findOne($id);
+		if ($record === null) {
+			return false;
+		}
+
+		$record->delete();
+		$this->_discounts = null;
+
+		return true;
+	}
+
 	public function saveCoupon(Coupon $coupon, bool $runValidation = true): bool
 	{
 		$isNew = $coupon->id === null;

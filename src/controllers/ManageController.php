@@ -49,6 +49,20 @@ class ManageController extends Controller
 		]);
 	}
 
+	public function actionDelete(): ?Response
+	{
+		$this->requirePostRequest();
+		$this->requireAcceptsJson();
+
+		$id = (int) $this->request->getRequiredBodyParam('id');
+
+		if (! Plugin::getInstance()->coupons->deleteCoupon($id)) {
+			return $this->asFailure(Craft::t('coupons', 'Coupon not found.'));
+		}
+
+		return $this->asSuccess(Craft::t('coupons', 'Coupon deleted.'));
+	}
+
 	public function actionSave(): void
 	{
 		$this->requirePostRequest();
