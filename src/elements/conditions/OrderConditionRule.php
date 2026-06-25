@@ -28,6 +28,7 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 	{
 		$condition = $this->_orderCondition ?? new OrderCondition();
 		$condition->mainTag = 'div';
+		$condition->name = 'orderCondition';
 
 		return $condition;
 	}

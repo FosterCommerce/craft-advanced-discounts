@@ -28,6 +28,7 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 	{
 		$condition = $this->_triggerCondition ?? new TriggerCondition();
 		$condition->mainTag = 'div';
+		$condition->name = 'triggerCondition';
 
 		return $condition;
 	}
