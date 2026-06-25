@@ -40,16 +40,13 @@ class ManageController extends Controller
 
 	public function actionEdit(?int $id = null): Response
 	{
-		$variables = [];
+		$coupon = Craft::$app->getUrlManager()->getRouteParams()['coupon']
+			?? ($id !== null ? Plugin::getInstance()->coupons->getCouponById($id) : new Coupon());
 
-		if ($id !== null) {
-			$variables['coupon'] = Plugin::getInstance()->coupons->getCouponById($id);
-		} else {
-			$variables['coupon'] = new Coupon();
-		}
-		$variables['isNewCoupon'] = true;
-
-		return $this->renderTemplate('coupons/edit', $variables);
+		return $this->renderTemplate('coupons/edit', [
+			'coupon' => $coupon,
+			'isNewCoupon' => $coupon->id === null,
+		]);
 	}
 
 	public function actionSave(): void
