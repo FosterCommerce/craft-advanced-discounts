@@ -27,7 +27,6 @@ class ManageController extends Controller
 		foreach ($coupons as &$coupon) {
 			$coupon = $coupon->toArray();
 			$coupon['url'] = "coupons/{$coupon['id']}";
-			$coupon['status'] = $coupon['enabled'] ? 'enabled' : 'disabled';
 			$coupon['dateCreated'] = Craft::$app->getFormatter()
 				->asDate($coupon['dateCreated'], Locale::LENGTH_SHORT);
 			$coupon['dateUpdated'] = Craft::$app->getFormatter()

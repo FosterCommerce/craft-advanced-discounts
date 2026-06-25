@@ -14,8 +14,8 @@
 
 {% js %}
 	let columns = [
-		{ name: 'status', title: '', callback: (value) => `<span class="status ${value}"></span>` },
-		{ name: 'title', title: Craft.t('app', 'Name'), callback: (value, row) => `<a href="${row.url}">${Craft.escapeHtml(value)}</a>` },
+		{ name: 'enabled', title: '', callback: (value) => `<span class="status ${value ? 'enabled' : 'disabled'}"></span>` },
+		{ name: '__slot:title', title: Craft.t('app', 'Name') },
 		{
 			name: 'code',
 			title: Craft.t('coupons', 'Code'),
