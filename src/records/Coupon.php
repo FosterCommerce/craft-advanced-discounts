@@ -10,6 +10,7 @@ use craft\db\ActiveRecord;
  * @property int $id
  * @property ?string $title
  * @property string $code
+ * @property bool $enabled
  * @property ?array $triggerCondition
  * @property ?array $actionCondition
  */

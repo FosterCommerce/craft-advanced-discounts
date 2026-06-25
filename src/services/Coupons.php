@@ -73,6 +73,7 @@ class Coupons extends Component
 
 		$record->title = $coupon->title;
 		$record->code = $coupon->code;
+		$record->enabled = $coupon->enabled;
 		$record->triggerCondition = $coupon->getTriggerCondition()->getConfig();
 		$record->actionCondition = $coupon->getActionCondition()->getConfig();
 
@@ -110,6 +111,7 @@ class Coupons extends Component
 				'[[coupons.id]]',
 				'[[coupons.title]]',
 				'[[coupons.code]]',
+				'[[coupons.enabled]]',
 				'[[coupons.triggerCondition]]',
 				'[[coupons.actionCondition]]',
 				'[[coupons.dateCreated]]',

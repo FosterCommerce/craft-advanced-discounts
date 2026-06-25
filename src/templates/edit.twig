@@ -82,3 +82,15 @@
         <input type="submit" class="hidden">
     </form>
 {% endset %}
+
+{% block details %}
+    <div id="settings" class="meta">
+        {{ forms.lightswitchField({
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: coupon.enabled,
+            form: 'couponform',
+        }) }}
+    </div>
+{% endblock %}

@@ -30,6 +30,11 @@ class Coupon extends Model
 	public string $code = '';
 
 	/**
+	 * @var bool Whether the coupon is enabled
+	 */
+	public bool $enabled = true;
+
+	/**
 	 * @see getTriggerCondition()
 	 * @see setTriggerCondition()
 	 */
