@@ -13,6 +13,12 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 {
 	public ?ElementConditionInterface $_orderCondition = null;
 
+	public function __construct($config = [])
+	{
+		$config['orderCondition'] = $config['attributes']['orderCondition'] ?? [];
+		parent::__construct($config);
+	}
+
 	public function getNestedCondition(): ElementConditionInterface
 	{
 		return $this->getOrderCondition();

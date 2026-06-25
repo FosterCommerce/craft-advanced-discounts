@@ -13,6 +13,12 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 {
 	public ?ElementConditionInterface $_triggerCondition = null;
 
+	public function __construct($config = [])
+	{
+		$config['triggerCondition'] = $config['attributes']['triggerCondition'] ?? [];
+		parent::__construct($config);
+	}
+
 	public function getNestedCondition(): ElementConditionInterface
 	{
 		return $this->getTriggerCondition();
