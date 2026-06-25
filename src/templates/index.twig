@@ -15,7 +15,7 @@
 {% js %}
 	let columns = [
 		{ name: 'status', title: '', callback: (value) => `<span class="status ${value}"></span>` },
-		{ name: '__slot:title', title: Craft.t('app', 'Name') },
+		{ name: 'title', title: Craft.t('app', 'Name'), callback: (value, row) => `<a href="${row.url}">${Craft.escapeHtml(value)}</a>` },
 		{
 			name: 'code',
 			title: Craft.t('coupons', 'Code'),
@@ -36,6 +36,7 @@
 		columns,
 		container: '#coupons-list',
 		search: true,
+		checkboxes: true,
 		tableDataEndpoint: '/admin/actions/coupons/manage/list',
 		deleteAction: 'coupons/manage/delete',
 	});
