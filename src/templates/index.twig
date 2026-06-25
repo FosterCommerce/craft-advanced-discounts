@@ -14,7 +14,7 @@
 
 {% js %}
 	let columns = [
-		{ name: '__slot:status', title: '' },
+		{ name: 'status', title: '', callback: (value) => `<span class="status ${value}"></span>` },
 		{ name: '__slot:title', title: Craft.t('app', 'Name') },
 		{
 			name: 'code',
