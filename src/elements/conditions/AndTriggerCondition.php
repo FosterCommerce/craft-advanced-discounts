@@ -50,6 +50,7 @@ class AndTriggerCondition extends ElementCondition
 		return [
 			TriggerConditionRule::class,
 			OrderConditionRule::class,
+			UserConditionRule::class,
 		];
 	}
 }
