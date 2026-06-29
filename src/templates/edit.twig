@@ -1,5 +1,6 @@
 {% extends '_layouts/cp' %}
 
+{% set fullPageForm = true %}
 {% set crumbs = [
     { label: "Coupons"|t('coupons'), url: url('coupons') },
 ] %}
@@ -12,7 +13,6 @@
 
 {% block content %}
     {{ actionInput('coupons/manage/save') }}
-    {{ csrfInput() }}
     {{ redirectInput('coupons') }}
 
     {% if coupon.id %}
@@ -67,7 +67,7 @@
 {% endblock %}
 
 {% block details %}
-    <div id="settings" class="meta">
+    <div class="meta">
         {{ forms.lightswitchField({
             label: 'Enabled'|t('app'),
             id: 'enabled',

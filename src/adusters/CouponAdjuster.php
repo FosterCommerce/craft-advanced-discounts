@@ -21,7 +21,7 @@ class CouponAdjuster implements AdjusterInterface
 		$adjustments = [];
 
 		foreach (Plugin::getInstance()->coupons->getAllCoupons() as $coupon) {
-			if ($coupon->code !== $order->couponCode || $coupon->enabled) {
+			if ($coupon->code !== $order->couponCode || ! $coupon->enabled) {
 				continue;
 			}
 
