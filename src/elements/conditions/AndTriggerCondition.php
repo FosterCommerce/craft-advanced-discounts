@@ -5,6 +5,7 @@ namespace fostercommerce\coupons\elements\conditions;
 use Craft;
 use craft\base\conditions\ConditionRuleInterface;
 use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
@@ -26,7 +27,7 @@ class AndTriggerCondition extends ElementCondition
 			'class' => static::class,
 			'conditionRules' => $conditionRules
 				->map(function (ConditionRuleInterface $rule) {
-					if (! $rule instanceof NestedConditionRuleInterface) {
+					if (! $rule instanceof ElementConditionRuleInterface) {
 						return null;
 					}
 					try {
@@ -51,6 +52,7 @@ class AndTriggerCondition extends ElementCondition
 			TriggerConditionRule::class,
 			OrderConditionRule::class,
 			UserConditionRule::class,
+			DateRangeConditionRule::class,
 		];
 	}
 }
