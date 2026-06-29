@@ -5,9 +5,9 @@ namespace fostercommerce\coupons\adjusters;
 use craft\commerce\base\AdjusterInterface;
 use craft\commerce\elements\Order;
 use craft\commerce\models\OrderAdjustment;
+use fostercommerce\coupons\elements\conditions\LineItemActionRule;
 use fostercommerce\coupons\elements\conditions\OrderActionRule;
 use fostercommerce\coupons\enums\DiscountType;
-use fostercommerce\coupons\enums\ItemsChoice;
 use fostercommerce\coupons\Plugin;
 
 class CouponAdjuster implements AdjusterInterface
@@ -31,6 +31,11 @@ class CouponAdjuster implements AdjusterInterface
 
 			foreach ($coupon->getActionCondition()->getConditionRules() as $rule) {
 				if ($rule instanceof OrderActionRule) {
+					$adjustment = $this->buildOrderAdjustment($rule, $order, $coupon->name);
+					if ($adjustment !== null) {
+						$adjustments[] = $adjustment;
+					}
+				} elseif ($rule instanceof LineItemActionRule) {
 					array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $coupon->name));
 				}
 			}
@@ -39,30 +44,46 @@ class CouponAdjuster implements AdjusterInterface
 		return $adjustments;
 	}
 
+	private function buildOrderAdjustment(OrderActionRule $rule, Order $order, string $couponName): ?OrderAdjustment
+	{
+		if (! $rule->discountValue) {
+			return null;
+		}
+
+		$subtotal = $order->itemSubtotal;
+
+		$amount = $rule->discountType === DiscountType::Percentage
+			? -($subtotal * ($rule->discountValue / 100))
+			: -min((float) $rule->discountValue, $subtotal);
+
+		$adjustment = new OrderAdjustment();
+		$adjustment->type = 'discount';
+		$adjustment->name = $couponName;
+		$adjustment->amount = $amount;
+		$adjustment->orderId = $order->id;
+
+		return $adjustment;
+	}
+
 	/**
 	 * @return OrderAdjustment[]
 	 */
-	private function buildLineItemAdjustments(OrderActionRule $rule, Order $order, string $couponTitle): array
+	private function buildLineItemAdjustments(LineItemActionRule $rule, Order $order, string $couponName): array
 	{
+		if (! $rule->discountValue) {
+			return [];
+		}
+
 		$adjustments = [];
-		$itemCondition = $rule->getOrderActionCondition();
-		$applied = 0;
+		$matchingOnly = $rule->lineItemsFilter === LineItemActionRule::FILTER_MATCHING;
+		$lineItemCondition = $matchingOnly ? $rule->getLineItemCondition() : null;
 
 		foreach ($order->getLineItems() as $lineItem) {
-			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable === null) {
-				continue;
-			}
-
-			if (! $itemCondition->matchElement($purchasable)) {
-				continue;
-			}
-
-			if ($rule->itemsChoice === ItemsChoice::NumberOfItems) {
-				if ($applied >= (int) $rule->numberOfItems) {
-					break;
+			if ($lineItemCondition !== null) {
+				$purchasable = $lineItem->getPurchasable();
+				if ($purchasable === null || ! $lineItemCondition->matchElement($purchasable)) {
+					continue;
 				}
-				$applied++;
 			}
 
 			$amount = $rule->discountType === DiscountType::Percentage
@@ -71,7 +92,7 @@ class CouponAdjuster implements AdjusterInterface
 
 			$adjustment = new OrderAdjustment();
 			$adjustment->type = 'discount';
-			$adjustment->name = $couponTitle;
+			$adjustment->name = $couponName;
 			$adjustment->amount = $amount;
 			$adjustment->orderId = $order->id;
 			$adjustment->lineItemId = $lineItem->id;

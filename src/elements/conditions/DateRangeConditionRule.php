@@ -14,12 +14,13 @@ use craft\helpers\Html;
 class DateRangeConditionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
 	private ?string $_startDate = null;
+
 	private ?string $_endDate = null;
 
 	public function init(): void
 	{
 		if ($this->_startDate === null) {
-			$this->_startDate = DateTimeHelper::toIso8601(DateTimeHelper::now());
+			$this->_startDate = DateTimeHelper::toIso8601(DateTimeHelper::now()) ?: null;
 		}
 		parent::init();
 	}
@@ -31,7 +32,7 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 
 	public function setStartDate(mixed $value): void
 	{
-		$this->_startDate = $value ? DateTimeHelper::toIso8601($value) : null;
+		$this->_startDate = $value ? (DateTimeHelper::toIso8601($value) ?: null) : null;
 	}
 
 	public function getEndDate(): ?string
@@ -41,7 +42,7 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 
 	public function setEndDate(mixed $value): void
 	{
-		$this->_endDate = $value ? DateTimeHelper::toIso8601($value) : null;
+		$this->_endDate = $value ? (DateTimeHelper::toIso8601($value) ?: null) : null;
 	}
 
 	public function getLabel(): string
@@ -104,7 +105,9 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 				'name' => 'startDate',
 				'value' => $this->_startDate,
 			])),
-			['class' => ['flex', 'flex-nowrap']]
+			[
+				'class' => ['flex', 'flex-nowrap'],
+			]
 		);
 
 		$endHtml = Html::tag(
@@ -115,10 +118,14 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 				'name' => 'endDate',
 				'value' => $this->_endDate,
 			])),
-			['class' => ['flex', 'flex-nowrap']]
+			[
+				'class' => ['flex', 'flex-nowrap'],
+			]
 		);
 
-		return Html::tag('div', $startHtml . $endHtml, ['class' => 'flex']);
+		return Html::tag('div', $startHtml . $endHtml, [
+			'class' => 'flex',
+		]);
 	}
 
 	/**

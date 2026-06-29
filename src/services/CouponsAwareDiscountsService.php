@@ -16,7 +16,7 @@ class CouponsAwareDiscountsService extends Discounts
 		}
 
 		$coupon = Plugin::getInstance()->coupons->getCouponByCode($code ?? '');
-		if ($coupon === null || !$coupon->enabled) {
+		if ($coupon === null || ! $coupon->enabled) {
 			return null;
 		}
 

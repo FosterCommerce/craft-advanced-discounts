@@ -49,7 +49,7 @@ class Plugin extends BasePlugin
 
 		// Defer most setup tasks until Craft is fully initialized
 		Craft::$app->onInit(function () {
-			\craft\commerce\Plugin::getInstance()->set('discounts', [
+			\craft\commerce\Plugin::getInstance()?->set('discounts', [
 				'class' => CouponsAwareDiscountsService::class,
 			]);
 			$this->attachEventHandlers();

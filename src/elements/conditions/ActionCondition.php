@@ -20,6 +20,7 @@ class ActionCondition extends ElementCondition
 	{
 		return array_merge([
 			OrderActionRule::class,
+			LineItemActionRule::class,
 			ShippingMethodActionRule::class,
 		]);
 	}
