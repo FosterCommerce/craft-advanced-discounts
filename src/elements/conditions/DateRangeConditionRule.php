@@ -16,6 +16,14 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 	private ?string $_startDate = null;
 	private ?string $_endDate = null;
 
+	public function init(): void
+	{
+		if ($this->_startDate === null) {
+			$this->_startDate = DateTimeHelper::toIso8601(DateTimeHelper::now());
+		}
+		parent::init();
+	}
+
 	public function getStartDate(): ?string
 	{
 		return $this->_startDate;
@@ -119,6 +127,7 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
+			[['startDate'], 'required'],
 			[['startDate', 'endDate'], 'safe'],
 		]);
 	}
