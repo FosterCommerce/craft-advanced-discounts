@@ -8,7 +8,7 @@ use craft\db\ActiveRecord;
  * Coupon record
  *
  * @property int $id
- * @property ?string $title
+ * @property ?string $name
  * @property string $code
  * @property bool $enabled
  * @property ?array $triggerCondition

@@ -31,7 +31,7 @@ class CouponAdjuster implements AdjusterInterface
 
 			foreach ($coupon->getActionCondition()->getConditionRules() as $rule) {
 				if ($rule instanceof OrderActionRule) {
-					array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $coupon->title));
+					array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $coupon->name));
 				}
 			}
 		}

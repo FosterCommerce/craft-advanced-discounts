@@ -27,6 +27,7 @@ class ManageController extends Controller
 		foreach ($coupons as &$coupon) {
 			$coupon = $coupon->toArray();
 			$coupon['url'] = "coupons/{$coupon['id']}";
+			$coupon['title'] = $coupon['name'];
 			$coupon['dateCreated'] = Craft::$app->getFormatter()
 				->asDate($coupon['dateCreated'], Locale::LENGTH_SHORT);
 			$coupon['dateUpdated'] = Craft::$app->getFormatter()
@@ -70,7 +71,7 @@ class ManageController extends Controller
 		$coupon = new Coupon();
 
 		$coupon->id = $this->request->getBodyParam('id');
-		$coupon->title = $this->request->getBodyParam('title');
+		$coupon->name = $this->request->getBodyParam('name');
 		$coupon->code = $this->request->getBodyParam('code');
 		$coupon->enabled = (bool) $this->request->getBodyParam('enabled');
 		$coupon->setTriggerCondition($this->request->getBodyParam('triggerCondition'));

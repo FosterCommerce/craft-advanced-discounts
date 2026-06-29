@@ -22,7 +22,7 @@ class Coupon extends Model
 	/**
 	 * @var string Name of the coupon
 	 */
-	public string $title = '';
+	public string $name = '';
 
 	/**
 	 * @var string The coupons unique code
@@ -121,8 +121,8 @@ class Coupon extends Model
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['title', 'code'], 'required'],
-			[['title', 'code'],
+			[['name', 'code'], 'required'],
+			[['name', 'code'],
 				'string',
 				'max' => 255],
 			[

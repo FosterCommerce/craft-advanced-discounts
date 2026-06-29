@@ -21,15 +21,15 @@
 
     {{ forms.textField({
         label: "Coupon Name"|t('coupons'),
-        id: 'title',
-        name: 'title',
-        value: coupon.title,
+        id: 'name',
+        name: 'name',
+        value: coupon.name,
         type: 'text',
         inputAttributes: {
             data: {lpignore: 'true'},
         },
         required: true,
-        errors: coupon.getErrors('title'),
+        errors: coupon.getErrors('name'),
     }) }}
 
     {{ forms.textField({
