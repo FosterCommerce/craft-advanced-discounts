@@ -79,8 +79,11 @@ class UserConditionRule extends BaseConditionRule implements NestedConditionRule
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		// todo
-		return true;
+		$user = Craft::$app->getUser()->getIdentity();
+        if($user === null) {
+            return false;
+        }
+        return $this->getUserCondition()->matchElement($user);
 	}
 
 	protected function inputHtml(): string

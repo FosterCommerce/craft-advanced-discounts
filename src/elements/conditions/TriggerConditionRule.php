@@ -83,15 +83,7 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		// todo
-		return $element::find()
-			->id($element->id ?: false)
-			->site('*')
-			->drafts($element->getIsDraft())
-			->provisionalDrafts($element->isProvisionalDraft)
-			->revisions($element->getIsRevision())
-			->status(null)
-			->exists();
+		return $this->getTriggerCondition()->matchElement($element);
 	}
 
 	protected function inputHtml(): string
