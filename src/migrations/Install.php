@@ -11,7 +11,7 @@ class Install extends Migration
 	{
 		$this->createTable(Coupon::TABLE_NAME, [
 			'id' => $this->primaryKey(),
-			'name' => $this->string()->notNull(),
+			'title' => $this->string()->notNull(),
 			'code' => $this->string()->null(),
 			'triggerCondition' => $this->json()->null(),
 			'actionCondition' => $this->json()->null(),
