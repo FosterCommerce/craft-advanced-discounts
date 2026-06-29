@@ -6,82 +6,68 @@
 {% set title = "Create Coupon"|t('coupons') %}
 {% import '_includes/forms.twig' as forms %}
 
-{% set hiddenInputs %}
-    {{ csrfInput() }}
-{% endset %}
+{% set mainFormAttributes = {
+    action: actionUrl('coupons/manage/save'),
+} %}
 
 {% block actionButton %}
-    <button type="button" class="btn submit formsubmit" data-form="couponform">{{ 'Save Coupon'|t('coupons') }}</button>
+    <button type="submit" class="btn submit">{{ 'Save Coupon'|t('coupons') }}</button>
 {% endblock %}
 
-{% set content %}
-    {% set formAttributes = {
-        id: 'couponform',
-        method: 'post',
-        'accept-charset': 'UTF-8',
-        data: {
-            saveshortcut: true,
-            'confirm-unload': true,
+{% block content %}
+    {{ csrfInput() }}
+    {{ redirectInput('coupons') }}
+
+    {% if coupon.id %}
+        <input type="hidden" name="id" value="{{ coupon.id }}">
+    {% endif %}
+
+    {{ forms.textField({
+        label: "Coupon Name"|t('coupons'),
+        id: 'title',
+        name: 'title',
+        value: coupon.title,
+        type: 'text',
+        inputAttributes: {
+            data: {lpignore: 'true'},
         },
-    } %}
-    <form {{ attr(formAttributes) }}>
-        {{ actionInput('coupons/manage/save') }}
-        {{ redirectInput('coupons') }}
-        {{ hiddenInputs }}
+        required: true,
+        errors: coupon.getErrors('title'),
+    }) }}
 
-				 {% if coupon.id %}
-					 <input type="hidden" name="id" value="{{ coupon.id }}">
-				 {% endif %}
+    {{ forms.textField({
+        label: "Coupon Code"|t('coupons'),
+        id: 'code',
+        name: 'code',
+        value: coupon.code,
+        type: 'text',
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
+        required: true,
+        errors: coupon.getErrors('code'),
+    }) }}
 
-        {{ forms.textField({
-            label: "Coupon Name"|t('coupons'),
-            id: 'title',
-            name: 'title',
-            value: coupon.title,
-            type: 'text',
-            inputAttributes: {
-                data: {lpignore: 'true'},
-            },
-            required: true,
-            errors: coupon.getErrors('title'),
-        }) }}
+    {% set triggerCondition %}
+        {{ coupon.triggerCondition.getBuilderHtml()|raw }}
+    {% endset %}
 
-        {{ forms.textField({
-            label: "Coupon Code"|t('coupons'),
-            id: 'code',
-            name: 'code',
-            value: coupon.code,
-            type: 'text',
-            inputAttributes: {
-                data: {lpignore: 'true'},
-            },
-            required: true,
-            errors: coupon.getErrors('code'),
-        }) }}
+    {{ forms.field({
+        label: 'Conditions'|t('coupons'),
+        instructions: 'Create rules to match and order with a coupon.'|t('coupons'),
+        errors: coupon.getErrors('triggerCondition')
+    }, triggerCondition) }}
 
-        {% set triggerCondition %}
-            {{ coupon.triggerCondition.getBuilderHtml()|raw }}
-        {% endset %}
+    {% set actionCondition %}
+        {{ coupon.actionCondition.getBuilderHtml()|raw }}
+    {% endset %}
 
-        {{ forms.field({
-            label: 'Conditions'|t('coupons'),
-            instructions: 'Create rules to match and order with a coupon.'|t('coupons'),
-            errors: coupon.getErrors('triggerCondition')
-        }, triggerCondition) }}
-
-        {% set actionCondition %}
-            {{ coupon.actionCondition.getBuilderHtml()|raw }}
-        {% endset %}
-
-        {{ forms.field({
-            label: 'Action Rules'|t('coupons'),
-            instructions: 'Create rules to apply discounts.'|t('coupons'),
-            errors: coupon.getErrors('actionCondition')
-        }, actionCondition) }}
-
-        <input type="submit" class="hidden">
-    </form>
-{% endset %}
+    {{ forms.field({
+        label: 'Action Rules'|t('coupons'),
+        instructions: 'Create rules to apply discounts.'|t('coupons'),
+        errors: coupon.getErrors('actionCondition')
+    }, actionCondition) }}
+{% endblock %}
 
 {% block details %}
     <div id="settings" class="meta">
@@ -90,7 +76,6 @@
             id: 'enabled',
             name: 'enabled',
             on: coupon.enabled,
-            form: 'couponform',
         }) }}
     </div>
 {% endblock %}
