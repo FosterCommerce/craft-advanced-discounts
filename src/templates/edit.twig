@@ -6,15 +6,12 @@
 {% set title = "Create Coupon"|t('coupons') %}
 {% import '_includes/forms.twig' as forms %}
 
-{% set mainFormAttributes = {
-    action: actionUrl('coupons/manage/save'),
-} %}
-
 {% block actionButton %}
     <button type="submit" class="btn submit">{{ 'Save Coupon'|t('coupons') }}</button>
 {% endblock %}
 
 {% block content %}
+    {{ actionInput('coupons/manage/save') }}
     {{ csrfInput() }}
     {{ redirectInput('coupons') }}
 
