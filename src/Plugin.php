@@ -5,13 +5,13 @@ namespace fostercommerce\coupons;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
+use craft\commerce\services\OrderAdjustments;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlManager;
-use craft\commerce\services\OrderAdjustments;
+use fostercommerce\coupons\adjusters\CouponAdjuster;
 use fostercommerce\coupons\models\Settings;
 use fostercommerce\coupons\services\Coupons;
-use fostercommerce\coupons\adjusters\CouponAdjuster;
 use yii\base\Event;
 
 /**
@@ -67,21 +67,20 @@ class Plugin extends BasePlugin
 
 	private function attachEventHandlers(): void
 	{
-
 		if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
 			if (Craft::$app->getRequest()->getIsCpRequest()) {
 				$this->registerCpRoutes();
 			}
 		}
 
-        // register adjuster
-        Event::on(
-            OrderAdjustments::class,
-            OrderAdjustments::EVENT_REGISTER_ORDER_ADJUSTERS,
-            static function (RegisterComponentTypesEvent $event): void {
-                $event->types[] = CouponAdjuster::class;
-            }
-        );
+		// register adjuster
+		Event::on(
+			OrderAdjustments::class,
+			OrderAdjustments::EVENT_REGISTER_ORDER_ADJUSTERS,
+			static function (RegisterComponentTypesEvent $event): void {
+				$event->types[] = CouponAdjuster::class;
+			}
+		);
 	}
 
 	private function registerCpRoutes(): void
