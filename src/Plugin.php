@@ -13,6 +13,7 @@ use craft\web\UrlManager;
 use fostercommerce\coupons\adjusters\CouponAdjuster;
 use fostercommerce\coupons\models\Settings;
 use fostercommerce\coupons\services\Coupons;
+use fostercommerce\coupons\services\CouponsAwareDiscountsService;
 use yii\base\Event;
 
 /**
@@ -48,6 +49,9 @@ class Plugin extends BasePlugin
 
 		// Defer most setup tasks until Craft is fully initialized
 		Craft::$app->onInit(function () {
+			\craft\commerce\Plugin::getInstance()->set('discounts', [
+				'class' => CouponsAwareDiscountsService::class,
+			]);
 			$this->attachEventHandlers();
 			// ...
 		});
