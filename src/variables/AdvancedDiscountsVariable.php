@@ -41,14 +41,16 @@ class AdvancedDiscountsVariable
 				continue;
 			}
 
-			if (! $coupon->getTriggerCondition()->matchElement($order)) {
-				continue;
-			}
-
 			foreach ($coupon->getActionCondition()->getConditionRules() as $rule) {
-				if ($rule instanceof MessageActionRule && $rule->message !== '') {
-					$messages[] = $this->resolvePlaceholders($rule->message, $coupon, $order);
+				if (! $rule instanceof MessageActionRule || $rule->message === '') {
+					continue;
 				}
+
+				if (! $rule->getMessageCondition()->matchElement($order)) {
+					continue;
+				}
+
+				$messages[] = $this->resolvePlaceholders($rule->message, $coupon, $order);
 			}
 		}
 
