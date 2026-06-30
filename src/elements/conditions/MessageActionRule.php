@@ -97,7 +97,7 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 					'id' => 'message',
 					'name' => 'message',
 					'value' => $this->message,
-					'placeholder' => Craft::t('advanced-discounts', 'e.g. Spend another {amount} to get {discount} off'),
+					'placeholder' => Craft::t('advanced-discounts', 'e.g. Spend another {amountRemaining} to get {discountAmount} off'),
 					'class' => 'flex-grow',
 					'rows' => 3,
 				]),
