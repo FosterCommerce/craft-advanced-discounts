@@ -93,17 +93,19 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 			Html::tag(
 				'div',
 				Html::hiddenLabel(Craft::t('advanced-discounts', 'Message'), 'message') .
-				Cp::textHtml([
+				Cp::textareaHtml([
 					'id' => 'message',
 					'name' => 'message',
 					'value' => $this->message,
 					'placeholder' => Craft::t('advanced-discounts', 'e.g. Spend another {amount} to get {discount} off'),
 					'class' => 'flex-grow',
+					'rows' => 3,
 				]),
 				[
 					'class' => ['flex', 'flex-start', 'flex-grow'],
 				]
 			) .
+			Html::tag('p', Craft::t('advanced-discounts', 'Create rules to determine when to show this message'), ['class' => 'instructions']) .
 			$this->getMessageCondition()->getBuilderHtml(),
 			[
 				'class' => ['flex', 'flex-start', 'flex-grow'],
