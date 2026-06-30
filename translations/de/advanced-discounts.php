@@ -29,7 +29,7 @@ return [
 
     // CP-Index
     'Advanced Discounts' => 'Erweiterte Rabatte',
-    'New coupon' => 'Neuer Gutschein',
+    'New discount' => 'Neuer Gutschein',
     'Code' => 'Code',
     'Created' => 'Erstellt',
     'Updated' => 'Aktualisiert',

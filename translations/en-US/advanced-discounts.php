@@ -29,7 +29,7 @@ return [
 
     // CP index
     'Advanced Discounts' => 'Advanced Discounts',
-    'New coupon' => 'New coupon',
+    'New discount' => 'New discount',
     'Code' => 'Code',
     'Created' => 'Created',
     'Updated' => 'Updated',

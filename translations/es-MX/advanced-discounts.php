@@ -29,7 +29,7 @@ return [
 
     // Índice del panel
     'Advanced Discounts' => 'Descuentos avanzados',
-    'New coupon' => 'Nuevo cupón',
+    'New discount' => 'Nuevo cupón',
     'Code' => 'Código',
     'Created' => 'Creado',
     'Updated' => 'Actualizado',
