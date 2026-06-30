@@ -1,80 +1,78 @@
 {% extends '_layouts/cp' %}
 
+{% set fullPageForm = true %}
 {% set crumbs = [
-    { label: "Coupons"|t('coupons'), url: url('coupons') },
+    { label: "Advanced Discounts"|t('advanced-discounts'), url: url('advanced-discounts') },
 ] %}
-{% set title = "Create Coupon"|t('coupons') %}
+{% set title = "Create Coupon"|t('advanced-discounts') %}
 {% import '_includes/forms.twig' as forms %}
 
-{% set hiddenInputs %}
-    {{ csrfInput() }}
-{% endset %}
-
 {% block actionButton %}
-    <button type="button" class="btn submit formsubmit" data-form="couponform">{{ 'Save Coupon'|t('coupons') }}</button>
+    <button type="submit" class="btn submit">{{ 'Save Coupon'|t('advanced-discounts') }}</button>
 {% endblock %}
 
-{% set content %}
-    {% set formAttributes = {
-        id: 'couponform',
-        method: 'post',
-        'accept-charset': 'UTF-8',
-        data: {
-            saveshortcut: true,
-            'confirm-unload': true,
+{% block content %}
+    {{ actionInput('advanced-discounts/manage/save') }}
+    {{ redirectInput('advanced-discounts') }}
+
+    {% if coupon.id %}
+        <input type="hidden" name="id" value="{{ coupon.id }}">
+    {% endif %}
+
+    {{ forms.textField({
+        label: "Coupon Name"|t('advanced-discounts'),
+        id: 'name',
+        name: 'name',
+        value: coupon.name,
+        type: 'text',
+        inputAttributes: {
+            data: {lpignore: 'true'},
         },
-    } %}
-    <form {{ attr(formAttributes) }}>
-        {{ actionInput('coupons/manage/save') }}
-        {{ redirectInput('coupons') }}
-        {{ hiddenInputs }}
+        required: true,
+        errors: coupon.getErrors('name'),
+    }) }}
 
-				 {% if coupon.id %}
-					 <input type="hidden" name="id" value="{{ coupon.id }}">
-				 {% endif %}
+    {{ forms.textField({
+        label: "Coupon Code"|t('advanced-discounts'),
+        id: 'code',
+        name: 'code',
+        value: coupon.code,
+        type: 'text',
+        instructions: "Leave blank to apply this discount automatically without a code."|t('advanced-discounts'),
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
+        errors: coupon.getErrors('code'),
+    }) }}
 
-        {{ forms.textField({
-            label: "Coupon Name"|t('coupons'),
-            id: 'title',
-            name: 'title',
-            value: coupon.title,
-            type: 'text',
-            inputAttributes: {
-                data: {lpignore: 'true'},
-            },
+    {% set triggerCondition %}
+        {{ coupon.triggerCondition.getBuilderHtml()|raw }}
+    {% endset %}
+
+    {{ forms.field({
+        label: 'Conditions'|t('advanced-discounts'),
+        instructions: 'Create rules to match and order with a coupon.'|t('advanced-discounts'),
+        errors: coupon.getErrors('triggerCondition')
+    }, triggerCondition) }}
+
+    {% set actionCondition %}
+        {{ coupon.actionCondition.getBuilderHtml()|raw }}
+    {% endset %}
+
+    {{ forms.field({
+        label: 'Action Rules'|t('advanced-discounts'),
+        instructions: 'Create rules to apply discounts.'|t('advanced-discounts'),
+        errors: coupon.getErrors('actionCondition')
+    }, actionCondition) }}
+{% endblock %}
+
+{% block details %}
+    <div class="meta">
+        {{ forms.lightswitchField({
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: coupon.enabled,
         }) }}
-
-        {{ forms.textField({
-            label: "Coupon Code"|t('coupons'),
-            id: 'code',
-            name: 'code',
-            value: coupon.code,
-            type: 'text',
-            inputAttributes: {
-                data: {lpignore: 'true'},
-            },
-        }) }}
-
-        {% set triggerCondition %}
-            {{ coupon.triggerCondition.getBuilderHtml()|raw }}
-        {% endset %}
-
-        {{ forms.field({
-            label: 'Conditions'|t('coupons'),
-            instructions: 'Create rules to match and order with a coupon.'|t('coupons'),
-            errors: coupon.getErrors('triggerCondition')
-        }, triggerCondition) }}
-
-        {% set actionCondition %}
-            {{ coupon.actionCondition.getBuilderHtml()|raw }}
-        {% endset %}
-
-        {{ forms.field({
-            label: 'Action Rules'|t('coupons'),
-            instructions: 'Create rules to apply discounts.'|t('coupons'),
-            errors: coupon.getErrors('actionCondition')
-        }, actionCondition) }}
-
-        <input type="submit" class="hidden">
-    </form>
-{% endset %}
+    </div>
+{% endblock %}

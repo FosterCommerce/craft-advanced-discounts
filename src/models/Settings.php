@@ -1,8 +1,7 @@
 <?php
 
-namespace fostercommerce\coupons\models;
+namespace fostercommerce\advancedDiscounts\models;
 
-use Craft;
 use craft\base\Model;
 
 /**

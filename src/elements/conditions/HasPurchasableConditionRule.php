@@ -1,5 +1,6 @@
 <?php
-namespace fostercommerce\coupons\elements\conditions;
+
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
@@ -14,130 +15,121 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use yii\base\InvalidConfigException;
 
 /**
  * @method array|string|null paramValue(?callable $normalizeValue = null)
  */
 class HasPurchasableConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * @var string
-     */
-    public string $purchasableType = Variant::class;
+	/**
+	 * @var class-string<ElementInterface>
+	 */
+	public string $purchasableType = Variant::class;
 
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return Craft::t('commerce', 'Has Purchasable');
-    }
+	public function getLabel(): string
+	{
+		return Craft::t('commerce', 'Has Purchasable');
+	}
 
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return [];
-    }
+	public function getExclusiveQueryParams(): array
+	{
+		return [];
+	}
 
-    /**
-     * @inheritdoc
-     */
-    protected function elementType(): string
-    {
-        return $this->purchasableType;
-    }
+	public function modifyQuery(ElementQueryInterface $query): void
+	{
+		if ($this->getElementId() === null) {
+			return;
+		}
 
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        if ($this->getElementId() === null) {
-            return;
-        }
+		/** @var OrderQuery $query */
+		$query->hasPurchasables([(int) $this->getElementId()]);
+	}
 
-        /** @var OrderQuery $query */
-        $query->hasPurchasables([$this->getElementId()]);
-    }
+	public function matchElement(ElementInterface $element): bool
+	{
+		return Order::find()
+			->id($element->id)
+			->hasPurchasables([(int) $this->getElementId()])
+			->exists();
+	}
 
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        return Order::find()
-            ->id($element->id)
-            ->hasPurchasables([$this->getElementId()])
-            ->exists();
-    }
+	/**
+	 * @return array<string, mixed>
+	 */
+	public function getConfig(): array
+	{
+		return array_merge(parent::getConfig(), [
+			'purchasableType' => $this->purchasableType,
+		]);
+	}
 
-    public function getConfig(): array
-    {
-        return array_merge(parent::getConfig(), [
-            'purchasableType' => $this->purchasableType,
-        ]);
-    }
+	/**
+	 * @return class-string<ElementInterface>
+	 */
+	protected function elementType(): string
+	{
+		return $this->purchasableType;
+	}
 
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['purchasableType'], 'safe'];
+	/**
+	 * @return array<int, mixed>
+	 */
+	protected function defineRules(): array
+	{
+		$rules = parent::defineRules();
+		$rules[] = [['purchasableType'], 'safe'];
 
-        return $rules;
-    }
+		return $rules;
+	}
 
-    /**
-     * @inheritdoc
-     */
-    protected function inputHtml(): string
-    {
-        $id = 'purchasable-type';
-        return Html::hiddenLabel($this->getLabel(), $id) .
-            Html::tag('div',
-                Cp::selectHtml([
-                    'id' => $id,
-                    'name' => 'purchasableType',
-                    'options' => $this->_purchasableTypeOptions(),
-                    'value' => $this->purchasableType,
-                    'inputAttributes' => [
-                        'hx' => [
-                            'post' => UrlHelper::actionUrl('conditions/render'),
-                        ],
-                    ],
-                ]) .
-                parent::inputHtml(),
-                [
-                    'class' => ['flex', 'flex-start'],
-                ]
-            );
-    }
+	protected function inputHtml(): string
+	{
+		$id = 'purchasable-type';
+		return Html::hiddenLabel($this->getLabel(), $id) .
+			Html::tag(
+				'div',
+				Cp::selectHtml([
+					'id' => $id,
+					'name' => 'purchasableType',
+					'options' => $this->_purchasableTypeOptions(),
+					'value' => $this->purchasableType,
+					'inputAttributes' => [
+						'hx' => [
+							'post' => UrlHelper::actionUrl('conditions/render'),
+						],
+					],
+				]) .
+				parent::inputHtml(),
+				[
+					'class' => ['flex', 'flex-start'],
+				]
+			);
+	}
 
+	protected function selectionCondition(): ?ElementConditionInterface
+	{
+		return Craft::$app->getConditions()->createCondition([
+			'class' => OrderCondition::class,
+		]);
+	}
 
-    protected function selectionCondition(): ?ElementConditionInterface
-    {
-        return Craft::$app->getConditions()->createCondition(['class' => OrderCondition::class]);
-    }
+	/**
+	 * @return array<int, array{value: string, label: string}>
+	 */
+	private function _purchasableTypeOptions(): array
+	{
+		$options = [];
 
-    /**
-     * @return array
-     * @throws InvalidConfigException
-     */
-    private function _purchasableTypeOptions(): array
-    {
-        $options = [];
+		foreach ((Plugin::getInstance()?->getPurchasables()->getAllPurchasableElementTypes() ?? []) as $elementType) {
+			/** @var string|ElementInterface $elementType */
+			/** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+			$options[] = [
+				'value' => $elementType,
+				'label' => $elementType::displayName(),
+			];
+		}
 
-        foreach (Plugin::getInstance()->getPurchasables()->getAllPurchasableElementTypes() as $elementType) {
-            /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-            $options[] = [
-                'value' => $elementType,
-                'label' => $elementType::displayName(),
-            ];
-        }
-
-        return $options;
-    }
+		return $options;
+	}
 }

@@ -5,23 +5,24 @@ namespace fostercommerce\advancedDiscounts\elements\conditions;
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
+use craft\commerce\elements\Variant;
+use craft\commerce\Plugin as CommercePlugin;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 
-class RelatedToConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
+class SpecificPurchasableConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
 	/**
-	 * @phpstan-var class-string<ElementInterface>
+	 * @var class-string<ElementInterface>
 	 */
-	public string $elementType = Entry::class;
+	public string $purchasableType = Variant::class;
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Related To');
+		return Craft::t('advanced-discounts', 'Specific Purchasable');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -31,10 +32,12 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 
 	public function modifyQuery(ElementQueryInterface $query): void
 	{
+	}
+
+	public function matchElement(ElementInterface $element): bool
+	{
 		$elementId = $this->getElementId();
-		if ($elementId !== null) {
-			$query->andRelatedTo($elementId);
-		}
+		return $elementId !== null && (int) $element->id === (int) $elementId;
 	}
 
 	/**
@@ -43,44 +46,29 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
-			'elementType' => $this->elementType,
+			'purchasableType' => $this->purchasableType,
 		]);
 	}
 
-	public function matchElement(ElementInterface $element): bool
-	{
-		$elementId = $this->getElementId();
-		if (! $elementId) {
-			return true;
-		}
-
-		return $element::find()
-			->id($element->id ?: false)
-			->site('*')
-			->drafts($element->getIsDraft())
-			->provisionalDrafts($element->isProvisionalDraft)
-			->revisions($element->getIsRevision())
-			->status(null)
-			->relatedTo($elementId)
-			->exists();
-	}
-
+	/**
+	 * @return class-string<ElementInterface>
+	 */
 	protected function elementType(): string
 	{
-		return $this->elementType;
+		return $this->purchasableType;
 	}
 
 	protected function inputHtml(): string
 	{
-		$id = 'element-type';
+		$id = 'purchasable-type';
 		return Html::hiddenLabel($this->getLabel(), $id) .
 			Html::tag(
 				'div',
 				Cp::selectHtml([
 					'id' => $id,
-					'name' => 'elementType',
-					'options' => $this->_elementTypeOptions(),
-					'value' => $this->elementType,
+					'name' => 'purchasableType',
+					'options' => $this->_purchasableTypeOptions(),
+					'value' => $this->purchasableType,
 					'inputAttributes' => [
 						'hx' => [
 							'post' => UrlHelper::actionUrl('conditions/render'),
@@ -100,22 +88,23 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['elementType'], 'safe'],
+			[['purchasableType'], 'safe'],
 		]);
 	}
 
 	/**
 	 * @return array<int, array{value: string, label: string}>
 	 */
-	private function _elementTypeOptions(): array
+	private function _purchasableTypeOptions(): array
 	{
-		$options = [
-			[
-				'value' => Entry::class,
-				'label' => Entry::displayName(),
-			],
-		];
-
+		$options = [];
+		foreach ((CommercePlugin::getInstance()?->getPurchasables()->getAllPurchasableElementTypes() ?? []) as $type) {
+			/** @var string|ElementInterface $type */
+			$options[] = [
+				'value' => $type,
+				'label' => $type::displayName(),
+			];
+		}
 		return $options;
 	}
 }

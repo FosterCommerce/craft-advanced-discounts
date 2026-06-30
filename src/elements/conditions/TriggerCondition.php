@@ -1,26 +1,26 @@
 <?php
-namespace fostercommerce\coupons\elements\conditions;
+
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\elements\conditions\ElementCondition;
-use fostercommerce\coupons\elements\conditions\RelatedToConditionRule;
 
 class TriggerCondition extends ElementCondition
 {
-    public function init(): void
-    {
-        $this->addRuleLabel = Craft::t('coupons', 'OR');
-        parent::init();
-    }
+	public function init(): void
+	{
+		$this->addRuleLabel = Craft::t('advanced-discounts', 'OR');
+		parent::init();
+	}
 
-    /**
-     * @inheritdoc
-     */
-    protected function conditionRuleTypes(): array
-    {
-        return array_merge([
-            HasPurchasableConditionRule::class,
-            RelatedToConditionRule::class,
-        ]);
-    }
+	/**
+	 * @return array<int, class-string>
+	 */
+	protected function selectableConditionRules(): array
+	{
+		return array_merge([
+			HasPurchasableConditionRule::class,
+			RelatedToConditionRule::class,
+		]);
+	}
 }

@@ -1,17 +1,19 @@
 {
-  "name": "fostercommerce/craft-coupons",
-  "description": "Craft coupons",
+  "name": "fostercommerce/craft-advanced-discounts",
+  "description": "Advanced Discounts for Craft Commerce",
   "type": "craft-plugin",
   "license": "proprietary",
   "support": {
     "email": "support@fostercommerce.com"
   },
   "require": {
-    "php": ">=8.1",
-    "craftcms/cms": "^4.6.0",
-    "craftcms/commerce": "^4.2.0"
+    "php": ">=8.2",
+    "craftcms/cms": "^5.0.0",
+    "craftcms/commerce": "^5.0.0"
   },
   "require-dev": {
+    "craftcms/phpstan": "dev-main",
+    "craftcms/rector": "dev-main",
     "fostercommerce/ecs": "dev-main",
     "fostercommerce/phpstan": "dev-main",
     "fostercommerce/rector": "dev-main",
@@ -19,12 +21,12 @@
   },
   "autoload": {
     "psr-4": {
-      "fostercommerce\\coupons\\": "src/"
+      "fostercommerce\\advancedDiscounts\\": "src/"
     }
   },
   "extra": {
-    "handle": "coupons",
-    "name": "Coupons",
+    "handle": "advanced-discounts",
+    "name": "Advanced Discounts",
     "developer": "Foster Commerce",
     "documentationUrl": ""
   },
@@ -39,9 +41,9 @@
   "minimum-stability": "dev",
   "scripts": {
     "phpstan": "phpstan --memory-limit=1G",
-    "ecs-check": "ecs check --ansi --memory-limit=1G",
-    "ecs-fix": "ecs check --ansi --fix --memory-limit=1G",
-    "rector": "rector process --config rector.php",
-    "rector-dry-run": "rector process --dry-run --config rector.php"
+    "ecs:check": "ecs check --ansi --memory-limit=1G",
+    "ecs:fix": "ecs check --ansi --fix --memory-limit=1G",
+    "rector:fix": "rector process --config rector.php",
+    "rector:dry-run": "rector process --dry-run --config rector.php"
   }
 }

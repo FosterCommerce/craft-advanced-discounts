@@ -2,39 +2,42 @@
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
-{% set title = "Coupons"|t('coupons') %}
+{% set title = "Advanced Discounts"|t('advanced-discounts') %}
 
 {% set additionalButtons %}
-	<a class="btn submit add icon" href="{{ url('coupons/new') }}">{{ "New coupon"|t('coupons') }}</a>
+	<a class="btn submit add icon" href="{{ url('advanced-discounts/new') }}">{{ "New discount"|t('advanced-discounts') }}</a>
 {% endset %}
 
 {% set content %}
-	<div id="coupons-list"></div>
+	<div id="advanced-discounts-list"></div>
 {% endset %}
 
 {% js %}
 	let columns = [
+		{ name: 'enabled', title: '', callback: (value) => `<span class="status ${value ? 'enabled' : 'disabled'}"></span>` },
 		{ name: '__slot:title', title: Craft.t('app', 'Name') },
 		{
 			name: 'code',
-			title: Craft.t('coupons', 'Code'),
+			title: Craft.t('advanced-discounts', 'Code'),
 		},
 		{
 			name: 'dateCreated',
-			title: Craft.t('coupons', 'Created'),
+			title: Craft.t('advanced-discounts', 'Created'),
 			sortField: 'dateCreated',
 		},
 		{
 			name: 'dateUpdated',
-			title: Craft.t('coupons', 'Updated'),
+			title: Craft.t('advanced-discounts', 'Updated'),
 			sortField: 'dateUpdated',
 		},
 	];
 
 	new Craft.VueAdminTable({
 		columns,
-		container: '#coupons-list',
+		container: '#advanced-discounts-list',
 		search: true,
-		tableDataEndpoint: '/admin/actions/coupons/manage/list',
+		checkboxes: true,
+		tableDataEndpoint: '/admin/actions/advanced-discounts/manage/list',
+		deleteAction: 'advanced-discounts/manage/delete',
 	});
 {% endjs %}

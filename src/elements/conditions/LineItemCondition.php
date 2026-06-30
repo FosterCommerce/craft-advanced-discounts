@@ -4,7 +4,7 @@ namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use craft\elements\conditions\ElementCondition;
 
-class OrderActionCondition extends ElementCondition
+class LineItemCondition extends ElementCondition
 {
 	public ?string $addRuleLabel = 'Add condition';
 
@@ -13,9 +13,9 @@ class OrderActionCondition extends ElementCondition
 	 */
 	protected function selectableConditionRules(): array
 	{
-		return array_merge([
-			HasPurchasableConditionRule::class,
+		return [
+			SpecificPurchasableConditionRule::class,
 			RelatedToConditionRule::class,
-		]);
+		];
 	}
 }

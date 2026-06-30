@@ -6,29 +6,30 @@ use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 
-class TriggerConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
+class UserConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
 {
-	public ?ElementConditionInterface $_triggerCondition = null;
+	public ?ElementConditionInterface $_userCondition = null;
 
 	public function __construct($config = [])
 	{
-		$config['triggerCondition'] = $config['attributes']['triggerCondition'] ?? [];
+		$config['userCondition'] = $config['attributes']['userCondition'] ?? [];
 		parent::__construct($config);
 	}
 
 	public function getNestedCondition(): ElementConditionInterface
 	{
-		return $this->getTriggerCondition();
+		return $this->getUserCondition();
 	}
 
-	public function getTriggerCondition(): ElementConditionInterface
+	public function getUserCondition(): ElementConditionInterface
 	{
-		$condition = $this->_triggerCondition ?? new TriggerCondition();
+		$condition = $this->_userCondition ?? new UserCondition();
 		$condition->mainTag = 'div';
-		$condition->name = 'triggerCondition';
+		$condition->name = 'userCondition';
 
 		return $condition;
 	}
@@ -36,25 +37,25 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 	/**
 	 * @param ElementConditionInterface|array<string, mixed> $condition
 	 */
-	public function setTriggerCondition(ElementConditionInterface|array $condition): void
+	public function setUserCondition(ElementConditionInterface|array $condition): void
 	{
 		if (is_array($condition)) {
 			if (empty($condition)) {
 				return;
 			}
-			$condition['class'] = TriggerCondition::class;
+			$condition['class'] = UserCondition::class;
 			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
 			/** @var ElementConditionInterface $condition */
 		}
 		$condition->forProjectConfig = false;
 
-		$this->_triggerCondition = $condition;
+		$this->_userCondition = $condition;
 	}
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Trigger');
+		return Craft::t('advanced-discounts', 'User');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -64,11 +65,6 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 
 	public function modifyQuery(ElementQueryInterface $query): void
 	{
-		// TODO
-		/*        $elementId = $this->getElementId();
-				if ($elementId !== null) {
-					$query->andRelatedTo($elementId);
-				}*/
 	}
 
 	/**
@@ -77,18 +73,22 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
-			'triggerCondition' => $this->_triggerCondition?->getConfig() ?? [],
+			'userCondition' => $this->_userCondition?->getConfig() ?? [],
 		]);
 	}
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		return $this->getTriggerCondition()->matchElement($element);
+		$user = Craft::$app->getUser()->getIdentity();
+		if ($user === null) {
+			return false;
+		}
+		return $this->getUserCondition()->matchElement($user);
 	}
 
 	protected function inputHtml(): string
 	{
-		return Html::tag('div', $this->getTriggerCondition()->getBuilderHtml());
+		return Html::tag('div', $this->getUserCondition()->getBuilderHtml());
 	}
 
 	/**

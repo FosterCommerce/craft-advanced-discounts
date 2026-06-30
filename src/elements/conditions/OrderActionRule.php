@@ -1,228 +1,100 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
-use craft\commerce\elements\db\OrderQuery;
-use craft\commerce\elements\Order;
-use craft\commerce\Plugin;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\helpers\ArrayHelper;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use fostercommerce\coupons\enums\DiscountType;
-use fostercommerce\coupons\enums\ItemsChoice;
-use yii\base\InvalidConfigException;
-use yii\db\QueryInterface;
+use fostercommerce\advancedDiscounts\enums\DiscountType;
 
 class OrderActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
-    public string $discountType = DiscountType::FlatAmount;
-    public ?float $discountValue = null;
-    public string $itemsChoice = ItemsChoice::AllItems;
-    public ?float $numberOfItems = null;
-    /**
-     * @var ElementConditionInterface|null
-     * @see getOrderActionCondition()
-     * @see setOrderActionCondition()
-     */
-    public null|ElementConditionInterface $_orderActionCondition = null;
+	public string $discountType = DiscountType::FlatAmount;
 
-    protected bool $reloadOnOperatorChange = true;
+	public ?float $discountValue = null;
 
-    private const ANY_VALUE = '';
+	public function getLabel(): string
+	{
+		return Craft::t('advanced-discounts', 'Order');
+	}
 
-    public function __construct($config = [])
-    {
-        $config['orderActionCondition'] = $config['attributes']['orderActionCondition']??[];
+	public function getExclusiveQueryParams(): array
+	{
+		return [];
+	}
 
-        parent::__construct($config);
-    }
+	public function modifyQuery(ElementQueryInterface $query): void
+	{
+	}
 
-    /**
-     * @return ElementConditionInterface
-     */
-    public function getOrderActionCondition(): ElementConditionInterface
-    {
-        $condition = $this->_orderActionCondition ?? new OrderActionCondition();
-        $condition->mainTag = 'div';
-        $condition->name = 'orderActionCondition';
+	public function matchElement(ElementInterface $element): bool
+	{
+		return true;
+	}
 
-        return $condition;
-    }
+	/**
+	 * @return array<string, mixed>
+	 */
+	public function getConfig(): array
+	{
+		return array_merge(parent::getConfig(), [
+			'discountType' => $this->discountType,
+			'discountValue' => $this->discountValue,
+		]);
+	}
 
-    /**
-     * @param ElementConditionInterface|string|array $condition
-     * @return void
-     */
-    public function setOrderActionCondition(ElementConditionInterface|string|array $condition): void
-    {
-        if (is_string($condition)) {
-            $condition = Json::decodeIfJson($condition);
-        }
+	protected function inputHtml(): string
+	{
+		$discountTypeLabel = match ($this->discountType) {
+			DiscountType::Percentage => Craft::t('advanced-discounts', 'Percentage'),
+			default => Craft::t('advanced-discounts', 'Flat Amount'),
+		};
 
-        if (!$condition instanceof ElementConditionInterface) {
-            $condition['class'] = OrderActionCondition::class;
-            /** @var OrderActionCondition $condition */
-            $condition = Craft::$app->getConditions()->createCondition($condition);
-        }
-        $condition->forProjectConfig = false;
+		return Html::tag(
+			'div',
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount Type'), 'discountType') .
+			Cp::selectHtml([
+				'id' => 'discountType',
+				'name' => 'discountType',
+				'options' => [
+					DiscountType::FlatAmount => Craft::t('advanced-discounts', 'Discount a flat amount'),
+					DiscountType::Percentage => Craft::t('advanced-discounts', 'Discount a percentage'),
+				],
+				'value' => $this->discountType,
+				'inputAttributes' => [
+					'hx' => [
+						'post' => UrlHelper::actionUrl('conditions/render'),
+					],
+				],
+			]) .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount value'), 'discountValue') .
+			Cp::textHtml([
+				'type' => 'number',
+				'id' => 'discountValue',
+				'name' => 'discountValue',
+				'value' => $this->discountValue,
+				'autocomplete' => false,
+				'placeholder' => $discountTypeLabel,
+				'class' => 'flex-grow flex-shrink',
+			]),
+			[
+				'class' => ['flex', 'flex-start', 'flex-grow'],
+			]
+		);
+	}
 
-        $this->_orderActionCondition = $condition;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return Craft::t('coupons', 'Order');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return [];
-    }
-
-    public function getConfig(): array
-    {
-        return array_merge(parent::getConfig(), [
-            'itemsChoice' => $this->itemsChoice,
-            'numberOfItems' => $this->numberOfItems,
-            'discountType' => $this->discountType,
-            'discountValue' => $this->discountValue,
-            'orderActionCondition' => $this->getOrderActionCondition()->getConfig(),
-        ]);
-    }
-
-    protected function inputHtml(): string
-    {
-        if ($this->discountType === DiscountType::FlatAmount) {
-            $discountTypeLabel = Craft::t('coupons', 'Flat Amount');
-        } else if ($this->discountType === DiscountType::Percentage) {
-            $discountTypeLabel = Craft::t('coupons', 'Percentage');
-        }
-
-        $itemsChoiceHtml = '';
-        if ($this->itemsChoice == ItemsChoice::NumberOfItems) {
-            $itemsChoiceHtml =
-                Html::hiddenLabel(Craft::t('coupons', 'Discount value'), 'numberOfItems') .
-                Cp::textHtml([
-                    'type' => 'number',
-                    'id' => 'numberOfItems',
-                    'name' => 'numberOfItems',
-                    'value' => $this->numberOfItems,
-                    'autocomplete' => false,
-                    'placeholder' => Craft::t('coupons', 'Up to number of items'),
-                    'class' => 'flex-grow flex-shrink',
-                ]);
-        }
-
-        return
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-start', 'flex-grow'],
-                'style' => ['flex-direction' => 'column'],
-            ]) .
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-start', 'flex-grow'],
-            ]) .
-            Html::hiddenLabel(Html::encode($this->getLabel()), 'itemsChoice') .
-            Cp::selectHtml([
-                'id' => 'itemsChoice',
-                'name' => 'itemsChoice',
-                'options' => [
-                    ItemsChoice::AllItems => Craft::t('coupons', 'All items'),
-                    ItemsChoice::NumberOfItems => Craft::t('coupons', 'Number of items'),
-                ],
-                'value' => $this->itemsChoice,
-                'inputAttributes' => [
-                    'hx' => [
-                        'post' => UrlHelper::actionUrl('conditions/render'),
-                    ],
-                ],
-            ]) .
-            Html::hiddenLabel(Craft::t('coupons', 'Discount Type'), 'discountType') .
-            $itemsChoiceHtml .
-            Cp::selectHtml([
-                'id' => 'discountType',
-                'name' => 'discountType',
-                'options' => [
-                    DiscountType::FlatAmount => Craft::t('coupons', 'Discount a flat amount'),
-                    DiscountType::Percentage => Craft::t('coupons', 'Discount a percentage'),
-                ],
-                'value' => $this->discountType,
-                'inputAttributes' => [
-                    'hx' => [
-                        'post' => UrlHelper::actionUrl('conditions/render'),
-                    ],
-                ],
-            ]) .
-            Html::hiddenLabel(Craft::t('coupons', 'Discount value'), 'discountValue') .
-            Cp::textHtml([
-                'type' => 'number',
-                'id' => 'discountValue',
-                'name' => 'discountValue',
-                'value' => $this->discountValue,
-                'autocomplete' => false,
-                'placeholder' => $discountTypeLabel,
-                'class' => 'flex-grow flex-shrink',
-            ]) .
-            Html::endTag('div') .
-            $this->getOrderActionCondition()->getBuilderHtml() .
-            Html::endTag('div');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(QueryInterface $query): void
-    {
-        // todo
-        /** @var orderquery $query */
-        $query->shippingMethodHandle($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        // todo
-        /** @var Order $element */
-        return $this->matchValue($element->shippingMethodHandle);
-    }
-
-    protected function defineRules(): array
-    {
-        return array_merge(parent::defineRules(), [
-            [['discountType', 'discountValue', 'itemsChoice', 'numberOfItems'], 'safe'],
-        ]);
-    }
-    protected function matchValue(array|string|null $value): bool
-    {
-        // todo override this correctly
-        if (!$this->_values) {
-            return true;
-        }
-
-        if ($value === '' || $value === null) {
-            $value = [];
-        } else {
-            $value = (array)$value;
-        }
-
-        return match ($this->operator) {
-            self::OPERATOR_IN => !empty(array_intersect($value, $this->_values)),
-            self::OPERATOR_NOT_IN => empty(array_intersect($value, $this->_values)),
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
-        };
-    }
+	/**
+	 * @return array<int, mixed>
+	 */
+	protected function defineRules(): array
+	{
+		return array_merge(parent::defineRules(), [
+			[['discountType', 'discountValue'], 'safe'],
+		]);
+	}
 }

@@ -1,9 +1,10 @@
 <?php
 
-namespace fostercommerce\coupons\enums;
+namespace fostercommerce\advancedDiscounts\enums;
 
 abstract class ItemsChoice
 {
-    public const AllItems = 'all';
-    public const NumberOfItems = 'numberOfItems';
+	public const AllItems = 'all';
+
+	public const NumberOfItems = 'numberOfItems';
 }
