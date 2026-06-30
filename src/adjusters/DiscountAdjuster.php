@@ -5,6 +5,7 @@ namespace fostercommerce\advancedDiscounts\adjusters;
 use craft\commerce\base\AdjusterInterface;
 use craft\commerce\elements\Order;
 use craft\commerce\models\OrderAdjustment;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use fostercommerce\advancedDiscounts\elements\conditions\LineItemActionRule;
 use fostercommerce\advancedDiscounts\elements\conditions\OrderActionRule;
 use fostercommerce\advancedDiscounts\enums\DiscountType;
@@ -81,8 +82,13 @@ class DiscountAdjuster implements AdjusterInterface
 		foreach ($order->getLineItems() as $lineItem) {
 			if ($lineItemCondition !== null) {
 				$purchasable = $lineItem->getPurchasable();
-				if ($purchasable === null || ! $lineItemCondition->matchElement($purchasable)) {
+				if ($purchasable === null) {
 					continue;
+				}
+				foreach ($lineItemCondition->getConditionRules() as $conditionRule) {
+					if ($conditionRule instanceof ElementConditionRuleInterface && ! $conditionRule->matchElement($purchasable)) {
+						continue 2;
+					}
 				}
 			}
 
