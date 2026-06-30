@@ -22,6 +22,7 @@ class ActionCondition extends ElementCondition
 			OrderActionRule::class,
 			LineItemActionRule::class,
 			ShippingMethodActionRule::class,
+			MessageActionRule::class,
 		]);
 	}
 }

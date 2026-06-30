@@ -9,7 +9,9 @@ use craft\commerce\elements\Order;
 use craft\commerce\services\OrderAdjustments;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use fostercommerce\advancedDiscounts\variables\AdvancedDiscountsVariable;
 use fostercommerce\advancedDiscounts\adjusters\DiscountAdjuster;
 use fostercommerce\advancedDiscounts\models\Settings;
 use fostercommerce\advancedDiscounts\services\AdvancedDiscountsService;
@@ -77,6 +79,17 @@ class Plugin extends BasePlugin
 				$this->registerCpRoutes();
 			}
 		}
+
+		// register Twig variable
+		Event::on(
+			CraftVariable::class,
+			CraftVariable::EVENT_DEFINE_BEHAVIORS,
+			static function (\yii\base\Event $event): void {
+				/** @var CraftVariable $variable */
+				$variable = $event->sender;
+				$variable->set('advancedDiscounts', AdvancedDiscountsVariable::class);
+			}
+		);
 
 		// register adjuster
 		Event::on(

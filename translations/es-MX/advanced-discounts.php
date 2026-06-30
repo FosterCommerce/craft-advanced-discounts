@@ -18,6 +18,10 @@ return [
     'All line items' => 'Todos los artículos',
     'Matching line items' => 'Artículos coincidentes',
 
+    // Regla de mensaje
+    'Message' => 'Mensaje',
+    'e.g. Spend another {amount} to get {discount} off' => 'p.ej. Gasta {amount} más para obtener {discount} de descuento',
+
     // Campos de regla de descuento
     'Apply to' => 'Aplicar a',
     'Discount Type' => 'Tipo de descuento',
