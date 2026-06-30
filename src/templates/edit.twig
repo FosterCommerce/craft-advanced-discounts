@@ -38,10 +38,10 @@
         name: 'code',
         value: coupon.code,
         type: 'text',
+        instructions: "Leave blank to apply this discount automatically without a code."|t('advanced-discounts'),
         inputAttributes: {
             data: {lpignore: 'true'},
         },
-        required: true,
         errors: coupon.getErrors('code'),
     }) }}
 

@@ -14,14 +14,14 @@ class DiscountAdjuster implements AdjusterInterface
 {
 	public function adjust(Order $order): array
 	{
-		if (! $order->couponCode) {
-			return [];
-		}
-
 		$adjustments = [];
 
 		foreach (Plugin::getInstance()->coupons->getAllCoupons() as $coupon) {
-			if ($coupon->code !== $order->couponCode || ! $coupon->enabled) {
+			if (! $coupon->enabled) {
+				continue;
+			}
+
+			if ($coupon->code !== null && strcasecmp($coupon->code, $order->couponCode ?? '') !== 0) {
 				continue;
 			}
 

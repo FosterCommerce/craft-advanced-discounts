@@ -25,9 +25,9 @@ class Discount extends Model
 	public string $name = '';
 
 	/**
-	 * @var string The coupons unique code
+	 * @var string|null The coupons unique code
 	 */
-	public string $code = '';
+	public ?string $code = null;
 
 	/**
 	 * @var bool Whether the coupon is enabled
@@ -121,7 +121,7 @@ class Discount extends Model
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['name', 'code'], 'required'],
+			[['name'], 'required'],
 			[['name', 'code'],
 				'string',
 				'max' => 255],

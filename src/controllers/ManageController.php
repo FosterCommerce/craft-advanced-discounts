@@ -72,7 +72,7 @@ class ManageController extends Controller
 
 		$coupon->id = $this->request->getBodyParam('id');
 		$coupon->name = $this->request->getBodyParam('name');
-		$coupon->code = $this->request->getBodyParam('code');
+		$coupon->code = $this->request->getBodyParam('code') ?: null;
 		$coupon->enabled = (bool) $this->request->getBodyParam('enabled');
 		$coupon->setTriggerCondition($this->request->getBodyParam('triggerCondition'));
 		$coupon->setActionCondition($this->request->getBodyParam('actionCondition'));

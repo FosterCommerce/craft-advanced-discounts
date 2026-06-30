@@ -9,7 +9,7 @@ use craft\db\ActiveRecord;
  *
  * @property int $id
  * @property ?string $name
- * @property string $code
+ * @property ?string $code
  * @property bool $enabled
  * @property ?array $triggerCondition
  * @property ?array $actionCondition
