@@ -105,7 +105,9 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 					'class' => ['flex', 'flex-start', 'flex-grow'],
 				]
 			) .
-			Html::tag('p', Craft::t('advanced-discounts', 'Create rules to determine when to show this message'), ['class' => 'instructions']) .
+			Html::tag('p', Craft::t('advanced-discounts', 'Create rules to determine when to show this message'), [
+				'class' => 'instructions',
+			]) .
 			$this->getMessageCondition()->getBuilderHtml(),
 			[
 				'class' => ['flex', 'flex-start', 'flex-grow'],
