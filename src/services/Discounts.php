@@ -43,7 +43,7 @@ class Discounts extends Component
 	public function getCouponByCode(string $code): ?Discount
 	{
 		foreach ($this->getAllCoupons() as $coupon) {
-			if (strcasecmp($coupon->code, $code) === 0) {
+			if ($coupon->code !== null && strcasecmp($coupon->code, $code) === 0) {
 				return $coupon;
 			}
 		}
