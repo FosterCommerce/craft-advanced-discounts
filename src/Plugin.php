@@ -11,11 +11,11 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
-use fostercommerce\advancedDiscounts\variables\AdvancedDiscountsVariable;
 use fostercommerce\advancedDiscounts\adjusters\DiscountAdjuster;
 use fostercommerce\advancedDiscounts\models\Settings;
 use fostercommerce\advancedDiscounts\services\AdvancedDiscountsService;
 use fostercommerce\advancedDiscounts\services\Discounts;
+use fostercommerce\advancedDiscounts\variables\AdvancedDiscountsVariable;
 use yii\base\Event;
 
 /**

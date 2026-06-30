@@ -115,7 +115,7 @@ class AdvancedDiscountsVariable
 						&& $orderRule->value !== null
 						&& in_array($orderRule->operator, ['>=', '>'], true)
 					) {
-						return max(0.0, (float) $orderRule->value - (float) $order->$field);
+						return max(0.0, (float) $orderRule->value - (float) $order->{$field});
 					}
 				}
 			}
