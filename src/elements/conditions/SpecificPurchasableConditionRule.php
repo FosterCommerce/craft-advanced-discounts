@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
@@ -19,7 +19,7 @@ class SpecificPurchasableConditionRule extends BaseElementSelectConditionRule im
 
 	public function getLabel(): string
 	{
-		return Craft::t('coupons', 'Specific Purchasable');
+		return Craft::t('advanced-discounts', 'Specific Purchasable');
 	}
 
 	public function getExclusiveQueryParams(): array

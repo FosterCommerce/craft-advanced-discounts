@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
 use craft\commerce\elements\conditions\orders\ItemTotalConditionRule;

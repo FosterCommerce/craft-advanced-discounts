@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
@@ -21,7 +21,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 
 	public function getLabel(): string
 	{
-		return Craft::t('coupons', 'Related To');
+		return Craft::t('advanced-discounts', 'Related To');
 	}
 
 	public function getExclusiveQueryParams(): array

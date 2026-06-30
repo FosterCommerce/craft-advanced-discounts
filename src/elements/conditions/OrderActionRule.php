@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseConditionRule;
@@ -10,7 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use fostercommerce\coupons\enums\DiscountType;
+use fostercommerce\advancedDiscounts\enums\DiscountType;
 
 class OrderActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
@@ -20,7 +20,7 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 
 	public function getLabel(): string
 	{
-		return Craft::t('coupons', 'Order');
+		return Craft::t('advanced-discounts', 'Order');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -51,19 +51,19 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 	protected function inputHtml(): string
 	{
 		$discountTypeLabel = match ($this->discountType) {
-			DiscountType::Percentage => Craft::t('coupons', 'Percentage'),
-			default => Craft::t('coupons', 'Flat Amount'),
+			DiscountType::Percentage => Craft::t('advanced-discounts', 'Percentage'),
+			default => Craft::t('advanced-discounts', 'Flat Amount'),
 		};
 
 		return Html::tag(
 			'div',
-			Html::hiddenLabel(Craft::t('coupons', 'Discount Type'), 'discountType') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount Type'), 'discountType') .
 			Cp::selectHtml([
 				'id' => 'discountType',
 				'name' => 'discountType',
 				'options' => [
-					DiscountType::FlatAmount => Craft::t('coupons', 'Discount a flat amount'),
-					DiscountType::Percentage => Craft::t('coupons', 'Discount a percentage'),
+					DiscountType::FlatAmount => Craft::t('advanced-discounts', 'Discount a flat amount'),
+					DiscountType::Percentage => Craft::t('advanced-discounts', 'Discount a percentage'),
 				],
 				'value' => $this->discountType,
 				'inputAttributes' => [
@@ -72,7 +72,7 @@ class OrderActionRule extends BaseConditionRule implements ElementConditionRuleI
 					],
 				],
 			]) .
-			Html::hiddenLabel(Craft::t('coupons', 'Discount value'), 'discountValue') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount value'), 'discountValue') .
 			Cp::textHtml([
 				'type' => 'number',
 				'id' => 'discountValue',

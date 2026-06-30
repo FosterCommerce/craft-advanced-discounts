@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons;
+namespace fostercommerce\advancedDiscounts;
 
 use Craft;
 use craft\base\Model;
@@ -10,18 +10,18 @@ use craft\commerce\services\OrderAdjustments;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlManager;
-use fostercommerce\coupons\adjusters\CouponAdjuster;
-use fostercommerce\coupons\models\Settings;
-use fostercommerce\coupons\services\Coupons;
-use fostercommerce\coupons\services\CouponsAwareDiscountsService;
+use fostercommerce\advancedDiscounts\adjusters\DiscountAdjuster;
+use fostercommerce\advancedDiscounts\models\Settings;
+use fostercommerce\advancedDiscounts\services\Discounts;
+use fostercommerce\advancedDiscounts\services\AdvancedDiscountsService;
 use yii\base\Event;
 
 /**
- * coupons plugin
+ * Advanced Discounts plugin
  *
  * @method static Plugin getInstance()
  * @method Settings getSettings()
- * @property-read Coupons $coupons
+ * @property-read Discounts $coupons
  */
 class Plugin extends BasePlugin
 {
@@ -38,7 +38,7 @@ class Plugin extends BasePlugin
 	{
 		return [
 			'components' => [
-				'coupons' => Coupons::class,
+				'coupons' => Discounts::class,
 			],
 		];
 	}
@@ -50,7 +50,7 @@ class Plugin extends BasePlugin
 		// Defer most setup tasks until Craft is fully initialized
 		Craft::$app->onInit(function () {
 			\craft\commerce\Plugin::getInstance()?->set('discounts', [
-				'class' => CouponsAwareDiscountsService::class,
+				'class' => AdvancedDiscountsService::class,
 			]);
 			$this->attachEventHandlers();
 			// ...
@@ -64,7 +64,7 @@ class Plugin extends BasePlugin
 
 	protected function settingsHtml(): ?string
 	{
-		return Craft::$app->view->renderTemplate('coupons/_settings.twig', [
+		return Craft::$app->view->renderTemplate('advanced-discounts/_settings.twig', [
 			'plugin' => $this,
 			'settings' => $this->getSettings(),
 		]);
@@ -83,7 +83,7 @@ class Plugin extends BasePlugin
 			OrderAdjustments::class,
 			OrderAdjustments::EVENT_REGISTER_ORDER_ADJUSTERS,
 			static function (RegisterComponentTypesEvent $event): void {
-				$event->types[] = CouponAdjuster::class;
+				$event->types[] = DiscountAdjuster::class;
 			}
 		);
 
@@ -135,9 +135,9 @@ class Plugin extends BasePlugin
 			UrlManager::class,
 			UrlManager::EVENT_REGISTER_CP_URL_RULES,
 			static function (RegisterUrlRulesEvent $registerUrlRulesEvent): void {
-				$registerUrlRulesEvent->rules['coupons'] = 'coupons/manage/index';
-				$registerUrlRulesEvent->rules['coupons/new'] = 'coupons/manage/edit';
-				$registerUrlRulesEvent->rules['coupons/<id:\d+>'] = 'coupons/manage/edit';
+				$registerUrlRulesEvent->rules['advanced-discounts'] = 'advanced-discounts/manage/index';
+				$registerUrlRulesEvent->rules['advanced-discounts/new'] = 'advanced-discounts/manage/edit';
+				$registerUrlRulesEvent->rules['advanced-discounts/<id:\d+>'] = 'advanced-discounts/manage/edit';
 			}
 		);
 	}

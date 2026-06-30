@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\enums;
+namespace fostercommerce\advancedDiscounts\enums;
 
 abstract class ItemsChoice
 {

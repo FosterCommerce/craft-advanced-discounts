@@ -1,11 +1,11 @@
 <?php
 
-namespace fostercommerce\coupons\records;
+namespace fostercommerce\advancedDiscounts\records;
 
 use craft\db\ActiveRecord;
 
 /**
- * Coupon record
+ * Discount record
  *
  * @property int $id
  * @property ?string $name
@@ -14,9 +14,9 @@ use craft\db\ActiveRecord;
  * @property ?array $triggerCondition
  * @property ?array $actionCondition
  */
-class Coupon extends ActiveRecord
+class Discount extends ActiveRecord
 {
-	final public const TABLE_NAME = '{{%coupons_coupons}}';
+	final public const TABLE_NAME = '{{%advanced_discounts}}';
 
 	public static function tableName()
 	{

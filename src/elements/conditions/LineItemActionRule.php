@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseConditionRule;
@@ -12,7 +12,7 @@ use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use fostercommerce\coupons\enums\DiscountType;
+use fostercommerce\advancedDiscounts\enums\DiscountType;
 
 class LineItemActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
@@ -67,7 +67,7 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 
 	public function getLabel(): string
 	{
-		return Craft::t('coupons', 'Line Items');
+		return Craft::t('advanced-discounts', 'Line Items');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -100,13 +100,13 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 	protected function inputHtml(): string
 	{
 		$discountTypeLabel = match ($this->discountType) {
-			DiscountType::Percentage => Craft::t('coupons', 'Percentage'),
-			default => Craft::t('coupons', 'Flat Amount'),
+			DiscountType::Percentage => Craft::t('advanced-discounts', 'Percentage'),
+			default => Craft::t('advanced-discounts', 'Flat Amount'),
 		};
 
 		$filterOptions = [
-			self::FILTER_ALL => Craft::t('coupons', 'All line items'),
-			self::FILTER_MATCHING => Craft::t('coupons', 'Matching line items'),
+			self::FILTER_ALL => Craft::t('advanced-discounts', 'All line items'),
+			self::FILTER_MATCHING => Craft::t('advanced-discounts', 'Matching line items'),
 		];
 
 		$conditionBuilderHtml = $this->lineItemsFilter === self::FILTER_MATCHING
@@ -117,7 +117,7 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 			'div',
 			Html::tag(
 				'div',
-				Html::hiddenLabel(Craft::t('coupons', 'Apply to'), 'lineItemsFilter') .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'Apply to'), 'lineItemsFilter') .
 				Cp::selectHtml([
 					'id' => 'lineItemsFilter',
 					'name' => 'lineItemsFilter',
@@ -129,13 +129,13 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 						],
 					],
 				]) .
-				Html::hiddenLabel(Craft::t('coupons', 'Discount Type'), 'discountType') .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount Type'), 'discountType') .
 				Cp::selectHtml([
 					'id' => 'discountType',
 					'name' => 'discountType',
 					'options' => [
-						DiscountType::FlatAmount => Craft::t('coupons', 'Discount a flat amount'),
-						DiscountType::Percentage => Craft::t('coupons', 'Discount a percentage'),
+						DiscountType::FlatAmount => Craft::t('advanced-discounts', 'Discount a flat amount'),
+						DiscountType::Percentage => Craft::t('advanced-discounts', 'Discount a percentage'),
 					],
 					'value' => $this->discountType,
 					'inputAttributes' => [
@@ -144,7 +144,7 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 						],
 					],
 				]) .
-				Html::hiddenLabel(Craft::t('coupons', 'Discount value'), 'discountValue') .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount value'), 'discountValue') .
 				Cp::textHtml([
 					'type' => 'number',
 					'id' => 'discountValue',

@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\ConditionRuleInterface;
@@ -13,7 +13,7 @@ class AndTriggerCondition extends ElementCondition
 {
 	public function init(): void
 	{
-		$this->addRuleLabel = Craft::t('coupons', 'AND');
+		$this->addRuleLabel = Craft::t('advanced-discounts', 'AND');
 		parent::init();
 	}
 

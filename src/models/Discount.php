@@ -1,18 +1,18 @@
 <?php
 
-namespace fostercommerce\coupons\models;
+namespace fostercommerce\advancedDiscounts\models;
 
 use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
-use fostercommerce\coupons\elements\conditions\ActionCondition;
-use fostercommerce\coupons\elements\conditions\AndTriggerCondition;
+use fostercommerce\advancedDiscounts\elements\conditions\ActionCondition;
+use fostercommerce\advancedDiscounts\elements\conditions\AndTriggerCondition;
 
 /**
  * Coupon model
  */
-class Coupon extends Model
+class Discount extends Model
 {
 	/**
 	 * @var int|null ID
@@ -129,7 +129,7 @@ class Coupon extends Model
 				'triggerCondition',
 				function (string $attribute): void {
 					if (empty($this->getTriggerCondition()->getConditionRules())) {
-						$this->addError($attribute, Craft::t('coupons', 'At least one condition is required.'));
+						$this->addError($attribute, Craft::t('advanced-discounts', 'At least one condition is required.'));
 					}
 				},
 			],
@@ -137,7 +137,7 @@ class Coupon extends Model
 				'actionCondition',
 				function (string $attribute): void {
 					if (empty($this->getActionCondition()->getConditionRules())) {
-						$this->addError($attribute, Craft::t('coupons', 'At least one action rule is required.'));
+						$this->addError($attribute, Craft::t('advanced-discounts', 'At least one action rule is required.'));
 					}
 				},
 			],

@@ -1,6 +1,6 @@
 {
   "name": "fostercommerce/craft-coupons",
-  "description": "Craft coupons",
+  "description": "Advanced Discounts for Craft Commerce",
   "type": "craft-plugin",
   "license": "proprietary",
   "support": {
@@ -21,12 +21,12 @@
   },
   "autoload": {
     "psr-4": {
-      "fostercommerce\\coupons\\": "src/"
+      "fostercommerce\\advancedDiscounts\\": "src/"
     }
   },
   "extra": {
-    "handle": "coupons",
-    "name": "Coupons",
+    "handle": "advanced-discounts",
+    "name": "Advanced Discounts",
     "developer": "Foster Commerce",
     "documentationUrl": ""
   },

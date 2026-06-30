@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseConditionRule;
@@ -54,7 +54,7 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 
 	public function getLabel(): string
 	{
-		return Craft::t('coupons', 'Order');
+		return Craft::t('advanced-discounts', 'Order');
 	}
 
 	public function getExclusiveQueryParams(): array

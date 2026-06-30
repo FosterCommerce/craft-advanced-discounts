@@ -1,12 +1,12 @@
 <?php
 
-namespace fostercommerce\coupons\services;
+namespace fostercommerce\advancedDiscounts\services;
 
 use craft\commerce\models\Discount;
 use craft\commerce\services\Discounts;
-use fostercommerce\coupons\Plugin;
+use fostercommerce\advancedDiscounts\Plugin;
 
-class CouponsAwareDiscountsService extends Discounts
+class AdvancedDiscountsService extends Discounts
 {
 	public function getDiscountByCode(?string $code, ?int $storeId = null): ?Discount
 	{

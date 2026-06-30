@@ -2,25 +2,25 @@
 
 {% set fullPageForm = true %}
 {% set crumbs = [
-    { label: "Coupons"|t('coupons'), url: url('coupons') },
+    { label: "Advanced Discounts"|t('advanced-discounts'), url: url('advanced-discounts') },
 ] %}
-{% set title = "Create Coupon"|t('coupons') %}
+{% set title = "Create Coupon"|t('advanced-discounts') %}
 {% import '_includes/forms.twig' as forms %}
 
 {% block actionButton %}
-    <button type="submit" class="btn submit">{{ 'Save Coupon'|t('coupons') }}</button>
+    <button type="submit" class="btn submit">{{ 'Save Coupon'|t('advanced-discounts') }}</button>
 {% endblock %}
 
 {% block content %}
-    {{ actionInput('coupons/manage/save') }}
-    {{ redirectInput('coupons') }}
+    {{ actionInput('advanced-discounts/manage/save') }}
+    {{ redirectInput('advanced-discounts') }}
 
     {% if coupon.id %}
         <input type="hidden" name="id" value="{{ coupon.id }}">
     {% endif %}
 
     {{ forms.textField({
-        label: "Coupon Name"|t('coupons'),
+        label: "Coupon Name"|t('advanced-discounts'),
         id: 'name',
         name: 'name',
         value: coupon.name,
@@ -33,7 +33,7 @@
     }) }}
 
     {{ forms.textField({
-        label: "Coupon Code"|t('coupons'),
+        label: "Coupon Code"|t('advanced-discounts'),
         id: 'code',
         name: 'code',
         value: coupon.code,
@@ -50,8 +50,8 @@
     {% endset %}
 
     {{ forms.field({
-        label: 'Conditions'|t('coupons'),
-        instructions: 'Create rules to match and order with a coupon.'|t('coupons'),
+        label: 'Conditions'|t('advanced-discounts'),
+        instructions: 'Create rules to match and order with a coupon.'|t('advanced-discounts'),
         errors: coupon.getErrors('triggerCondition')
     }, triggerCondition) }}
 
@@ -60,8 +60,8 @@
     {% endset %}
 
     {{ forms.field({
-        label: 'Action Rules'|t('coupons'),
-        instructions: 'Create rules to apply discounts.'|t('coupons'),
+        label: 'Action Rules'|t('advanced-discounts'),
+        instructions: 'Create rules to apply discounts.'|t('advanced-discounts'),
         errors: coupon.getErrors('actionCondition')
     }, actionCondition) }}
 {% endblock %}

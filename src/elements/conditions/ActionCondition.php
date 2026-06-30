@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\elements\conditions\ElementCondition;
@@ -9,7 +9,7 @@ class ActionCondition extends ElementCondition
 {
 	public function init(): void
 	{
-		$this->addRuleLabel = Craft::t('coupons', 'Add an action');
+		$this->addRuleLabel = Craft::t('advanced-discounts', 'Add an action');
 		parent::init();
 	}
 

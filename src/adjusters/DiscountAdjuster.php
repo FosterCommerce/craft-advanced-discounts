@@ -1,16 +1,16 @@
 <?php
 
-namespace fostercommerce\coupons\adjusters;
+namespace fostercommerce\advancedDiscounts\adjusters;
 
 use craft\commerce\base\AdjusterInterface;
 use craft\commerce\elements\Order;
 use craft\commerce\models\OrderAdjustment;
-use fostercommerce\coupons\elements\conditions\LineItemActionRule;
-use fostercommerce\coupons\elements\conditions\OrderActionRule;
-use fostercommerce\coupons\enums\DiscountType;
-use fostercommerce\coupons\Plugin;
+use fostercommerce\advancedDiscounts\elements\conditions\LineItemActionRule;
+use fostercommerce\advancedDiscounts\elements\conditions\OrderActionRule;
+use fostercommerce\advancedDiscounts\enums\DiscountType;
+use fostercommerce\advancedDiscounts\Plugin;
 
-class CouponAdjuster implements AdjusterInterface
+class DiscountAdjuster implements AdjusterInterface
 {
 	public function adjust(Order $order): array
 	{

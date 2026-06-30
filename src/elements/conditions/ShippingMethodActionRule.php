@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\coupons\elements\conditions;
+namespace fostercommerce\advancedDiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
@@ -13,7 +13,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use fostercommerce\coupons\enums\DiscountType;
+use fostercommerce\advancedDiscounts\enums\DiscountType;
 use yii\base\InvalidConfigException;
 
 class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
@@ -30,7 +30,7 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 
 	public function getLabel(): string
 	{
-		return Craft::t('coupons', 'Shipping Method');
+		return Craft::t('advanced-discounts', 'Shipping Method');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -107,21 +107,21 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 		}
 
 		if ($this->discountType === DiscountType::FlatAmount) {
-			$discountTypeLabel = Craft::t('coupons', 'Flat Amount');
+			$discountTypeLabel = Craft::t('advanced-discounts', 'Flat Amount');
 		} elseif ($this->discountType === DiscountType::Percentage) {
-			$discountTypeLabel = Craft::t('coupons', 'Percentage');
+			$discountTypeLabel = Craft::t('advanced-discounts', 'Percentage');
 		} else {
 			$discountTypeLabel = '';
 		}
 
 		return $selectHtml .
-			Html::hiddenLabel(Craft::t('coupons', 'Discount Type'), 'discountType') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount Type'), 'discountType') .
 			Cp::selectHtml([
 				'id' => 'discountType',
 				'name' => 'discountType',
 				'options' => [
-					DiscountType::FlatAmount => Craft::t('coupons', 'Discount a flat amount'),
-					DiscountType::Percentage => Craft::t('coupons', 'Discount a percentage'),
+					DiscountType::FlatAmount => Craft::t('advanced-discounts', 'Discount a flat amount'),
+					DiscountType::Percentage => Craft::t('advanced-discounts', 'Discount a percentage'),
 				],
 				'value' => $this->discountType,
 				'inputAttributes' => [
@@ -130,7 +130,7 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 					],
 				],
 			]) .
-			Html::hiddenLabel(Craft::t('coupons', 'Discount value'), 'discountValue') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount value'), 'discountValue') .
 			Cp::textHtml([
 				'type' => 'number',
 				'id' => 'discountValue',
