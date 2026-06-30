@@ -15,7 +15,7 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 
 	public function __construct($config = [])
 	{
-		$config['triggerCondition'] = $config['attributes']['triggerCondition'] ?? [];
+		$config['triggerCondition'] = isset($config['triggerCondition']) ? $config['triggerCondition'] : ($config['attributes']['triggerCondition'] ?? []);
 		parent::__construct($config);
 	}
 

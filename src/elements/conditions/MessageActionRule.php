@@ -20,7 +20,7 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 
 	public function __construct($config = [])
 	{
-		$config['messageCondition'] = $config['attributes']['messageCondition'] ?? [];
+		$config['messageCondition'] = isset($config['messageCondition']) ? $config['messageCondition'] : ($config['attributes']['messageCondition'] ?? []);
 		parent::__construct($config);
 	}
 

@@ -15,7 +15,7 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 
 	public function __construct($config = [])
 	{
-		$config['orderCondition'] = $config['attributes']['orderCondition'] ?? [];
+		$config['orderCondition'] = isset($config['orderCondition']) ? $config['orderCondition'] : ($config['attributes']['orderCondition'] ?? []);
 		parent::__construct($config);
 	}
 

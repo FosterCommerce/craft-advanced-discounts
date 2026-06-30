@@ -30,7 +30,7 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 
 	public function __construct($config = [])
 	{
-		$config['lineItemCondition'] = $config['attributes']['lineItemCondition'] ?? [];
+		$config['lineItemCondition'] = isset($config['lineItemCondition']) ? $config['lineItemCondition'] : ($config['attributes']['lineItemCondition'] ?? []);
 		parent::__construct($config);
 	}
 
