@@ -12,8 +12,8 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlManager;
 use fostercommerce\advancedDiscounts\adjusters\DiscountAdjuster;
 use fostercommerce\advancedDiscounts\models\Settings;
-use fostercommerce\advancedDiscounts\services\Discounts;
 use fostercommerce\advancedDiscounts\services\AdvancedDiscountsService;
+use fostercommerce\advancedDiscounts\services\Discounts;
 use yii\base\Event;
 
 /**

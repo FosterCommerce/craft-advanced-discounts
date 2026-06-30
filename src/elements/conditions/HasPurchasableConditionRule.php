@@ -21,6 +21,9 @@ use craft\helpers\UrlHelper;
  */
 class HasPurchasableConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
+	/**
+	 * @var class-string<ElementInterface>
+	 */
 	public string $purchasableType = Variant::class;
 
 	public function getLabel(): string
@@ -61,6 +64,9 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		]);
 	}
 
+	/**
+	 * @return class-string<ElementInterface>
+	 */
 	protected function elementType(): string
 	{
 		return $this->purchasableType;
