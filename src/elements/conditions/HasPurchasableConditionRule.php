@@ -123,7 +123,9 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 				],
 			]) .
 			parent::inputHtml(),
-			['class' => ['flex', 'flex-start']]
+			[
+				'class' => ['flex', 'flex-start'],
+			]
 		);
 
 		$quantityRow = Html::tag(
@@ -137,7 +139,9 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 				'placeholder' => Craft::t('advanced-discounts', 'Any qty'),
 				'autocomplete' => false,
 			]),
-			['class' => ['flex', 'flex-start']]
+			[
+				'class' => ['flex', 'flex-start'],
+			]
 		);
 
 		return Html::hiddenLabel($this->getLabel(), $id) .
@@ -146,7 +150,9 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 				$elementRow . $quantityRow,
 				[
 					'class' => ['flex', 'flex-start'],
-					'style' => ['flex-direction' => 'column'],
+					'style' => [
+						'flex-direction' => 'column',
+					],
 				]
 			);
 	}
