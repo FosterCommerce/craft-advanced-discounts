@@ -18,5 +18,4 @@ class LineItemCondition extends ElementCondition
 			RelatedToConditionRule::class,
 		];
 	}
-
 }

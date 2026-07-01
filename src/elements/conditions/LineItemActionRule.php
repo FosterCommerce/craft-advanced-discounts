@@ -28,7 +28,9 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 
 	public string $purchasableType = Variant::class;
 
-	/** @var int[] */
+	/**
+	 * @var int[]
+	 */
 	public array $purchasableIds = [];
 
 	public function getLabel(): string
@@ -117,7 +119,9 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 					'elements' => $selectedElements,
 					'limit' => null,
 				]),
-				['class' => ['flex', 'flex-start', 'gap-s']]
+				[
+					'class' => ['flex', 'flex-start', 'gap-s'],
+				]
 			);
 		}
 
