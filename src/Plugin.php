@@ -17,7 +17,6 @@ use fostercommerce\advanceddiscounts\services\AdvancedDiscountsService;
 use fostercommerce\advanceddiscounts\services\Discounts;
 use fostercommerce\advanceddiscounts\variables\AdvancedDiscountsVariable;
 use yii\base\Event;
-use yii\base\ModelEvent;
 
 /**
  * Advanced Discounts plugin
@@ -110,7 +109,7 @@ class Plugin extends BasePlugin
 		Event::on(
 			Order::class,
 			Order::EVENT_BEFORE_VALIDATE,
-			function (ModelEvent $event) use (&$savedModes): void {
+			function (Event $event) use (&$savedModes): void {
 				/** @var Order $order */
 				$order = $event->sender;
 				if (! $order->couponCode) {
@@ -129,7 +128,7 @@ class Plugin extends BasePlugin
 		Event::on(
 			Order::class,
 			Order::EVENT_AFTER_VALIDATE,
-			function (ModelEvent $event) use (&$savedModes): void {
+			function (Event $event) use (&$savedModes): void {
 				/** @var Order $order */
 				$order = $event->sender;
 				$id = spl_object_id($order);
