@@ -48,10 +48,19 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		return Order::find()
-			->id($element->id)
-			->hasPurchasables([(int) $this->getElementId()])
-			->exists();
+		$purchasableId = (int) $this->getElementId();
+		if ($purchasableId === 0 || ! $element instanceof Order) {
+			return false;
+		}
+
+		foreach ($element->getLineItems() as $lineItem) {
+			$purchasable = $lineItem->getPurchasable();
+			if ($purchasable !== null && (int) $purchasable->id === $purchasableId) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -59,9 +68,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 	 */
 	public function getConfig(): array
 	{
-		return array_merge(parent::getConfig(), [
-			'purchasableType' => $this->purchasableType,
-		]);
+		return [...parent::getConfig(), 'purchasableType' => $this->purchasableType];
 	}
 
 	/**
