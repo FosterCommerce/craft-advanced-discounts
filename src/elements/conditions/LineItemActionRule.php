@@ -20,11 +20,17 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 
 	public const FILTER_MATCHING = 'matching';
 
+	public const APPLY_PER_LINE_ITEM = 'lineItem';
+
+	public const APPLY_PER_PURCHASABLE = 'purchasable';
+
 	public string $discountType = DiscountType::FlatAmount;
 
 	public ?float $discountValue = null;
 
 	public string $lineItemsFilter = self::FILTER_ALL;
+
+	public string $applyPer = self::APPLY_PER_LINE_ITEM;
 
 	public string $purchasableType = Variant::class;
 
@@ -69,6 +75,7 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 			'discountType' => $this->discountType,
 			'discountValue' => $this->discountValue,
 			'lineItemsFilter' => $this->lineItemsFilter,
+			'applyPer' => $this->applyPer,
 			'purchasableType' => $this->purchasableType,
 			'purchasableIds' => $this->purchasableIds,
 		]);
@@ -165,6 +172,16 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 					'autocomplete' => false,
 					'placeholder' => $discountTypeLabel,
 					'class' => 'flex-grow flex-shrink',
+				]) .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'Apply per'), 'applyPer') .
+				Cp::selectHtml([
+					'id' => 'applyPer',
+					'name' => 'applyPer',
+					'options' => [
+						self::APPLY_PER_LINE_ITEM => Craft::t('advanced-discounts', 'Per line item'),
+						self::APPLY_PER_PURCHASABLE => Craft::t('advanced-discounts', 'Per purchasable'),
+					],
+					'value' => $this->applyPer,
 				]),
 				[
 					'class' => ['flex', 'flex-start', 'flex-grow'],
@@ -186,7 +203,7 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['discountType', 'discountValue', 'lineItemsFilter', 'purchasableType', 'purchasableIds'], 'safe'],
+			[['discountType', 'discountValue', 'lineItemsFilter', 'applyPer', 'purchasableType', 'purchasableIds'], 'safe'],
 		]);
 	}
 
