@@ -83,7 +83,7 @@ class Plugin extends BasePlugin
 		Event::on(
 			CraftVariable::class,
 			CraftVariable::EVENT_DEFINE_BEHAVIORS,
-			static function (\yii\base\Event $event): void {
+			static function (Event $event): void {
 				/** @var CraftVariable $variable */
 				$variable = $event->sender;
 				$variable->set('advancedDiscounts', AdvancedDiscountsVariable::class);
