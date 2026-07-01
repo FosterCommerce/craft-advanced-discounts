@@ -21,7 +21,7 @@
   },
   "autoload": {
     "psr-4": {
-      "fostercommerce\\advancedDiscounts\\": "src/"
+      "fostercommerce\\advanceddiscounts\\": "src/"
     }
   },
   "extra": {
