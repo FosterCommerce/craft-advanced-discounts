@@ -137,6 +137,7 @@ class Plugin extends BasePlugin
 				}
 				$order->recalculationMode = $savedModes[$id];
 				unset($savedModes[$id]);
+				$order->recalculate();
 			}
 		);
 	}
