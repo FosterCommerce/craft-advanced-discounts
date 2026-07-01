@@ -81,7 +81,11 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		return true;
+		if ($this->lineItemsFilter !== self::FILTER_MATCHING) {
+			return true;
+		}
+
+		return $this->getLineItemCondition()->matchElement($element);
 	}
 
 	/**

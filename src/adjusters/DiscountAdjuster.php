@@ -75,15 +75,11 @@ class DiscountAdjuster implements AdjusterInterface
 		}
 
 		$adjustments = [];
-		$matchingOnly = $rule->lineItemsFilter === LineItemActionRule::FILTER_MATCHING;
-		$lineItemCondition = $matchingOnly ? $rule->getLineItemCondition() : null;
 
 		foreach ($order->getLineItems() as $lineItem) {
-			if ($lineItemCondition !== null) {
-				$purchasable = $lineItem->getPurchasable();
-				if ($purchasable === null || ! $lineItemCondition->matchElement($purchasable)) {
-					continue;
-				}
+			$purchasable = $lineItem->getPurchasable();
+			if ($purchasable === null || ! $rule->matchElement($purchasable)) {
+				continue;
 			}
 
 			$amount = $rule->discountType === DiscountType::Percentage
