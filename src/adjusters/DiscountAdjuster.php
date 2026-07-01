@@ -84,7 +84,10 @@ class DiscountAdjuster implements AdjusterInterface
 
 			$amount = $rule->discountType === DiscountType::Percentage
 				? -($lineItem->subtotal * ($rule->discountValue / 100))
-				: -min((float) $rule->discountValue, $lineItem->subtotal);
+				: -min(
+					(float) $rule->discountValue * ($rule->applyPer === LineItemActionRule::APPLY_PER_PURCHASABLE ? $lineItem->qty : 1),
+					$lineItem->subtotal
+				);
 
 			$adjustment = new OrderAdjustment();
 			$adjustment->type = 'discount';
