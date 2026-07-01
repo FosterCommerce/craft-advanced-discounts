@@ -138,6 +138,8 @@ class Plugin extends BasePlugin
 				if (! $order->couponCode) {
 					$order->couponCode = $savedCode;
 				}
+
+				$order->clearErrors('couponCode');
 			}
 		);
 	}
