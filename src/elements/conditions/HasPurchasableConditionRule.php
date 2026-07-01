@@ -26,6 +26,8 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 	 */
 	public string $purchasableType = Variant::class;
 
+	public ?int $quantity = null;
+
 	public function getLabel(): string
 	{
 		return Craft::t('commerce', 'Has Purchasable');
@@ -53,14 +55,23 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 			return false;
 		}
 
+		$totalQty = 0;
+
 		foreach ($element->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
 			if ($purchasable !== null && (int) $purchasable->id === $purchasableId) {
-				return true;
+				if ($this->quantity === null) {
+					return true;
+				}
+				$totalQty += $lineItem->qty;
 			}
 		}
 
-		return false;
+		if ($this->quantity === null) {
+			return false;
+		}
+
+		return $totalQty === $this->quantity;
 	}
 
 	/**
@@ -71,6 +82,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		return [
 			...parent::getConfig(),
 			'purchasableType' => $this->purchasableType,
+			'quantity' => $this->quantity,
 		];
 	}
 
@@ -88,7 +100,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 	protected function defineRules(): array
 	{
 		$rules = parent::defineRules();
-		$rules[] = [['purchasableType'], 'safe'];
+		$rules[] = [['purchasableType', 'quantity'], 'safe'];
 
 		return $rules;
 	}
@@ -96,23 +108,51 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 	protected function inputHtml(): string
 	{
 		$id = 'purchasable-type';
+
+		$elementRow = Html::tag(
+			'div',
+			Cp::selectHtml([
+				'id' => $id,
+				'name' => 'purchasableType',
+				'options' => $this->_purchasableTypeOptions(),
+				'value' => $this->purchasableType,
+				'inputAttributes' => [
+					'hx' => [
+						'post' => UrlHelper::actionUrl('conditions/render'),
+					],
+				],
+			]) .
+			parent::inputHtml(),
+			[
+				'class' => ['flex', 'flex-start'],
+			]
+		);
+
+		$quantityRow = Html::tag(
+			'div',
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Quantity'), 'quantity') .
+			Cp::textHtml([
+				'type' => 'number',
+				'id' => 'quantity',
+				'name' => 'quantity',
+				'value' => $this->quantity,
+				'placeholder' => Craft::t('advanced-discounts', 'Any qty'),
+				'autocomplete' => false,
+			]),
+			[
+				'class' => ['flex', 'flex-start'],
+			]
+		);
+
 		return Html::hiddenLabel($this->getLabel(), $id) .
 			Html::tag(
 				'div',
-				Cp::selectHtml([
-					'id' => $id,
-					'name' => 'purchasableType',
-					'options' => $this->_purchasableTypeOptions(),
-					'value' => $this->purchasableType,
-					'inputAttributes' => [
-						'hx' => [
-							'post' => UrlHelper::actionUrl('conditions/render'),
-						],
-					],
-				]) .
-				parent::inputHtml(),
+				$elementRow . $quantityRow,
 				[
 					'class' => ['flex', 'flex-start'],
+					'style' => [
+						'flex-direction' => 'column',
+					],
 				]
 			);
 	}
