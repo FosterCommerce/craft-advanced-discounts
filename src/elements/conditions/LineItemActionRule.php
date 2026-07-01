@@ -5,12 +5,12 @@ namespace fostercommerce\advanceddiscounts\elements\conditions;
 use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionInterface;
+use craft\commerce\elements\Variant;
+use craft\commerce\Plugin as CommercePlugin;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 
@@ -26,44 +26,10 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 
 	public string $lineItemsFilter = self::FILTER_ALL;
 
-	public ?ElementConditionInterface $_lineItemCondition = null;
+	public string $purchasableType = Variant::class;
 
-	public function __construct($config = [])
-	{
-		$config['lineItemCondition'] = isset($config['lineItemCondition']) ? $config['lineItemCondition'] : ($config['attributes']['lineItemCondition'] ?? []);
-		parent::__construct($config);
-	}
-
-	public function getLineItemCondition(): ElementConditionInterface
-	{
-		$condition = $this->_lineItemCondition ?? new LineItemCondition();
-		$condition->mainTag = 'div';
-		$condition->name = 'lineItemCondition';
-		return $condition;
-	}
-
-	/**
-	 * @param ElementConditionInterface|string|array<string, mixed> $condition
-	 */
-	public function setLineItemCondition(ElementConditionInterface|string|array $condition): void
-	{
-		if (is_string($condition)) {
-			$condition = Json::decodeIfJson($condition);
-		}
-
-		if (! $condition instanceof ElementConditionInterface) {
-			if (empty($condition)) {
-				return;
-			}
-			$condition['class'] = LineItemCondition::class;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
-		}
-		$condition->forProjectConfig = false;
-
-		$this->_lineItemCondition = $condition;
-	}
+	/** @var int[] */
+	public array $purchasableIds = [];
 
 	public function getLabel(): string
 	{
@@ -85,7 +51,11 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 			return true;
 		}
 
-		return $this->getLineItemCondition()->matchElement($element);
+		if (empty($this->purchasableIds)) {
+			return false;
+		}
+
+		return in_array((int) $element->id, array_map('intval', $this->purchasableIds), true);
 	}
 
 	/**
@@ -97,7 +67,8 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 			'discountType' => $this->discountType,
 			'discountValue' => $this->discountValue,
 			'lineItemsFilter' => $this->lineItemsFilter,
-			'lineItemCondition' => $this->_lineItemCondition?->getConfig() ?? [],
+			'purchasableType' => $this->purchasableType,
+			'purchasableIds' => $this->purchasableIds,
 		]);
 	}
 
@@ -113,9 +84,42 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 			self::FILTER_MATCHING => Craft::t('advanced-discounts', 'Matching line items'),
 		];
 
-		$conditionBuilderHtml = $this->lineItemsFilter === self::FILTER_MATCHING
-			? $this->getLineItemCondition()->getBuilderHtml()
-			: '';
+		$purchasableSelectHtml = '';
+
+		if ($this->lineItemsFilter === self::FILTER_MATCHING) {
+			$selectedElements = [];
+			if (! empty($this->purchasableIds)) {
+				/** @var class-string<ElementInterface> $type */
+				$type = $this->purchasableType;
+				$selectedElements = $type::find()
+					->id($this->purchasableIds)
+					->status(null)
+					->all();
+			}
+
+			$purchasableSelectHtml = Html::tag(
+				'div',
+				Cp::selectHtml([
+					'id' => 'purchasableType',
+					'name' => 'purchasableType',
+					'options' => $this->_purchasableTypeOptions(),
+					'value' => $this->purchasableType,
+					'inputAttributes' => [
+						'hx' => [
+							'post' => UrlHelper::actionUrl('conditions/render'),
+						],
+					],
+				]) .
+				Cp::elementSelectHtml([
+					'elementType' => $this->purchasableType,
+					'id' => 'purchasableIds',
+					'name' => 'purchasableIds',
+					'elements' => $selectedElements,
+					'limit' => null,
+				]),
+				['class' => ['flex', 'flex-start', 'gap-s']]
+			);
+		}
 
 		return Html::tag(
 			'div',
@@ -162,7 +166,7 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 					'class' => ['flex', 'flex-start', 'flex-grow'],
 				]
 			) .
-			$conditionBuilderHtml,
+			$purchasableSelectHtml,
 			[
 				'class' => ['flex', 'flex-start', 'flex-grow'],
 				'style' => [
@@ -178,7 +182,25 @@ class LineItemActionRule extends BaseConditionRule implements ElementConditionRu
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['discountType', 'discountValue', 'lineItemsFilter'], 'safe'],
+			[['discountType', 'discountValue', 'lineItemsFilter', 'purchasableType', 'purchasableIds'], 'safe'],
 		]);
+	}
+
+	/**
+	 * @return array<int, array{value: string, label: string}>
+	 */
+	private function _purchasableTypeOptions(): array
+	{
+		$options = [];
+
+		foreach ((CommercePlugin::getInstance()?->getPurchasables()->getAllPurchasableElementTypes() ?? []) as $type) {
+			/** @var string|ElementInterface $type */
+			$options[] = [
+				'value' => $type,
+				'label' => $type::displayName(),
+			];
+		}
+
+		return $options;
 	}
 }
