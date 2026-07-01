@@ -68,7 +68,10 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 	 */
 	public function getConfig(): array
 	{
-		return [...parent::getConfig(), 'purchasableType' => $this->purchasableType];
+		return [
+			...parent::getConfig(),
+			'purchasableType' => $this->purchasableType,
+		];
 	}
 
 	/**
