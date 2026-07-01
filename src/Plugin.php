@@ -83,7 +83,7 @@ class Plugin extends BasePlugin
 		Event::on(
 			CraftVariable::class,
 			CraftVariable::EVENT_DEFINE_BEHAVIORS,
-			static function (\yii\base\Event $event): void {
+			static function (Event $event): void {
 				/** @var CraftVariable $variable */
 				$variable = $event->sender;
 				$variable->set('advancedDiscounts', AdvancedDiscountsVariable::class);
@@ -99,17 +99,16 @@ class Plugin extends BasePlugin
 			}
 		);
 
-		// Prevent Commerce from clearing our custom coupon codes during order validation.
-		// Commerce's validateCouponCode() nulls $order->couponCode if not found in its own
-		// discount system, but only when recalculationMode is ALL or ADJUSTMENTS_ONLY.
-		// We temporarily set mode to NONE before validation and restore it after, so the
-		// code survives into recalculate() where our adjuster can read it.
-		$savedModes = [];
+		// Commerce's validateCouponCode() nulls $order->couponCode if it can't find the
+		// code in its own discount table. We save the code before validation and restore
+		// it afterwards if Commerce cleared it, without touching recalculationMode so that
+		// Commerce's normal recalculation flow runs uninterrupted.
+		$savedCodes = [];
 
 		Event::on(
 			Order::class,
 			Order::EVENT_BEFORE_VALIDATE,
-			function (Event $event) use (&$savedModes): void {
+			function (Event $event) use (&$savedCodes): void {
 				/** @var Order $order */
 				$order = $event->sender;
 				if (! $order->couponCode) {
@@ -119,24 +118,26 @@ class Plugin extends BasePlugin
 				if ($coupon === null || ! $coupon->enabled) {
 					return;
 				}
-				$id = spl_object_id($order);
-				$savedModes[$id] = $order->recalculationMode;
-				$order->recalculationMode = Order::RECALCULATION_MODE_NONE;
+				$savedCodes[spl_object_id($order)] = $order->couponCode;
 			}
 		);
 
 		Event::on(
 			Order::class,
 			Order::EVENT_AFTER_VALIDATE,
-			function (Event $event) use (&$savedModes): void {
+			function (Event $event) use (&$savedCodes): void {
 				/** @var Order $order */
 				$order = $event->sender;
 				$id = spl_object_id($order);
-				if (! isset($savedModes[$id])) {
+				if (! isset($savedCodes[$id])) {
 					return;
 				}
-				$order->recalculationMode = $savedModes[$id];
-				unset($savedModes[$id]);
+				$savedCode = $savedCodes[$id];
+				unset($savedCodes[$id]);
+
+				if (! $order->couponCode) {
+					$order->couponCode = $savedCode;
+				}
 			}
 		);
 	}
