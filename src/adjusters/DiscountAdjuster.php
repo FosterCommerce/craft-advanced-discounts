@@ -1,14 +1,14 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\adjusters;
+namespace fostercommerce\advanceddiscounts\adjusters;
 
 use craft\commerce\base\AdjusterInterface;
 use craft\commerce\elements\Order;
 use craft\commerce\models\OrderAdjustment;
-use fostercommerce\advancedDiscounts\elements\conditions\LineItemActionRule;
-use fostercommerce\advancedDiscounts\elements\conditions\OrderActionRule;
-use fostercommerce\advancedDiscounts\enums\DiscountType;
-use fostercommerce\advancedDiscounts\Plugin;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\OrderActionRule;
+use fostercommerce\advanceddiscounts\enums\DiscountType;
+use fostercommerce\advanceddiscounts\Plugin;
 
 class DiscountAdjuster implements AdjusterInterface
 {

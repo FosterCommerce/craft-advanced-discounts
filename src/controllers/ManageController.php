@@ -1,12 +1,12 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\controllers;
+namespace fostercommerce\advanceddiscounts\controllers;
 
 use Craft;
 use craft\i18n\Locale;
 use craft\web\Controller;
-use fostercommerce\advancedDiscounts\models\Discount;
-use fostercommerce\advancedDiscounts\Plugin;
+use fostercommerce\advanceddiscounts\models\Discount;
+use fostercommerce\advanceddiscounts\Plugin;
 use yii\web\Response;
 
 class ManageController extends Controller

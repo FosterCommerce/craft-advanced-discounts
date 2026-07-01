@@ -1,9 +1,9 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\migrations;
+namespace fostercommerce\advanceddiscounts\migrations;
 
 use craft\db\Migration;
-use fostercommerce\advancedDiscounts\records\Discount;
+use fostercommerce\advanceddiscounts\records\Discount;
 
 class Install extends Migration
 {

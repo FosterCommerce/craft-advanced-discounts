@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\elements\conditions;
+namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseConditionRule;
@@ -10,7 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use fostercommerce\advancedDiscounts\enums\DiscountType;
+use fostercommerce\advanceddiscounts\enums\DiscountType;
 
 class OrderActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {

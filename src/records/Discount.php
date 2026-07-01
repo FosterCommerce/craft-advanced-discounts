@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\records;
+namespace fostercommerce\advanceddiscounts\records;
 
 use craft\db\ActiveRecord;
 

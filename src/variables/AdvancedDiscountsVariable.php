@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\variables;
+namespace fostercommerce\advanceddiscounts\variables;
 
 use Craft;
 use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
@@ -8,13 +8,13 @@ use craft\commerce\elements\conditions\orders\ItemTotalConditionRule;
 use craft\commerce\elements\conditions\orders\TotalConditionRule;
 use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
 use craft\commerce\elements\Order;
-use fostercommerce\advancedDiscounts\elements\conditions\LineItemActionRule;
-use fostercommerce\advancedDiscounts\elements\conditions\MessageActionRule;
-use fostercommerce\advancedDiscounts\elements\conditions\OrderActionRule;
-use fostercommerce\advancedDiscounts\elements\conditions\OrderConditionRule;
-use fostercommerce\advancedDiscounts\enums\DiscountType;
-use fostercommerce\advancedDiscounts\models\Discount;
-use fostercommerce\advancedDiscounts\Plugin;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\OrderActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
+use fostercommerce\advanceddiscounts\enums\DiscountType;
+use fostercommerce\advanceddiscounts\models\Discount;
+use fostercommerce\advanceddiscounts\Plugin;
 
 class AdvancedDiscountsVariable
 {

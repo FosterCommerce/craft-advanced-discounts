@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\elements\conditions;
+namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;

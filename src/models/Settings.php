@@ -1,6 +1,6 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\models;
+namespace fostercommerce\advanceddiscounts\models;
 
 use craft\base\Model;
 

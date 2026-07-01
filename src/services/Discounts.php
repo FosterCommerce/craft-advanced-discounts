@@ -1,11 +1,11 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\services;
+namespace fostercommerce\advanceddiscounts\services;
 
 use Craft;
 use craft\db\Query;
-use fostercommerce\advancedDiscounts\models\Discount;
-use fostercommerce\advancedDiscounts\records\Discount as DiscountRecord;
+use fostercommerce\advanceddiscounts\models\Discount;
+use fostercommerce\advanceddiscounts\records\Discount as DiscountRecord;
 use yii\base\Component;
 
 class Discounts extends Component

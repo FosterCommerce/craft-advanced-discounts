@@ -1,13 +1,13 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\models;
+namespace fostercommerce\advanceddiscounts\models;
 
 use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
-use fostercommerce\advancedDiscounts\elements\conditions\ActionCondition;
-use fostercommerce\advancedDiscounts\elements\conditions\AndTriggerCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\ActionCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\AndTriggerCondition;
 
 /**
  * Coupon model

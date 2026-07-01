@@ -1,10 +1,10 @@
 <?php
 
-namespace fostercommerce\advancedDiscounts\services;
+namespace fostercommerce\advanceddiscounts\services;
 
 use craft\commerce\models\Discount;
 use craft\commerce\services\Discounts;
-use fostercommerce\advancedDiscounts\Plugin;
+use fostercommerce\advanceddiscounts\Plugin;
 
 class AdvancedDiscountsService extends Discounts
 {
