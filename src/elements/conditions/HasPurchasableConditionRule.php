@@ -71,7 +71,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 			return false;
 		}
 
-		return $totalQty === $this->quantity;
+		return $totalQty >= $this->quantity;
 	}
 
 	/**
