@@ -35,12 +35,13 @@ return [
     'Updated' => 'Updated',
 
     // CP edit form
-    'Create Coupon' => 'Create Coupon',
-    'Save Coupon' => 'Save Coupon',
-    'Coupon Name' => 'Coupon Name',
-    'Coupon Code' => 'Coupon Code',
+    'Create discount' => 'Create discount',
+    'Save discount' => 'Save discount',
+    'Name' => 'Name',
+    'Discount code' => 'Discount code',
+    'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.' => 'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.',
     'Conditions' => 'Conditions',
-    'Create rules to match and order with a coupon.' => 'Create rules to match and order with a coupon.',
+    'Rules that decide when this discount applies.' => 'Rules that decide when this discount applies.',
     'Action Rules' => 'Action Rules',
     'Create rules to apply discounts.' => 'Create rules to apply discounts.',
 
@@ -49,8 +50,8 @@ return [
     'At least one action rule is required.' => 'At least one action rule is required.',
 
     // Flash messages
-    'Coupon saved.' => 'Coupon saved.',
-    "Couldn't save coupon." => "Couldn't save coupon.",
-    'Coupon deleted.' => 'Coupon deleted.',
-    'Coupon not found.' => 'Coupon not found.',
+    'Discount saved.' => 'Discount saved.',
+    "Couldn't save discount." => "Couldn't save discount.",
+    'Discount deleted.' => 'Discount deleted.',
+    'Discount not found.' => 'Discount not found.',
 ];

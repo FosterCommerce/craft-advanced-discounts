@@ -29,18 +29,19 @@ return [
 
     // CP-Index
     'Advanced Discounts' => 'Erweiterte Rabatte',
-    'New discount' => 'Neuer Gutschein',
+    'New discount' => 'Neuer Rabatt',
     'Code' => 'Code',
     'Created' => 'Erstellt',
     'Updated' => 'Aktualisiert',
 
     // Bearbeitungsformular
-    'Create Coupon' => 'Gutschein erstellen',
-    'Save Coupon' => 'Gutschein speichern',
-    'Coupon Name' => 'Gutscheinname',
-    'Coupon Code' => 'Gutscheincode',
+    'Create discount' => 'Rabatt erstellen',
+    'Save discount' => 'Rabatt speichern',
+    'Name' => 'Name',
+    'Discount code' => 'Rabattcode',
+    'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.' => 'Leer lassen, um den Rabatt auf jede zutreffende Bestellung anzuwenden (wie ein Angebot). Wenn ein Code angegeben wird, muss er an der Kasse eingegeben werden, damit der Rabatt gilt.',
     'Conditions' => 'Bedingungen',
-    'Create rules to match and order with a coupon.' => 'Erstellen Sie Regeln, um eine Bestellung einem Gutschein zuzuordnen.',
+    'Rules that decide when this discount applies.' => 'Regeln, die festlegen, wann dieser Rabatt gilt.',
     'Action Rules' => 'Aktionsregeln',
     'Create rules to apply discounts.' => 'Erstellen Sie Regeln zum Anwenden von Rabatten.',
 
@@ -49,8 +50,8 @@ return [
     'At least one action rule is required.' => 'Es ist mindestens eine Aktionsregel erforderlich.',
 
     // Flash-Meldungen
-    'Coupon saved.' => 'Gutschein gespeichert.',
-    "Couldn't save coupon." => 'Gutschein konnte nicht gespeichert werden.',
-    'Coupon deleted.' => 'Gutschein gelöscht.',
-    'Coupon not found.' => 'Gutschein nicht gefunden.',
+    'Discount saved.' => 'Rabatt gespeichert.',
+    "Couldn't save discount." => 'Rabatt konnte nicht gespeichert werden.',
+    'Discount deleted.' => 'Rabatt gelöscht.',
+    'Discount not found.' => 'Rabatt nicht gefunden.',
 ];

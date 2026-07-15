@@ -4,11 +4,11 @@
 {% set crumbs = [
     { label: "Advanced Discounts"|t('advanced-discounts'), url: url('advanced-discounts') },
 ] %}
-{% set title = "Create Coupon"|t('advanced-discounts') %}
+{% set title = "Create discount"|t('advanced-discounts') %}
 {% import '_includes/forms.twig' as forms %}
 
 {% block actionButton %}
-    <button type="submit" class="btn submit">{{ 'Save Coupon'|t('advanced-discounts') }}</button>
+    <button type="submit" class="btn submit">{{ 'Save discount'|t('advanced-discounts') }}</button>
 {% endblock %}
 
 {% block content %}
@@ -20,7 +20,7 @@
     {% endif %}
 
     {{ forms.textField({
-        label: "Coupon Name"|t('advanced-discounts'),
+        label: "Name"|t('advanced-discounts'),
         id: 'name',
         name: 'name',
         value: coupon.name,
@@ -33,12 +33,12 @@
     }) }}
 
     {{ forms.textField({
-        label: "Coupon Code"|t('advanced-discounts'),
+        label: "Discount code"|t('advanced-discounts'),
         id: 'code',
         name: 'code',
         value: coupon.code,
         type: 'text',
-        instructions: "Leave blank to apply this discount automatically without a code."|t('advanced-discounts'),
+        instructions: "Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply."|t('advanced-discounts'),
         inputAttributes: {
             data: {lpignore: 'true'},
         },
@@ -51,7 +51,7 @@
 
     {{ forms.field({
         label: 'Conditions'|t('advanced-discounts'),
-        instructions: 'Create rules to match and order with a coupon.'|t('advanced-discounts'),
+        instructions: 'Rules that decide when this discount applies.'|t('advanced-discounts'),
         errors: coupon.getErrors('triggerCondition')
     }, triggerCondition) }}
 

@@ -58,10 +58,10 @@ class ManageController extends Controller
 		$id = (int) $this->request->getRequiredBodyParam('id');
 
 		if (! Plugin::getInstance()->coupons->deleteCoupon($id)) {
-			return $this->asFailure(Craft::t('advanced-discounts', 'Coupon not found.'));
+			return $this->asFailure(Craft::t('advanced-discounts', 'Discount not found.'));
 		}
 
-		return $this->asSuccess(Craft::t('advanced-discounts', 'Coupon deleted.'));
+		return $this->asSuccess(Craft::t('advanced-discounts', 'Discount deleted.'));
 	}
 
 	public function actionSave(): void
@@ -78,10 +78,10 @@ class ManageController extends Controller
 		$coupon->setActionCondition($this->request->getBodyParam('actionCondition'));
 
 		if (Plugin::getInstance()->coupons->saveCoupon($coupon)) {
-			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Coupon saved.'));
+			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Discount saved.'));
 			$this->redirectToPostedUrl($coupon);
 		} else {
-			$this->setFailFlash(Craft::t('advanced-discounts', "Couldn\'t save coupon."));
+			$this->setFailFlash(Craft::t('advanced-discounts', "Couldn\'t save discount."));
 			Craft::$app->getUrlManager()->setRouteParams([
 				'coupon' => $coupon,
 			]);

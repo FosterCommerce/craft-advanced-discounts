@@ -34,18 +34,19 @@ return [
 
     // Índice del panel
     'Advanced Discounts' => 'Descuentos avanzados',
-    'New discount' => 'Nuevo cupón',
+    'New discount' => 'Nuevo descuento',
     'Code' => 'Código',
     'Created' => 'Creado',
     'Updated' => 'Actualizado',
 
     // Formulario de edición
-    'Create Coupon' => 'Crear cupón',
-    'Save Coupon' => 'Guardar cupón',
-    'Coupon Name' => 'Nombre del cupón',
-    'Coupon Code' => 'Código del cupón',
+    'Create discount' => 'Crear descuento',
+    'Save discount' => 'Guardar descuento',
+    'Name' => 'Nombre',
+    'Discount code' => 'Código de descuento',
+    'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.' => 'Déjalo en blanco para aplicarlo a todos los pedidos aplicables (como una oferta). Si se indica un código, debe ingresarse al pagar para que se aplique el descuento.',
     'Conditions' => 'Condiciones',
-    'Create rules to match and order with a coupon.' => 'Crea reglas para relacionar un pedido con un cupón.',
+    'Rules that decide when this discount applies.' => 'Reglas que determinan cuándo se aplica este descuento.',
     'Action Rules' => 'Reglas de acción',
     'Create rules to apply discounts.' => 'Crea reglas para aplicar descuentos.',
 
@@ -54,8 +55,8 @@ return [
     'At least one action rule is required.' => 'Se requiere al menos una regla de acción.',
 
     // Mensajes flash
-    'Coupon saved.' => 'Cupón guardado.',
-    "Couldn't save coupon." => 'No se pudo guardar el cupón.',
-    'Coupon deleted.' => 'Cupón eliminado.',
-    'Coupon not found.' => 'Cupón no encontrado.',
+    'Discount saved.' => 'Descuento guardado.',
+    "Couldn't save discount." => 'No se pudo guardar el descuento.',
+    'Discount deleted.' => 'Descuento eliminado.',
+    'Discount not found.' => 'Descuento no encontrado.',
 ];
