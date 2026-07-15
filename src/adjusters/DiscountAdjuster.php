@@ -11,6 +11,14 @@ use fostercommerce\advanceddiscounts\elements\conditions\ShippingMethodActionRul
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 use fostercommerce\advanceddiscounts\Plugin;
 
+/**
+ * Applies advanced-discount sales as order adjustments at cart recalc time.
+ *
+ * Scope: cart-based only. Discounts are evaluated against order state (totals,
+ * quantities, shipping method) and exist as adjustments on the order, never as
+ * a catalog price. A purchasable outside a cart has no sale price here; catalog
+ * sales require Commerce catalog pricing, a separate mechanism.
+ */
 class DiscountAdjuster implements AdjusterInterface
 {
 	public function adjust(Order $order): array
