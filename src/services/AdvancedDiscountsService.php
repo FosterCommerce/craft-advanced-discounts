@@ -15,13 +15,13 @@ class AdvancedDiscountsService extends Discounts
 			return $discount;
 		}
 
-		$coupon = Plugin::getInstance()->coupons->getCouponByCode($code ?? '');
-		if ($coupon === null || ! $coupon->enabled) {
+		$advancedDiscount = Plugin::getInstance()->discounts->getDiscountByCode($code ?? '');
+		if ($advancedDiscount === null || ! $advancedDiscount->enabled) {
 			return null;
 		}
 
 		$synthetic = new Discount();
-		$synthetic->name = $coupon->name;
+		$synthetic->name = $advancedDiscount->name;
 
 		return $synthetic;
 	}

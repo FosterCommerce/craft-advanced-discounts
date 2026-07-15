@@ -32,16 +32,16 @@ class AdvancedDiscountsVariable
 	{
 		$messages = [];
 
-		foreach (Plugin::getInstance()->coupons->getAllCoupons() as $coupon) {
-			if (! $coupon->enabled) {
+		foreach (Plugin::getInstance()->discounts->getAllDiscounts() as $discount) {
+			if (! $discount->enabled) {
 				continue;
 			}
 
-			if ($coupon->code !== null && strcasecmp($coupon->code, $order->couponCode ?? '') !== 0) {
+			if ($discount->code !== null && strcasecmp($discount->code, $order->couponCode ?? '') !== 0) {
 				continue;
 			}
 
-			foreach ($coupon->getActionCondition()->getConditionRules() as $rule) {
+			foreach ($discount->getActionCondition()->getConditionRules() as $rule) {
 				if (! $rule instanceof MessageActionRule || $rule->message === '') {
 					continue;
 				}
@@ -50,7 +50,7 @@ class AdvancedDiscountsVariable
 					continue;
 				}
 
-				$messages[] = $this->resolvePlaceholders($rule->message, $coupon, $order);
+				$messages[] = $this->resolvePlaceholders($rule->message, $discount, $order);
 			}
 		}
 
@@ -65,12 +65,12 @@ class AdvancedDiscountsVariable
 		return $this->getMessages($order)[0] ?? null;
 	}
 
-	private function resolvePlaceholders(string $message, Discount $coupon, Order $order): string
+	private function resolvePlaceholders(string $message, Discount $discount, Order $order): string
 	{
 		$placeholders = [];
 
 		// {discountAmount} — value from the first action rule that has one
-		foreach ($coupon->getActionCondition()->getConditionRules() as $rule) {
+		foreach ($discount->getActionCondition()->getConditionRules() as $rule) {
 			if (($rule instanceof OrderActionRule || $rule instanceof LineItemActionRule) && $rule->discountValue !== null) {
 				$placeholders['{discountAmount}'] = $rule->discountType === DiscountType::Percentage
 					? $rule->discountValue . '%'
@@ -80,7 +80,7 @@ class AdvancedDiscountsVariable
 		}
 
 		// {amountRemaining} — how much more the customer needs to spend
-		$amountRemaining = $this->computeAmountRemaining($coupon, $order);
+		$amountRemaining = $this->computeAmountRemaining($discount, $order);
 		if ($amountRemaining !== null) {
 			$placeholders['{amountRemaining}'] = Craft::$app->getFormatter()->asCurrency($amountRemaining, $order->paymentCurrency);
 		}
@@ -93,7 +93,7 @@ class AdvancedDiscountsVariable
 	 * rule (>=, >) and returns how far the order is from meeting it.
 	 * Returns null if no such rule exists.
 	 */
-	private function computeAmountRemaining(Discount $coupon, Order $order): ?float
+	private function computeAmountRemaining(Discount $discount, Order $order): ?float
 	{
 		// Maps Commerce condition rule class → the Order property it compares against
 		$ruleFieldMap = [
@@ -103,7 +103,7 @@ class AdvancedDiscountsVariable
 			TotalConditionRule::class => 'total',
 		];
 
-		foreach ($coupon->getTriggerCondition()->getConditionRules() as $triggerRule) {
+		foreach ($discount->getTriggerCondition()->getConditionRules() as $triggerRule) {
 			if (! $triggerRule instanceof OrderConditionRule) {
 				continue;
 			}

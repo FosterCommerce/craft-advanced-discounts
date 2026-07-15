@@ -22,31 +22,31 @@ class ManageController extends Controller
 
 	public function actionList(): Response
 	{
-		$coupons = Plugin::getInstance()->coupons->getAllCoupons();
+		$discounts = Plugin::getInstance()->discounts->getAllDiscounts();
 
-		foreach ($coupons as &$coupon) {
-			$coupon = $coupon->toArray();
-			$coupon['url'] = "advanced-discounts/{$coupon['id']}";
-			$coupon['title'] = $coupon['name'];
-			$coupon['dateCreated'] = Craft::$app->getFormatter()
-				->asDate($coupon['dateCreated'], Locale::LENGTH_SHORT);
-			$coupon['dateUpdated'] = Craft::$app->getFormatter()
-				->asDate($coupon['dateUpdated'], Locale::LENGTH_SHORT);
+		foreach ($discounts as &$discount) {
+			$discount = $discount->toArray();
+			$discount['url'] = "advanced-discounts/{$discount['id']}";
+			$discount['title'] = $discount['name'];
+			$discount['dateCreated'] = Craft::$app->getFormatter()
+				->asDate($discount['dateCreated'], Locale::LENGTH_SHORT);
+			$discount['dateUpdated'] = Craft::$app->getFormatter()
+				->asDate($discount['dateUpdated'], Locale::LENGTH_SHORT);
 		}
 		return $this->asJson([
-			'data' => $coupons,
+			'data' => $discounts,
 			'pagination' => false,
 		]);
 	}
 
 	public function actionEdit(?int $id = null): Response
 	{
-		$coupon = Craft::$app->getUrlManager()->getRouteParams()['coupon']
-			?? ($id !== null ? Plugin::getInstance()->coupons->getCouponById($id) : new Discount());
+		$discount = Craft::$app->getUrlManager()->getRouteParams()['discount']
+			?? ($id !== null ? Plugin::getInstance()->discounts->getDiscountById($id) : new Discount());
 
 		return $this->renderTemplate('advanced-discounts/edit', [
-			'coupon' => $coupon,
-			'isNewCoupon' => $coupon->id === null,
+			'discount' => $discount,
+			'isNewDiscount' => $discount->id === null,
 		]);
 	}
 
@@ -57,7 +57,7 @@ class ManageController extends Controller
 
 		$id = (int) $this->request->getRequiredBodyParam('id');
 
-		if (! Plugin::getInstance()->coupons->deleteCoupon($id)) {
+		if (! Plugin::getInstance()->discounts->deleteDiscount($id)) {
 			return $this->asFailure(Craft::t('advanced-discounts', 'Discount not found.'));
 		}
 
@@ -68,22 +68,22 @@ class ManageController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$coupon = new Discount();
+		$discount = new Discount();
 
-		$coupon->id = $this->request->getBodyParam('id');
-		$coupon->name = $this->request->getBodyParam('name');
-		$coupon->code = $this->request->getBodyParam('code') ?: null;
-		$coupon->enabled = (bool) $this->request->getBodyParam('enabled');
-		$coupon->setTriggerCondition($this->request->getBodyParam('triggerCondition'));
-		$coupon->setActionCondition($this->request->getBodyParam('actionCondition'));
+		$discount->id = $this->request->getBodyParam('id');
+		$discount->name = $this->request->getBodyParam('name');
+		$discount->code = $this->request->getBodyParam('code') ?: null;
+		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
+		$discount->setTriggerCondition($this->request->getBodyParam('triggerCondition'));
+		$discount->setActionCondition($this->request->getBodyParam('actionCondition'));
 
-		if (Plugin::getInstance()->coupons->saveCoupon($coupon)) {
+		if (Plugin::getInstance()->discounts->saveDiscount($discount)) {
 			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Discount saved.'));
-			$this->redirectToPostedUrl($coupon);
+			$this->redirectToPostedUrl($discount);
 		} else {
 			$this->setFailFlash(Craft::t('advanced-discounts', "Couldn\'t save discount."));
 			Craft::$app->getUrlManager()->setRouteParams([
-				'coupon' => $coupon,
+				'discount' => $discount,
 			]);
 		}
 	}

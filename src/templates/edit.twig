@@ -15,54 +15,54 @@
     {{ actionInput('advanced-discounts/manage/save') }}
     {{ redirectInput('advanced-discounts') }}
 
-    {% if coupon.id %}
-        <input type="hidden" name="id" value="{{ coupon.id }}">
+    {% if discount.id %}
+        <input type="hidden" name="id" value="{{ discount.id }}">
     {% endif %}
 
     {{ forms.textField({
         label: "Name"|t('advanced-discounts'),
         id: 'name',
         name: 'name',
-        value: coupon.name,
+        value: discount.name,
         type: 'text',
         inputAttributes: {
             data: {lpignore: 'true'},
         },
         required: true,
-        errors: coupon.getErrors('name'),
+        errors: discount.getErrors('name'),
     }) }}
 
     {{ forms.textField({
         label: "Discount code"|t('advanced-discounts'),
         id: 'code',
         name: 'code',
-        value: coupon.code,
+        value: discount.code,
         type: 'text',
         instructions: "Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply."|t('advanced-discounts'),
         inputAttributes: {
             data: {lpignore: 'true'},
         },
-        errors: coupon.getErrors('code'),
+        errors: discount.getErrors('code'),
     }) }}
 
     {% set triggerCondition %}
-        {{ coupon.triggerCondition.getBuilderHtml()|raw }}
+        {{ discount.triggerCondition.getBuilderHtml()|raw }}
     {% endset %}
 
     {{ forms.field({
         label: 'Conditions'|t('advanced-discounts'),
         instructions: 'Rules that decide when this discount applies.'|t('advanced-discounts'),
-        errors: coupon.getErrors('triggerCondition')
+        errors: discount.getErrors('triggerCondition')
     }, triggerCondition) }}
 
     {% set actionCondition %}
-        {{ coupon.actionCondition.getBuilderHtml()|raw }}
+        {{ discount.actionCondition.getBuilderHtml()|raw }}
     {% endset %}
 
     {{ forms.field({
         label: 'Action Rules'|t('advanced-discounts'),
         instructions: 'Create rules to apply discounts.'|t('advanced-discounts'),
-        errors: coupon.getErrors('actionCondition')
+        errors: discount.getErrors('actionCondition')
     }, actionCondition) }}
 {% endblock %}
 
@@ -72,7 +72,7 @@
             label: 'Enabled'|t('app'),
             id: 'enabled',
             name: 'enabled',
-            on: coupon.enabled,
+            on: discount.enabled,
         }) }}
     </div>
 {% endblock %}

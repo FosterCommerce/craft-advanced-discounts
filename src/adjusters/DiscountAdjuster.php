@@ -25,32 +25,32 @@ class DiscountAdjuster implements AdjusterInterface
 	{
 		$adjustments = [];
 
-		foreach (Plugin::getInstance()->coupons->getAllCoupons() as $coupon) {
-			if (! $coupon->enabled) {
+		foreach (Plugin::getInstance()->discounts->getAllDiscounts() as $discount) {
+			if (! $discount->enabled) {
 				continue;
 			}
 
-			if ($coupon->code !== null && strcasecmp($coupon->code, $order->couponCode ?? '') !== 0) {
+			if ($discount->code !== null && strcasecmp($discount->code, $order->couponCode ?? '') !== 0) {
 				continue;
 			}
 
-			if (! $coupon->getTriggerCondition()->matchElement($order)) {
+			if (! $discount->getTriggerCondition()->matchElement($order)) {
 				continue;
 			}
 
-			foreach ($coupon->getActionCondition()->getConditionRules() as $rule) {
+			foreach ($discount->getActionCondition()->getConditionRules() as $rule) {
 				if ($rule instanceof OrderActionRule) {
-					$adjustment = $this->buildOrderAdjustment($rule, $order, $coupon->name);
+					$adjustment = $this->buildOrderAdjustment($rule, $order, $discount->name);
 					if ($adjustment !== null) {
 						$adjustments[] = $adjustment;
 					}
 				} elseif ($rule instanceof ShippingMethodActionRule) {
-					$adjustment = $this->buildShippingAdjustment($rule, $order, $coupon->name);
+					$adjustment = $this->buildShippingAdjustment($rule, $order, $discount->name);
 					if ($adjustment !== null) {
 						$adjustments[] = $adjustment;
 					}
 				} elseif ($rule instanceof LineItemActionRule) {
-					array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $coupon->name));
+					array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $discount->name));
 				}
 			}
 		}
@@ -58,7 +58,7 @@ class DiscountAdjuster implements AdjusterInterface
 		return $adjustments;
 	}
 
-	private function buildOrderAdjustment(OrderActionRule $rule, Order $order, string $couponName): ?OrderAdjustment
+	private function buildOrderAdjustment(OrderActionRule $rule, Order $order, string $discountName): ?OrderAdjustment
 	{
 		if (! $rule->discountValue) {
 			return null;
@@ -72,14 +72,14 @@ class DiscountAdjuster implements AdjusterInterface
 
 		$adjustment = new OrderAdjustment();
 		$adjustment->type = 'discount';
-		$adjustment->name = $couponName;
+		$adjustment->name = $discountName;
 		$adjustment->amount = $amount;
 		$adjustment->orderId = $order->id;
 
 		return $adjustment;
 	}
 
-	private function buildShippingAdjustment(ShippingMethodActionRule $rule, Order $order, string $couponName): ?OrderAdjustment
+	private function buildShippingAdjustment(ShippingMethodActionRule $rule, Order $order, string $discountName): ?OrderAdjustment
 	{
 		if (! $rule->discountValue) {
 			return null;
@@ -100,7 +100,7 @@ class DiscountAdjuster implements AdjusterInterface
 
 		$adjustment = new OrderAdjustment();
 		$adjustment->type = 'discount';
-		$adjustment->name = $couponName;
+		$adjustment->name = $discountName;
 		$adjustment->amount = $amount;
 		$adjustment->orderId = $order->id;
 
@@ -110,7 +110,7 @@ class DiscountAdjuster implements AdjusterInterface
 	/**
 	 * @return OrderAdjustment[]
 	 */
-	private function buildLineItemAdjustments(LineItemActionRule $rule, Order $order, string $couponName): array
+	private function buildLineItemAdjustments(LineItemActionRule $rule, Order $order, string $discountName): array
 	{
 		if (! $rule->discountValue) {
 			return [];
@@ -133,7 +133,7 @@ class DiscountAdjuster implements AdjusterInterface
 
 			$adjustment = new OrderAdjustment();
 			$adjustment->type = 'discount';
-			$adjustment->name = $couponName;
+			$adjustment->name = $discountName;
 			$adjustment->amount = $amount;
 			$adjustment->orderId = $order->id;
 			$adjustment->lineItemId = $lineItem->id;

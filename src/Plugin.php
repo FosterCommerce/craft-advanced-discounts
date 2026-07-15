@@ -23,7 +23,7 @@ use yii\base\Event;
  *
  * @method static Plugin getInstance()
  * @method Settings getSettings()
- * @property-read Discounts $coupons
+ * @property-read Discounts $discounts
  */
 class Plugin extends BasePlugin
 {
@@ -40,7 +40,7 @@ class Plugin extends BasePlugin
 	{
 		return [
 			'components' => [
-				'coupons' => Discounts::class,
+				'discounts' => Discounts::class,
 			],
 		];
 	}
@@ -99,7 +99,7 @@ class Plugin extends BasePlugin
 			}
 		);
 
-		// Prevent Commerce from clearing our custom coupon codes during order validation.
+		// Prevent Commerce from clearing our custom discount codes during order validation.
 		// Commerce's validateCouponCode() nulls $order->couponCode if not found in its own
 		// discount system, but only when recalculationMode is ALL or ADJUSTMENTS_ONLY.
 		// We temporarily set mode to NONE before validation and restore it after, so the
@@ -115,8 +115,8 @@ class Plugin extends BasePlugin
 				if (! $order->couponCode) {
 					return;
 				}
-				$coupon = Plugin::getInstance()->coupons->getCouponByCode($order->couponCode);
-				if ($coupon === null || ! $coupon->enabled) {
+				$discount = Plugin::getInstance()->discounts->getDiscountByCode($order->couponCode);
+				if ($discount === null || ! $discount->enabled) {
 					return;
 				}
 				$id = spl_object_id($order);

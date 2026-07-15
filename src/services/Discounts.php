@@ -18,40 +18,40 @@ class Discounts extends Component
 	/**
 	 * @return Discount[]
 	 */
-	public function getAllCoupons(): array
+	public function getAllDiscounts(): array
 	{
 		if ($this->_discounts === null) {
 			$this->_discounts = [];
-			$query = $this->_createCouponQuery();
-			foreach ($query->all() as $couponRecord) {
-				$this->_discounts[] = $this->_populateCoupon($couponRecord);
+			$query = $this->_createDiscountQuery();
+			foreach ($query->all() as $discountRecord) {
+				$this->_discounts[] = $this->_populateDiscount($discountRecord);
 			}
 		}
 
 		return $this->_discounts;
 	}
 
-	public function getCouponById(int $id): ?Discount
+	public function getDiscountById(int $id): ?Discount
 	{
-		$record = $this->_createCouponQuery()->andWhere([
+		$record = $this->_createDiscountQuery()->andWhere([
 			'[[discounts.id]]' => $id,
 		])->one();
 
-		return $record !== null ? $this->_populateCoupon($record) : null;
+		return $record !== null ? $this->_populateDiscount($record) : null;
 	}
 
-	public function getCouponByCode(string $code): ?Discount
+	public function getDiscountByCode(string $code): ?Discount
 	{
-		foreach ($this->getAllCoupons() as $coupon) {
-			if ($coupon->code !== null && strcasecmp($coupon->code, $code) === 0) {
-				return $coupon;
+		foreach ($this->getAllDiscounts() as $discount) {
+			if ($discount->code !== null && strcasecmp($discount->code, $code) === 0) {
+				return $discount;
 			}
 		}
 
 		return null;
 	}
 
-	public function deleteCoupon(int $id): bool
+	public function deleteDiscount(int $id): bool
 	{
 		$record = DiscountRecord::findOne($id);
 		if ($record === null) {
@@ -64,36 +64,36 @@ class Discounts extends Component
 		return true;
 	}
 
-	public function saveCoupon(Discount $coupon, bool $runValidation = true): bool
+	public function saveDiscount(Discount $discount, bool $runValidation = true): bool
 	{
-		$isNew = $coupon->id === null;
+		$isNew = $discount->id === null;
 
 		if ($isNew) {
 			$record = new DiscountRecord();
 		} else {
-			$record = DiscountRecord::findOne($coupon->id);
+			$record = DiscountRecord::findOne($discount->id);
 			if ($record === null) {
-				throw new \RuntimeException("No coupon exists with ID {$coupon->id}");
+				throw new \RuntimeException("No discount exists with ID {$discount->id}");
 			}
 		}
 
-		if ($runValidation && ! $coupon->validate()) {
+		if ($runValidation && ! $discount->validate()) {
 			Craft::debug('Discount not saved due to validation error.', __METHOD__);
 			return false;
 		}
 
-		$record->name = $coupon->name;
-		$record->code = $coupon->code;
-		$record->enabled = $coupon->enabled;
-		$record->triggerCondition = $coupon->getTriggerCondition()->getConfig();
-		$record->actionCondition = $coupon->getActionCondition()->getConfig();
+		$record->name = $discount->name;
+		$record->code = $discount->code;
+		$record->enabled = $discount->enabled;
+		$record->triggerCondition = $discount->getTriggerCondition()->getConfig();
+		$record->actionCondition = $discount->getActionCondition()->getConfig();
 
 		// In the future we may have multiple things that would need to be saved here.
 		$db = Craft::$app->db;
 		$transaction = $db->beginTransaction();
 		try {
 			$record->save();
-			$coupon->id = $record->id;
+			$discount->id = $record->id;
 			$transaction->commit();
 			$this->_discounts = null;
 		} catch (\Exception $e) {
@@ -107,7 +107,7 @@ class Discounts extends Component
 	/**
 	 * @param array<string, mixed> $record
 	 */
-	private function _populateCoupon(array $record): Discount
+	private function _populateDiscount(array $record): Discount
 	{
 		return new Discount($record);
 	}
@@ -115,7 +115,7 @@ class Discounts extends Component
 	/**
 	 * @return Query<int, array<string, mixed>>
 	 */
-	private function _createCouponQuery(): Query
+	private function _createDiscountQuery(): Query
 	{
 		return (new Query())
 			->select([

@@ -9,9 +9,6 @@ use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\elements\conditions\ActionCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\AndTriggerCondition;
 
-/**
- * Coupon model
- */
 class Discount extends Model
 {
 	/**
@@ -20,17 +17,17 @@ class Discount extends Model
 	public ?int $id = null;
 
 	/**
-	 * @var string Name of the coupon
+	 * @var string Name of the discount
 	 */
 	public string $name = '';
 
 	/**
-	 * @var string|null The coupons unique code
+	 * @var string|null The discount's unique code, if any
 	 */
 	public ?string $code = null;
 
 	/**
-	 * @var bool Whether the coupon is enabled
+	 * @var bool Whether the discount is enabled
 	 */
 	public bool $enabled = true;
 
