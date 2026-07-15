@@ -30,6 +30,7 @@ return [
     // CP index
     'Advanced Discounts' => 'Advanced Discounts',
     'New discount' => 'New discount',
+    'No discounts yet.' => 'No discounts yet.',
     'Code' => 'Code',
     'Created' => 'Created',
     'Updated' => 'Updated',

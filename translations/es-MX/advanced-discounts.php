@@ -35,6 +35,7 @@ return [
     // Índice del panel
     'Advanced Discounts' => 'Descuentos avanzados',
     'New discount' => 'Nuevo descuento',
+    'No discounts yet.' => 'Aún no hay descuentos.',
     'Code' => 'Código',
     'Created' => 'Creado',
     'Updated' => 'Actualizado',

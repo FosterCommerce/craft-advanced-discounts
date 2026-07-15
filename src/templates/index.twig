@@ -35,6 +35,7 @@
 	new Craft.VueAdminTable({
 		columns,
 		container: '#advanced-discounts-list',
+		emptyMessage: Craft.t('advanced-discounts', 'No discounts yet.'),
 		search: true,
 		checkboxes: true,
 		tableDataEndpoint: '/admin/actions/advanced-discounts/manage/list',
