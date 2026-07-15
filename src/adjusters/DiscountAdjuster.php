@@ -77,6 +77,10 @@ class DiscountAdjuster implements AdjusterInterface
 			return null;
 		}
 
+		if (! $rule->matchElement($order)) {
+			return null;
+		}
+
 		$shippingCost = $order->getTotalShippingCost();
 		if ($shippingCost <= 0) {
 			return null;

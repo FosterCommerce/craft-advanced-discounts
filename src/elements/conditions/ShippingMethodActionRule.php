@@ -60,14 +60,21 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 
 	public function modifyQuery(\craft\elements\db\ElementQueryInterface $query): void
 	{
-		// todo
-		/** @var orderquery $query */
+		/** @var OrderQuery $query */
+		if ($this->operator === self::OPERATOR_EQ) {
+			$handle = $this->getValues()[0] ?? self::ANY_VALUE;
+			if ($handle !== self::ANY_VALUE) {
+				$query->shippingMethodHandle($handle);
+			}
+
+			return;
+		}
+
 		$query->shippingMethodHandle($this->paramValue());
 	}
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		// todo
 		/** @var Order $element */
 		return $this->matchValue($element->shippingMethodHandle);
 	}
@@ -154,22 +161,20 @@ class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements E
 
 	protected function matchValue(array|string|null $value): bool
 	{
-		// todo override this correctly
 		$values = $this->getValues();
 
-		if (! $values) {
+		if ($this->operator === self::OPERATOR_EQ) {
+			$handle = $values[0] ?? self::ANY_VALUE;
+			return $handle === self::ANY_VALUE || $handle === $value;
+		}
+
+		if ($values === []) {
 			return true;
 		}
 
-		if ($value === '' || $value === null) {
-			$value = [];
-		} else {
-			$value = (array) $value;
-		}
-
 		return match ($this->operator) {
-			self::OPERATOR_IN => ! empty(array_intersect($value, $values)),
-			self::OPERATOR_NOT_IN => empty(array_intersect($value, $values)),
+			self::OPERATOR_IN => in_array($value, $values, true),
+			self::OPERATOR_NOT_IN => ! in_array($value, $values, true),
 			default => throw new InvalidConfigException("Invalid operator: {$this->operator}"),
 		};
 	}
