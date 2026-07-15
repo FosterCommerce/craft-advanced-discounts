@@ -7,6 +7,7 @@ use craft\commerce\elements\Order;
 use craft\commerce\models\OrderAdjustment;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\ShippingMethodActionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 use fostercommerce\advanceddiscounts\Plugin;
 
@@ -35,6 +36,11 @@ class DiscountAdjuster implements AdjusterInterface
 					if ($adjustment !== null) {
 						$adjustments[] = $adjustment;
 					}
+				} elseif ($rule instanceof ShippingMethodActionRule) {
+					$adjustment = $this->buildShippingAdjustment($rule, $order, $coupon->name);
+					if ($adjustment !== null) {
+						$adjustments[] = $adjustment;
+					}
 				} elseif ($rule instanceof LineItemActionRule) {
 					array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $coupon->name));
 				}
@@ -55,6 +61,30 @@ class DiscountAdjuster implements AdjusterInterface
 		$amount = $rule->discountType === DiscountType::Percentage
 			? -($subtotal * ($rule->discountValue / 100))
 			: -min((float) $rule->discountValue, $subtotal);
+
+		$adjustment = new OrderAdjustment();
+		$adjustment->type = 'discount';
+		$adjustment->name = $couponName;
+		$adjustment->amount = $amount;
+		$adjustment->orderId = $order->id;
+
+		return $adjustment;
+	}
+
+	private function buildShippingAdjustment(ShippingMethodActionRule $rule, Order $order, string $couponName): ?OrderAdjustment
+	{
+		if (! $rule->discountValue) {
+			return null;
+		}
+
+		$shippingCost = $order->getTotalShippingCost();
+		if ($shippingCost <= 0) {
+			return null;
+		}
+
+		$amount = $rule->discountType === DiscountType::Percentage
+			? -($shippingCost * ($rule->discountValue / 100))
+			: -min((float) $rule->discountValue, $shippingCost);
 
 		$adjustment = new OrderAdjustment();
 		$adjustment->type = 'discount';
