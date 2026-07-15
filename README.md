@@ -23,8 +23,8 @@ Open your terminal and run the following commands:
 cd /path/to/my-project.test
 
 # tell Composer to load the plugin
-composer require fostercommerce/craft-coupons
+composer require fostercommerce/advanced-discounts
 
 # tell Craft to install the plugin
-./craft plugin/install coupons
+./craft plugin/install advanced-discounts
 ```
