@@ -94,9 +94,6 @@ class AdvancedDiscountsVariable
 			$placeholders['{quantityRemaining}'] = $quantityRemaining;
 		}
 
-		$placeholders['{quantityRemaining}'] = 'bananas';
-		$placeholders['{amountRemaining}'] = 'oranges';
-
 		return strtr($message, $placeholders);
 	}
 
