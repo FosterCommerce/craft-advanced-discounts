@@ -26,6 +26,8 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 	 */
 	public string $purchasableType = Variant::class;
 
+	public string $operator = self::OPERATOR_GTE;
+
 	public ?int $quantity = null;
 
 	public function getLabel(): string
@@ -55,23 +57,30 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 			return false;
 		}
 
+		$hasPurchasable = false;
 		$totalQty = 0;
 
 		foreach ($element->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
 			if ($purchasable !== null && (int) $purchasable->id === $purchasableId) {
-				if ($this->quantity === null) {
-					return true;
-				}
+				$hasPurchasable = true;
 				$totalQty += $lineItem->qty;
 			}
 		}
 
 		if ($this->quantity === null) {
-			return false;
+			return $hasPurchasable;
 		}
 
-		return $totalQty >= $this->quantity;
+		return match ($this->operator) {
+			self::OPERATOR_EQ => $totalQty === $this->quantity,
+			self::OPERATOR_NE => $totalQty !== $this->quantity,
+			self::OPERATOR_LT => $totalQty < $this->quantity,
+			self::OPERATOR_LTE => $totalQty <= $this->quantity,
+			self::OPERATOR_GT => $totalQty > $this->quantity,
+			self::OPERATOR_GTE => $totalQty >= $this->quantity,
+			default => false,
+		};
 	}
 
 	/**
@@ -83,6 +92,21 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 			...parent::getConfig(),
 			'purchasableType' => $this->purchasableType,
 			'quantity' => $this->quantity,
+		];
+	}
+
+	/**
+	 * @return array<int, string>
+	 */
+	protected function operators(): array
+	{
+		return [
+			self::OPERATOR_EQ,
+			self::OPERATOR_NE,
+			self::OPERATOR_LT,
+			self::OPERATOR_LTE,
+			self::OPERATOR_GT,
+			self::OPERATOR_GTE,
 		];
 	}
 
