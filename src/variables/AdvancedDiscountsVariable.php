@@ -7,11 +7,14 @@ use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
 use craft\commerce\elements\conditions\orders\ItemTotalConditionRule;
 use craft\commerce\elements\conditions\orders\TotalConditionRule;
 use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
+use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\commerce\elements\Order;
+use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\TriggerConditionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
@@ -85,14 +88,15 @@ class AdvancedDiscountsVariable
 			$placeholders['{amountRemaining}'] = Craft::$app->getFormatter()->asCurrency($amountRemaining, $order->paymentCurrency);
 		}
 
+		// {quantityRemaining} - how many more of an item the customer needs
+		$quantityRemaining = $this->computeQuantityRemaining($discount, $order);
+		if ($quantityRemaining !== null) {
+			$placeholders['{quantityRemaining}'] = $quantityRemaining;
+		}
+
 		return strtr($message, $placeholders);
 	}
 
-	/**
-	 * Walks the trigger conditions looking for the first threshold-based order
-	 * rule (>=, >) and returns how far the order is from meeting it.
-	 * Returns null if no such rule exists.
-	 */
 	private function computeAmountRemaining(Discount $discount, Order $order): ?float
 	{
 		// Maps Commerce condition rule class → the Order property it compares against
@@ -118,6 +122,47 @@ class AdvancedDiscountsVariable
 						&& in_array($orderRule->operator, ['>=', '>'], true)
 					) {
 						return max(0.0, (float) $orderRule->value - (float) $order->{$field});
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private function computeQuantityRemaining(Discount $discount, Order $order): ?int
+	{
+		foreach ($discount->getTriggerCondition()->getConditionRules() as $triggerRule) {
+			if ($triggerRule instanceof OrderConditionRule) {
+				foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
+					if (
+						$orderRule instanceof TotalQtyConditionRule
+						&& $orderRule->value !== null
+						&& in_array($orderRule->operator, ['>=', '>'], true)
+					) {
+						return max(0, (int) $orderRule->value - $order->totalQty);
+					}
+				}
+			}
+
+			if ($triggerRule instanceof TriggerConditionRule) {
+				foreach ($triggerRule->getTriggerCondition()->getConditionRules() as $rule) {
+					if (
+						$rule instanceof HasPurchasableConditionRule
+						&& $rule->quantity !== null
+						&& in_array($rule->operator, ['>=', '>'], true)
+					) {
+						$purchasableId = (int) $rule->getElementId();
+						$totalQty = 0;
+
+						foreach ($order->getLineItems() as $lineItem) {
+							$purchasable = $lineItem->getPurchasable();
+							if ($purchasable !== null && (int) $purchasable->id === $purchasableId) {
+								$totalQty += $lineItem->qty;
+							}
+						}
+
+						return max(0, $rule->quantity - $totalQty);
 					}
 				}
 			}
