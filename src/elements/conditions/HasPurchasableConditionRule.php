@@ -95,6 +95,11 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		];
 	}
 
+	public function getHtml(): string
+	{
+		return $this->inputHtml();
+	}
+
 	/**
 	 * @return array<int, string>
 	 */
@@ -154,6 +159,16 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 
 		$quantityRow = Html::tag(
 			'div',
+			Html::hiddenLabel(Craft::t('app', 'Operator'), 'operator') .
+			Cp::selectHtml([
+				'id' => 'operator',
+				'name' => 'operator',
+				'value' => $this->operator,
+				'options' => array_map(fn (string $operator): array => [
+					'value' => $operator,
+					'label' => $this->operatorLabel($operator),
+				], $this->operators()),
+			]) .
 			Html::hiddenLabel(Craft::t('advanced-discounts', 'Quantity'), 'quantity') .
 			Cp::textHtml([
 				'type' => 'number',
