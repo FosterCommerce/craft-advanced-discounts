@@ -26,7 +26,7 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 
 	public function getMessageCondition(): ElementConditionInterface
 	{
-		$condition = $this->_messageCondition ?? new AndTriggerCondition();
+		$condition = $this->_messageCondition ?? new AndCondition();
 		$condition->mainTag = 'div';
 		$condition->name = 'messageCondition';
 
@@ -46,7 +46,7 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 			if (empty($condition)) {
 				return;
 			}
-			$condition['class'] = AndTriggerCondition::class;
+			$condition['class'] = AndCondition::class;
 			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
 			/** @var ElementConditionInterface $condition */

@@ -9,26 +9,26 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 
-class TriggerConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
+class LineItemConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
 {
-	public ?ElementConditionInterface $_triggerCondition = null;
+	public ?ElementConditionInterface $_lineItemCondition = null;
 
 	public function __construct($config = [])
 	{
-		$config['triggerCondition'] = isset($config['triggerCondition']) ? $config['triggerCondition'] : ($config['attributes']['triggerCondition'] ?? []);
+		$config['lineItemCondition'] = isset($config['lineItemCondition']) ? $config['lineItemCondition'] : ($config['attributes']['lineItemCondition'] ?? []);
 		parent::__construct($config);
 	}
 
 	public function getNestedCondition(): ElementConditionInterface
 	{
-		return $this->getTriggerCondition();
+		return $this->getLineItemCondition();
 	}
 
-	public function getTriggerCondition(): ElementConditionInterface
+	public function getLineItemCondition(): ElementConditionInterface
 	{
-		$condition = $this->_triggerCondition ?? new TriggerCondition();
+		$condition = $this->_lineItemCondition ?? new LineItemCondition();
 		$condition->mainTag = 'div';
-		$condition->name = 'triggerCondition';
+		$condition->name = 'lineItemCondition';
 
 		return $condition;
 	}
@@ -36,25 +36,25 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 	/**
 	 * @param ElementConditionInterface|array<string, mixed> $condition
 	 */
-	public function setTriggerCondition(ElementConditionInterface|array $condition): void
+	public function setLineItemCondition(ElementConditionInterface|array $condition): void
 	{
 		if (is_array($condition)) {
 			if (empty($condition)) {
 				return;
 			}
-			$condition['class'] = TriggerCondition::class;
+			$condition['class'] = LineItemCondition::class;
 			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
 			/** @var ElementConditionInterface $condition */
 		}
 		$condition->forProjectConfig = false;
 
-		$this->_triggerCondition = $condition;
+		$this->_lineItemCondition = $condition;
 	}
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Trigger');
+		return Craft::t('advanced-discounts', 'Line Items');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -77,18 +77,18 @@ class TriggerConditionRule extends BaseConditionRule implements NestedConditionR
 	public function getConfig(): array
 	{
 		return array_merge(parent::getConfig(), [
-			'triggerCondition' => $this->_triggerCondition?->getConfig() ?? [],
+			'lineItemCondition' => $this->_lineItemCondition?->getConfig() ?? [],
 		]);
 	}
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		return $this->getTriggerCondition()->matchElement($element);
+		return $this->getLineItemCondition()->matchElement($element);
 	}
 
 	protected function inputHtml(): string
 	{
-		return Html::tag('div', $this->getTriggerCondition()->getBuilderHtml());
+		return Html::tag('div', $this->getLineItemCondition()->getBuilderHtml());
 	}
 
 	/**

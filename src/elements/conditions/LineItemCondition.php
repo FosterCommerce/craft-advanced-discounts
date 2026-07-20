@@ -5,7 +5,7 @@ namespace fostercommerce\advanceddiscounts\elements\conditions;
 use Craft;
 use craft\elements\conditions\ElementCondition;
 
-class TriggerCondition extends ElementCondition
+class LineItemCondition extends ElementCondition
 {
 	public function init(): void
 	{

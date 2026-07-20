@@ -45,15 +45,15 @@
         errors: discount.getErrors('code'),
     }) }}
 
-    {% set triggerCondition %}
-        {{ discount.triggerCondition.getBuilderHtml()|raw }}
+    {% set cartCondition %}
+        {{ discount.cartCondition.getBuilderHtml()|raw }}
     {% endset %}
 
     {{ forms.field({
-        label: 'Conditions'|t('advanced-discounts'),
+        label: 'Cart Conditions'|t('advanced-discounts'),
         instructions: 'Rules that decide when this discount applies.'|t('advanced-discounts'),
-        errors: discount.getErrors('triggerCondition')
-    }, triggerCondition) }}
+        errors: discount.getErrors('cartCondition')
+    }, cartCondition) }}
 
     {% set cartActionCondition %}
         {{ discount.cartActionCondition.getBuilderHtml()|raw }}

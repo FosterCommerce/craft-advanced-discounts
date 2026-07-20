@@ -9,7 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
-class AndTriggerCondition extends ElementCondition
+class AndCondition extends ElementCondition
 {
 	public function init(): void
 	{
@@ -49,7 +49,7 @@ class AndTriggerCondition extends ElementCondition
 	protected function selectableConditionRules(): array
 	{
 		return [
-			TriggerConditionRule::class,
+			LineItemConditionRule::class,
 			OrderConditionRule::class,
 			UserConditionRule::class,
 			DateRangeConditionRule::class,

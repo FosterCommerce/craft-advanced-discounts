@@ -34,7 +34,7 @@ class DiscountAdjuster implements AdjusterInterface
 				continue;
 			}
 
-			if (! $discount->getTriggerCondition()->matchElement($order)) {
+			if (! $discount->getCartCondition()->matchElement($order)) {
 				continue;
 			}
 
