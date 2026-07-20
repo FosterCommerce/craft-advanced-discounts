@@ -9,11 +9,11 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
-class AndCondition extends ElementCondition
+class CartCondition extends ElementCondition
 {
 	public function init(): void
 	{
-		$this->addRuleLabel = Craft::t('advanced-discounts', 'AND');
+		$this->addRuleLabel = Craft::t('advanced-discounts', 'Add a cart condition');
 		parent::init();
 	}
 

@@ -6,8 +6,8 @@ use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
-use fostercommerce\advanceddiscounts\elements\conditions\AndCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\CartActionCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
 
 class Discount extends Model
@@ -56,7 +56,7 @@ class Discount extends Model
 
 	public function getCartCondition(): ElementConditionInterface
 	{
-		$condition = $this->_cartCondition ?? new AndCondition();
+		$condition = $this->_cartCondition ?? new CartCondition();
 		$condition->mainTag = 'div';
 		$condition->name = 'cartCondition';
 
@@ -77,7 +77,7 @@ class Discount extends Model
 		}
 
 		if (! $condition instanceof ElementConditionInterface) {
-			$condition['class'] = AndCondition::class;
+			$condition['class'] = CartCondition::class;
 			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
 			/** @var ElementConditionInterface $condition */

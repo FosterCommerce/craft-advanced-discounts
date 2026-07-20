@@ -5,19 +5,16 @@ namespace fostercommerce\advanceddiscounts\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
+use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
 use fostercommerce\advanceddiscounts\records\Discount;
 
-class m260720_150000_rename_trigger_condition_to_cart_condition extends Migration
+class m260720_170000_rename_and_condition_to_cart_condition extends Migration
 {
-	private const OLD_AND_CONDITION_CLASS = 'fostercommerce\\advanceddiscounts\\elements\\conditions\\AndTriggerCondition';
-
-	private const NEW_AND_CONDITION_CLASS = 'fostercommerce\\advanceddiscounts\\elements\\conditions\\AndCondition';
+	private const OLD_CONDITION_CLASS = 'fostercommerce\\advanceddiscounts\\elements\\conditions\\AndCondition';
 
 	public function safeUp(): bool
 	{
-		$this->renameColumn(Discount::TABLE_NAME, 'triggerCondition', 'cartCondition');
-
-		$this->_remapStoredClasses(self::OLD_AND_CONDITION_CLASS, self::NEW_AND_CONDITION_CLASS);
+		$this->_remapStoredClasses(self::OLD_CONDITION_CLASS, CartCondition::class);
 
 		return true;
 	}
@@ -25,18 +22,15 @@ class m260720_150000_rename_trigger_condition_to_cart_condition extends Migratio
 	public function safeDown(): bool
 	{
 		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->_remapStoredClasses(self::NEW_AND_CONDITION_CLASS, self::OLD_AND_CONDITION_CLASS);
-
-			$this->renameColumn(Discount::TABLE_NAME, 'cartCondition', 'triggerCondition');
+			$this->_remapStoredClasses(CartCondition::class, self::OLD_CONDITION_CLASS);
 		}
 
 		return true;
 	}
 
 	/**
-	 * AndCondition (formerly AndTriggerCondition, later renamed to CartCondition) is
-	 * used both as the discount's top-level cartCondition and, nested, as each
-	 * message rule's messageCondition.
+	 * CartCondition (formerly AndCondition) is used both as the discount's
+	 * top-level cartCondition and, nested, as each message rule's messageCondition.
 	 */
 	private function _remapStoredClasses(string $oldClass, string $newClass): void
 	{
