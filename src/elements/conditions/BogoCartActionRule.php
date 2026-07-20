@@ -66,15 +66,6 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 		return true;
 	}
 
-	public function bundleSize(): int
-	{
-		$buyVariantIds = Purchasables::expandToVariantIds($this->buyPurchasableType, $this->buyPurchasableIds);
-		$discountedVariantIds = Purchasables::expandToVariantIds($this->discountedPurchasableType, $this->discountedPurchasableIds);
-		$overlaps = array_intersect($buyVariantIds, $discountedVariantIds) !== [];
-
-		return ($this->buyQuantity ?? 0) + ($overlaps ? ($this->discountedQuantity ?? 0) : 0);
-	}
-
 	public function earnedQuantity(Order $order): int
 	{
 		if (! $this->buyQuantity || ! $this->discountedQuantity) {
@@ -128,6 +119,20 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 
 		$buyRow = Html::tag(
 			'div',
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer buys quantity'), 'buyQuantity') .
+			Cp::textHtml([
+				'type' => 'number',
+				'id' => 'buyQuantity',
+				'name' => 'buyQuantity',
+				'value' => $this->buyQuantity,
+				'autocomplete' => false,
+				'placeholder' => Craft::t('advanced-discounts', 'Quantity'),
+				'inputAttributes' => [
+					'style' => [
+						'width' => '5rem',
+					],
+				],
+			]) .
 			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer buys'), 'buyPurchasableType') .
 			Cp::selectHtml([
 				'id' => 'buyPurchasableType',
@@ -146,15 +151,6 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 				'name' => 'buyPurchasableIds',
 				'elements' => $this->_selectedElements($this->buyPurchasableType, $this->buyPurchasableIds),
 				'limit' => null,
-			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer buys quantity'), 'buyQuantity') .
-			Cp::textHtml([
-				'type' => 'number',
-				'id' => 'buyQuantity',
-				'name' => 'buyQuantity',
-				'value' => $this->buyQuantity,
-				'autocomplete' => false,
-				'placeholder' => Craft::t('advanced-discounts', 'Quantity'),
 			]),
 			[
 				'class' => ['flex', 'flex-start', 'gap-s'],
@@ -163,6 +159,20 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 
 		$discountedRow = Html::tag(
 			'div',
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer gets quantity'), 'discountedQuantity') .
+			Cp::textHtml([
+				'type' => 'number',
+				'id' => 'discountedQuantity',
+				'name' => 'discountedQuantity',
+				'value' => $this->discountedQuantity,
+				'autocomplete' => false,
+				'placeholder' => Craft::t('advanced-discounts', 'Quantity'),
+				'inputAttributes' => [
+					'style' => [
+						'width' => '5rem',
+					],
+				],
+			]) .
 			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer gets'), 'discountedPurchasableType') .
 			Cp::selectHtml([
 				'id' => 'discountedPurchasableType',
@@ -181,15 +191,6 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 				'name' => 'discountedPurchasableIds',
 				'elements' => $this->_selectedElements($this->discountedPurchasableType, $this->discountedPurchasableIds),
 				'limit' => null,
-			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer gets quantity'), 'discountedQuantity') .
-			Cp::textHtml([
-				'type' => 'number',
-				'id' => 'discountedQuantity',
-				'name' => 'discountedQuantity',
-				'value' => $this->discountedQuantity,
-				'autocomplete' => false,
-				'placeholder' => Craft::t('advanced-discounts', 'Quantity'),
 			]),
 			[
 				'class' => ['flex', 'flex-start', 'gap-s'],
@@ -273,6 +274,15 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 		return array_merge(parent::defineRules(), [
 			[['buyPurchasableType', 'buyPurchasableIds', 'buyQuantity', 'discountedPurchasableType', 'discountedPurchasableIds', 'discountedQuantity', 'repeat', 'discountType', 'discountValue'], 'safe'],
 		]);
+	}
+
+	private function bundleSize(): int
+	{
+		$buyVariantIds = Purchasables::expandToVariantIds($this->buyPurchasableType, $this->buyPurchasableIds);
+		$discountedVariantIds = Purchasables::expandToVariantIds($this->discountedPurchasableType, $this->discountedPurchasableIds);
+		$overlaps = array_intersect($buyVariantIds, $discountedVariantIds) !== [];
+
+		return ($this->buyQuantity ?? 0) + ($overlaps ? ($this->discountedQuantity ?? 0) : 0);
 	}
 
 	private function buyCartQuantity(Order $order): int

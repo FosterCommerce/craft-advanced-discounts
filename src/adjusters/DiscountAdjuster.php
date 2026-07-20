@@ -180,6 +180,7 @@ class DiscountAdjuster implements AdjusterInterface
 			$discountableUnits = array_merge($discountableUnits, array_fill(0, $lineItem->qty, $lineItem));
 		}
 
+		// Discount the cheapest qualifying units, not the most expensive
 		usort(
 			$discountableUnits,
 			static fn (LineItem $firstLineItem, LineItem $secondLineItem): int => $firstLineItem->salePrice <=> $secondLineItem->salePrice
