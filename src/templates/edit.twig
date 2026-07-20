@@ -60,8 +60,8 @@
     {% endset %}
 
     {{ forms.field({
-        label: 'Action Rules'|t('advanced-discounts'),
-        instructions: 'Create rules to apply discounts.'|t('advanced-discounts'),
+        label: 'Actions'|t('advanced-discounts'),
+        instructions: 'Create actions to apply when the customer matches the rules above.'|t('advanced-discounts'),
         errors: discount.getErrors('actionCondition')
     }, actionCondition) }}
 
@@ -71,7 +71,7 @@
 
     {{ forms.field({
         label: 'Messages'|t('advanced-discounts'),
-        instructions: 'Show messages to customers, such as upsells telling them how much more they need to spend to qualify.'|t('advanced-discounts'),
+        instructions: 'Create messages to show to customers, when they match certain conditions.'|t('advanced-discounts'),
         errors: discount.getErrors('messageCondition')
     }, messageCondition) }}
 {% endblock %}
