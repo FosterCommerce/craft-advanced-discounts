@@ -31,10 +31,10 @@ return [
     'Percentage' => 'Porcentaje',
     'Discount a flat amount' => 'Descontar un monto fijo',
     'Discount a percentage' => 'Descontar un porcentaje',
-    'Buy' => 'Compra',
-    'Get' => 'Lleva',
-    'Buy quantity' => 'Cantidad a comprar',
-    'Get quantity' => 'Cantidad gratis',
+    'Customer buys' => 'El cliente compra',
+    'Customer gets' => 'El cliente recibe',
+    'Customer buys quantity' => 'Cantidad que compra',
+    'Customer gets quantity' => 'Cantidad que recibe',
     'Apply repeatedly' => 'Aplicar repetidamente',
 
     // Campos de regla de mensaje

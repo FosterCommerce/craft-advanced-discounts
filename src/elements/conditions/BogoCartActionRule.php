@@ -6,13 +6,13 @@ use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
 use craft\commerce\elements\Variant;
-use craft\commerce\Plugin as CommercePlugin;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
+use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
 class BogoCartActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
@@ -31,14 +31,14 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 	/**
 	 * @var class-string<ElementInterface>
 	 */
-	public string $freePurchasableType = Variant::class;
+	public string $discountedPurchasableType = Variant::class;
 
 	/**
 	 * @var int[]
 	 */
-	public array $freePurchasableIds = [];
+	public array $discountedPurchasableIds = [];
 
-	public ?int $freeQuantity = null;
+	public ?int $discountedQuantity = null;
 
 	public bool $repeat = true;
 
@@ -74,9 +74,9 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 			'buyPurchasableType' => $this->buyPurchasableType,
 			'buyPurchasableIds' => $this->buyPurchasableIds,
 			'buyQuantity' => $this->buyQuantity,
-			'freePurchasableType' => $this->freePurchasableType,
-			'freePurchasableIds' => $this->freePurchasableIds,
-			'freeQuantity' => $this->freeQuantity,
+			'discountedPurchasableType' => $this->discountedPurchasableType,
+			'discountedPurchasableIds' => $this->discountedPurchasableIds,
+			'discountedQuantity' => $this->discountedQuantity,
 			'repeat' => $this->repeat,
 			'discountType' => $this->discountType,
 			'discountValue' => $this->discountValue,
@@ -92,11 +92,11 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 
 		$buyRow = Html::tag(
 			'div',
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Buy'), 'buyPurchasableType') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer buys'), 'buyPurchasableType') .
 			Cp::selectHtml([
 				'id' => 'buyPurchasableType',
 				'name' => 'buyPurchasableType',
-				'options' => $this->_purchasableTypeOptions(),
+				'options' => Purchasables::typeOptions(),
 				'value' => $this->buyPurchasableType,
 				'inputAttributes' => [
 					'hx' => [
@@ -111,7 +111,7 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 				'elements' => $this->_selectedElements($this->buyPurchasableType, $this->buyPurchasableIds),
 				'limit' => null,
 			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Buy quantity'), 'buyQuantity') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer buys quantity'), 'buyQuantity') .
 			Cp::textHtml([
 				'type' => 'number',
 				'id' => 'buyQuantity',
@@ -125,14 +125,14 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 			]
 		);
 
-		$freeRow = Html::tag(
+		$discountedRow = Html::tag(
 			'div',
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Get'), 'freePurchasableType') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer gets'), 'discountedPurchasableType') .
 			Cp::selectHtml([
-				'id' => 'freePurchasableType',
-				'name' => 'freePurchasableType',
-				'options' => $this->_purchasableTypeOptions(),
-				'value' => $this->freePurchasableType,
+				'id' => 'discountedPurchasableType',
+				'name' => 'discountedPurchasableType',
+				'options' => Purchasables::typeOptions(),
+				'value' => $this->discountedPurchasableType,
 				'inputAttributes' => [
 					'hx' => [
 						'post' => UrlHelper::actionUrl('conditions/render'),
@@ -140,18 +140,18 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 				],
 			]) .
 			Cp::elementSelectHtml([
-				'elementType' => $this->freePurchasableType,
-				'id' => 'freePurchasableIds',
-				'name' => 'freePurchasableIds',
-				'elements' => $this->_selectedElements($this->freePurchasableType, $this->freePurchasableIds),
+				'elementType' => $this->discountedPurchasableType,
+				'id' => 'discountedPurchasableIds',
+				'name' => 'discountedPurchasableIds',
+				'elements' => $this->_selectedElements($this->discountedPurchasableType, $this->discountedPurchasableIds),
 				'limit' => null,
 			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Get quantity'), 'freeQuantity') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'Customer gets quantity'), 'discountedQuantity') .
 			Cp::textHtml([
 				'type' => 'number',
-				'id' => 'freeQuantity',
-				'name' => 'freeQuantity',
-				'value' => $this->freeQuantity,
+				'id' => 'discountedQuantity',
+				'name' => 'discountedQuantity',
+				'value' => $this->discountedQuantity,
 				'autocomplete' => false,
 				'placeholder' => Craft::t('advanced-discounts', 'Quantity'),
 			]),
@@ -186,7 +186,14 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 				'autocomplete' => false,
 				'placeholder' => $discountTypeLabel,
 				'class' => 'flex-grow flex-shrink',
-			]) .
+			]),
+			[
+				'class' => ['flex', 'flex-start', 'gap-s'],
+			]
+		);
+
+		$repeatRow = Html::tag(
+			'div',
 			Cp::lightswitchHtml([
 				'id' => 'repeat',
 				'name' => 'repeat',
@@ -198,9 +205,21 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 			]
 		);
 
+		$buyHeading = Html::tag('div', Craft::t('advanced-discounts', 'Customer buys'), [
+			'style' => [
+				'font-weight' => 'bold',
+			],
+		]);
+
+		$discountedHeading = Html::tag('div', Craft::t('advanced-discounts', 'Customer gets'), [
+			'style' => [
+				'font-weight' => 'bold',
+			],
+		]);
+
 		return Html::tag(
 			'div',
-			$buyRow . $freeRow . $discountRow,
+			$buyHeading . $buyRow . $discountedHeading . $discountedRow . $discountRow . $repeatRow,
 			[
 				'class' => ['flex', 'flex-start', 'flex-grow'],
 				'style' => [
@@ -216,7 +235,7 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['buyPurchasableType', 'buyPurchasableIds', 'buyQuantity', 'freePurchasableType', 'freePurchasableIds', 'freeQuantity', 'repeat', 'discountType', 'discountValue'], 'safe'],
+			[['buyPurchasableType', 'buyPurchasableIds', 'buyQuantity', 'discountedPurchasableType', 'discountedPurchasableIds', 'discountedQuantity', 'repeat', 'discountType', 'discountValue'], 'safe'],
 		]);
 	}
 
@@ -235,23 +254,5 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 			->id($purchasableIds)
 			->status(null)
 			->all();
-	}
-
-	/**
-	 * @return array<int, array{value: string, label: string}>
-	 */
-	private function _purchasableTypeOptions(): array
-	{
-		$options = [];
-
-		foreach ((CommercePlugin::getInstance()?->getPurchasables()->getAllPurchasableElementTypes() ?? []) as $type) {
-			/** @var string|ElementInterface $type */
-			$options[] = [
-				'value' => $type,
-				'label' => $type::displayName(),
-			];
-		}
-
-		return $options;
 	}
 }

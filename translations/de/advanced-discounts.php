@@ -31,10 +31,10 @@ return [
     'Percentage' => 'Prozentsatz',
     'Discount a flat amount' => 'Einen Festbetrag abziehen',
     'Discount a percentage' => 'Einen Prozentsatz abziehen',
-    'Buy' => 'Kaufe',
-    'Get' => 'Erhalte',
-    'Buy quantity' => 'Kaufmenge',
-    'Get quantity' => 'Gratismenge',
+    'Customer buys' => 'Kunde kauft',
+    'Customer gets' => 'Kunde erhält',
+    'Customer buys quantity' => 'Kaufmenge',
+    'Customer gets quantity' => 'Erhaltene Menge',
     'Apply repeatedly' => 'Wiederholt anwenden',
 
     // Felder der Nachrichtenregel

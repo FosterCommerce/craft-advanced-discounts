@@ -11,6 +11,7 @@ use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\ShippingMethodCartActionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
+use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\Plugin;
 
 /**
@@ -159,22 +160,22 @@ class DiscountAdjuster implements AdjusterInterface
 	 */
 	private function buildBogoAdjustments(BogoCartActionRule $rule, Order $order, string $discountName): array
 	{
-		if (! $rule->discountValue || ! $rule->buyQuantity || ! $rule->freeQuantity) {
+		if (! $rule->discountValue || ! $rule->buyQuantity || ! $rule->discountedQuantity) {
 			return [];
 		}
 
-		$buyPurchasableIds = array_map('intval', $rule->buyPurchasableIds);
-		$freePurchasableIds = array_map('intval', $rule->freePurchasableIds);
+		$buyVariantIds = Purchasables::expandToVariantIds($rule->buyPurchasableType, $rule->buyPurchasableIds);
+		$discountedVariantIds = Purchasables::expandToVariantIds($rule->discountedPurchasableType, $rule->discountedPurchasableIds);
 
-		$overlaps = array_intersect($buyPurchasableIds, $freePurchasableIds) !== [];
-		$bundleSize = $rule->buyQuantity + ($overlaps ? $rule->freeQuantity : 0);
-		$buyQty = $this->totalQtyForPurchasables($order, $buyPurchasableIds);
+		$overlaps = array_intersect($buyVariantIds, $discountedVariantIds) !== [];
+		$bundleSize = $rule->buyQuantity + ($overlaps ? $rule->discountedQuantity : 0);
+		$buyQty = $this->totalQtyForPurchasables($order, $rule->buyPurchasableType, $rule->buyPurchasableIds);
 
-		$freeQty = $rule->repeat
-			? intdiv($buyQty, $bundleSize) * $rule->freeQuantity
-			: ($buyQty >= $bundleSize ? $rule->freeQuantity : 0);
+		$discountedQty = $rule->repeat
+			? intdiv($buyQty, $bundleSize) * $rule->discountedQuantity
+			: ($buyQty >= $bundleSize ? $rule->discountedQuantity : 0);
 
-		if ($freeQty === 0) {
+		if ($discountedQty === 0) {
 			return [];
 		}
 
@@ -182,7 +183,7 @@ class DiscountAdjuster implements AdjusterInterface
 
 		foreach ($order->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable === null || ! in_array((int) $purchasable->id, $freePurchasableIds, true)) {
+			if ($purchasable === null || ! Purchasables::matches($purchasable, $rule->discountedPurchasableType, $rule->discountedPurchasableIds)) {
 				continue;
 			}
 
@@ -197,7 +198,7 @@ class DiscountAdjuster implements AdjusterInterface
 		$amountsByLineItem = [];
 		$lineItemsByKey = [];
 
-		foreach (array_slice($discountableUnits, 0, $freeQty) as $lineItem) {
+		foreach (array_slice($discountableUnits, 0, $discountedQty) as $lineItem) {
 			$unitAmount = $rule->discountType === DiscountType::Percentage
 				? $lineItem->salePrice * ($rule->discountValue / 100)
 				: min((float) $rule->discountValue, $lineItem->salePrice);
@@ -229,13 +230,13 @@ class DiscountAdjuster implements AdjusterInterface
 	/**
 	 * @param int[] $purchasableIds
 	 */
-	private function totalQtyForPurchasables(Order $order, array $purchasableIds): int
+	private function totalQtyForPurchasables(Order $order, string $purchasableType, array $purchasableIds): int
 	{
 		$totalQty = 0;
 
 		foreach ($order->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable !== null && in_array((int) $purchasable->id, $purchasableIds, true)) {
+			if ($purchasable !== null && Purchasables::matches($purchasable, $purchasableType, $purchasableIds)) {
 				$totalQty += $lineItem->qty;
 			}
 		}

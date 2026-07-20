@@ -31,10 +31,10 @@ return [
     'Percentage' => 'Percentage',
     'Discount a flat amount' => 'Discount a flat amount',
     'Discount a percentage' => 'Discount a percentage',
-    'Buy' => 'Buy',
-    'Get' => 'Get',
-    'Buy quantity' => 'Buy quantity',
-    'Get quantity' => 'Get quantity',
+    'Customer buys' => 'Customer buys',
+    'Customer gets' => 'Customer gets',
+    'Customer buys quantity' => 'Customer buys quantity',
+    'Customer gets quantity' => 'Customer gets quantity',
     'Apply repeatedly' => 'Apply repeatedly',
 
     // Message rule fields

@@ -6,13 +6,13 @@ use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
 use craft\commerce\elements\Variant;
-use craft\commerce\Plugin as CommercePlugin;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
+use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
 class LineItemCartActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
@@ -63,7 +63,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 			return false;
 		}
 
-		return in_array((int) $element->id, array_map('intval', $this->purchasableIds), true);
+		return Purchasables::matches($element, $this->purchasableType, $this->purchasableIds);
 	}
 
 	/**
@@ -111,7 +111,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 				Cp::selectHtml([
 					'id' => 'purchasableType',
 					'name' => 'purchasableType',
-					'options' => $this->_purchasableTypeOptions(),
+					'options' => Purchasables::typeOptions(),
 					'value' => $this->purchasableType,
 					'inputAttributes' => [
 						'hx' => [
@@ -205,23 +205,5 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 		return array_merge(parent::defineRules(), [
 			[['discountType', 'discountValue', 'lineItemsFilter', 'applyPer', 'purchasableType', 'purchasableIds'], 'safe'],
 		]);
-	}
-
-	/**
-	 * @return array<int, array{value: string, label: string}>
-	 */
-	private function _purchasableTypeOptions(): array
-	{
-		$options = [];
-
-		foreach ((CommercePlugin::getInstance()?->getPurchasables()->getAllPurchasableElementTypes() ?? []) as $type) {
-			/** @var string|ElementInterface $type */
-			$options[] = [
-				'value' => $type,
-				'label' => $type::displayName(),
-			];
-		}
-
-		return $options;
 	}
 }

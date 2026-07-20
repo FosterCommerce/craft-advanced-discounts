@@ -16,6 +16,7 @@ use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
+use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 
@@ -157,7 +158,7 @@ class AdvancedDiscountsVariable
 
 						foreach ($order->getLineItems() as $lineItem) {
 							$purchasable = $lineItem->getPurchasable();
-							if ($purchasable !== null && (int) $purchasable->id === $purchasableId) {
+							if ($purchasable !== null && Purchasables::matches($purchasable, $rule->purchasableType, [$purchasableId])) {
 								$totalQty += $lineItem->qty;
 							}
 						}
