@@ -17,6 +17,13 @@ class ManageController extends Controller
 
 	public function actionIndex(): Response
 	{
+		Craft::$app->getView()->registerTranslations('advanced-discounts', [
+			'Code',
+			'Created',
+			'Updated',
+			'No discounts yet.',
+		]);
+
 		return $this->renderTemplate('advanced-discounts/index');
 	}
 
@@ -82,7 +89,7 @@ class ManageController extends Controller
 			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Discount saved.'));
 			$this->redirectToPostedUrl($discount);
 		} else {
-			$this->setFailFlash(Craft::t('advanced-discounts', "Couldn\'t save discount."));
+			$this->setFailFlash(Craft::t('advanced-discounts', "Couldn't save discount."));
 			Craft::$app->getUrlManager()->setRouteParams([
 				'discount' => $discount,
 			]);

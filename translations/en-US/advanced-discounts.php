@@ -2,9 +2,8 @@
 
 return [
     // Condition builder
-    'AND' => 'AND',
     'OR' => 'OR',
-	'Add a cart condition' => 'Add a cart condition',
+    'Add a cart condition' => 'Add a cart condition',
     'Add a cart action' => 'Add a cart action',
     'Add a message' => 'Add a message',
     'Date Range' => 'Date Range',

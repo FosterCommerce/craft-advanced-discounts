@@ -2,8 +2,8 @@
 
 return [
     // Generador de condiciones
-    'AND' => 'Y',
     'OR' => 'O',
+    'Add a cart condition' => 'Agregar una condición',
     'Add a cart action' => 'Agregar una acción',
     'Add a message' => 'Agregar un mensaje',
     'Date Range' => 'Rango de fechas',

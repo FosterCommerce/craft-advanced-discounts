@@ -71,7 +71,7 @@
 
     {{ forms.field({
         label: 'Messages'|t('advanced-discounts'),
-        instructions: 'Create messages to show to customers, when they match certain conditions.'|t('advanced-discounts'),
+        instructions: 'Create messages to show to customers when they match certain conditions.'|t('advanced-discounts'),
         errors: discount.getErrors('messageCondition')
     }, messageCondition) }}
 {% endblock %}

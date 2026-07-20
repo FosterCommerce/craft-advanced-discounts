@@ -2,8 +2,8 @@
 
 return [
     // Bedingungsgenerator
-    'AND' => 'UND',
     'OR' => 'ODER',
+    'Add a cart condition' => 'Bedingung hinzufügen',
     'Add a cart action' => 'Aktion hinzufügen',
     'Add a message' => 'Nachricht hinzufügen',
     'Date Range' => 'Datumsbereich',
