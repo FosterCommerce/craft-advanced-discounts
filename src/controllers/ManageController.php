@@ -76,6 +76,7 @@ class ManageController extends Controller
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
 		$discount->setTriggerCondition($this->request->getBodyParam('triggerCondition'));
 		$discount->setActionCondition($this->request->getBodyParam('actionCondition'));
+		$discount->setMessageCondition($this->request->getBodyParam('messageCondition'));
 
 		if (Plugin::getInstance()->discounts->saveDiscount($discount)) {
 			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Discount saved.'));

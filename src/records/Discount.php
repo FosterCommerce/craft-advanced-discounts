@@ -13,6 +13,7 @@ use craft\db\ActiveRecord;
  * @property bool $enabled
  * @property ?array $triggerCondition
  * @property ?array $actionCondition
+ * @property ?array $messageCondition
  */
 class Discount extends ActiveRecord
 {

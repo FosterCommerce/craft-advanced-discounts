@@ -44,7 +44,7 @@ class AdvancedDiscountsVariable
 				continue;
 			}
 
-			foreach ($discount->getActionCondition()->getConditionRules() as $rule) {
+			foreach ($discount->getMessageCondition()->getConditionRules() as $rule) {
 				if (! $rule instanceof MessageActionRule || $rule->message === '') {
 					continue;
 				}

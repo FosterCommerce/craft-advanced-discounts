@@ -64,6 +64,16 @@
         instructions: 'Create rules to apply discounts.'|t('advanced-discounts'),
         errors: discount.getErrors('actionCondition')
     }, actionCondition) }}
+
+    {% set messageCondition %}
+        {{ discount.messageCondition.getBuilderHtml()|raw }}
+    {% endset %}
+
+    {{ forms.field({
+        label: 'Messages'|t('advanced-discounts'),
+        instructions: 'Show messages to customers, such as upsells telling them how much more they need to spend to qualify.'|t('advanced-discounts'),
+        errors: discount.getErrors('messageCondition')
+    }, messageCondition) }}
 {% endblock %}
 
 {% block details %}

@@ -5,11 +5,11 @@ namespace fostercommerce\advanceddiscounts\elements\conditions;
 use Craft;
 use craft\elements\conditions\ElementCondition;
 
-class ActionCondition extends ElementCondition
+class MessageCondition extends ElementCondition
 {
 	public function init(): void
 	{
-		$this->addRuleLabel = Craft::t('advanced-discounts', 'Add an action');
+		$this->addRuleLabel = Craft::t('advanced-discounts', 'Add a message');
 		parent::init();
 	}
 
@@ -19,9 +19,7 @@ class ActionCondition extends ElementCondition
 	protected function selectableConditionRules(): array
 	{
 		return array_merge([
-			OrderActionRule::class,
-			LineItemActionRule::class,
-			ShippingMethodActionRule::class,
+			MessageActionRule::class,
 		]);
 	}
 }
