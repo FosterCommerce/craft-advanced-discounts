@@ -9,6 +9,7 @@ use craft\commerce\elements\conditions\orders\TotalConditionRule;
 use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
 use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\commerce\elements\Order;
+use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
@@ -27,8 +28,11 @@ class AdvancedDiscountsVariable
 	 * with placeholders resolved against the order and discount rules.
 	 *
 	 * Supported placeholders:
-	 *   {discountAmount}   — the discount value (currency or percentage)
-	 *   {amountRemaining}  — how much more the customer needs to spend to qualify
+	 *   {discountAmount}         — the discount value (currency or percentage)
+	 *   {amountRemaining}        — how much more the customer needs to spend to qualify
+	 *   {quantityRemaining}      — how many more of an item the customer needs
+	 *   {buyQuantityRemaining}   — how many more of the buy items earn the next reward
+	 *   {discountedQuantity}     — units the customer currently gets discounted
 	 *
 	 * @return string[]
 	 */
@@ -75,7 +79,7 @@ class AdvancedDiscountsVariable
 
 		// {discountAmount} — value from the first cart action rule that has one
 		foreach ($discount->getCartActionCondition()->getConditionRules() as $rule) {
-			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule) && $rule->discountValue !== null) {
+			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule || $rule instanceof BogoCartActionRule) && $rule->discountValue !== null) {
 				$placeholders['{discountAmount}'] = $rule->discountType === DiscountType::Percentage
 					? $rule->discountValue . '%'
 					: Craft::$app->getFormatter()->asCurrency($rule->discountValue, $order->paymentCurrency);
@@ -95,7 +99,27 @@ class AdvancedDiscountsVariable
 			$placeholders['{quantityRemaining}'] = $quantityRemaining;
 		}
 
+		$bogoRule = $this->firstBogoRule($discount);
+		if ($bogoRule !== null) {
+			// {buyQuantityRemaining} — how many more of the buy items earn the next reward
+			$placeholders['{buyQuantityRemaining}'] = $bogoRule->buyQuantityRemaining($order);
+
+			// {discountedQuantity} — units the customer currently gets discounted
+			$placeholders['{discountedQuantity}'] = $bogoRule->earnedQuantity($order);
+		}
+
 		return strtr($message, $placeholders);
+	}
+
+	private function firstBogoRule(Discount $discount): ?BogoCartActionRule
+	{
+		foreach ($discount->getCartActionCondition()->getConditionRules() as $rule) {
+			if ($rule instanceof BogoCartActionRule) {
+				return $rule;
+			}
+		}
+
+		return null;
 	}
 
 	private function computeAmountRemaining(Discount $discount, Order $order): ?float

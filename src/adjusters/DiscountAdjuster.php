@@ -160,21 +160,11 @@ class DiscountAdjuster implements AdjusterInterface
 	 */
 	private function buildBogoAdjustments(BogoCartActionRule $rule, Order $order, string $discountName): array
 	{
-		if (! $rule->discountValue || ! $rule->buyQuantity || ! $rule->discountedQuantity) {
+		if (! $rule->discountValue) {
 			return [];
 		}
 
-		$buyVariantIds = Purchasables::expandToVariantIds($rule->buyPurchasableType, $rule->buyPurchasableIds);
-		$discountedVariantIds = Purchasables::expandToVariantIds($rule->discountedPurchasableType, $rule->discountedPurchasableIds);
-
-		$overlaps = array_intersect($buyVariantIds, $discountedVariantIds) !== [];
-		$bundleSize = $rule->buyQuantity + ($overlaps ? $rule->discountedQuantity : 0);
-		$buyQty = $this->totalQtyForPurchasables($order, $rule->buyPurchasableType, $rule->buyPurchasableIds);
-
-		$discountedQty = $rule->repeat
-			? intdiv($buyQty, $bundleSize) * $rule->discountedQuantity
-			: ($buyQty >= $bundleSize ? $rule->discountedQuantity : 0);
-
+		$discountedQty = $rule->earnedQuantity($order);
 		if ($discountedQty === 0) {
 			return [];
 		}
@@ -225,22 +215,5 @@ class DiscountAdjuster implements AdjusterInterface
 		}
 
 		return $adjustments;
-	}
-
-	/**
-	 * @param int[] $purchasableIds
-	 */
-	private function totalQtyForPurchasables(Order $order, string $purchasableType, array $purchasableIds): int
-	{
-		$totalQty = 0;
-
-		foreach ($order->getLineItems() as $lineItem) {
-			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable !== null && Purchasables::matches($purchasable, $purchasableType, $purchasableIds)) {
-				$totalQty += $lineItem->qty;
-			}
-		}
-
-		return $totalQty;
 	}
 }

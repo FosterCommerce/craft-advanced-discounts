@@ -5,6 +5,7 @@ namespace fostercommerce\advanceddiscounts\elements\conditions;
 use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
+use craft\commerce\elements\Order;
 use craft\commerce\elements\Variant;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -63,6 +64,41 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 	public function matchElement(ElementInterface $element): bool
 	{
 		return true;
+	}
+
+	public function bundleSize(): int
+	{
+		$buyVariantIds = Purchasables::expandToVariantIds($this->buyPurchasableType, $this->buyPurchasableIds);
+		$discountedVariantIds = Purchasables::expandToVariantIds($this->discountedPurchasableType, $this->discountedPurchasableIds);
+		$overlaps = array_intersect($buyVariantIds, $discountedVariantIds) !== [];
+
+		return ($this->buyQuantity ?? 0) + ($overlaps ? ($this->discountedQuantity ?? 0) : 0);
+	}
+
+	public function earnedQuantity(Order $order): int
+	{
+		if (! $this->buyQuantity || ! $this->discountedQuantity) {
+			return 0;
+		}
+
+		$bundleSize = $this->bundleSize();
+		$buyQty = $this->buyCartQuantity($order);
+
+		return $this->repeat
+			? intdiv($buyQty, $bundleSize) * $this->discountedQuantity
+			: ($buyQty >= $bundleSize ? $this->discountedQuantity : 0);
+	}
+
+	public function buyQuantityRemaining(Order $order): int
+	{
+		if (! $this->buyQuantity || ! $this->discountedQuantity) {
+			return 0;
+		}
+
+		$bundleSize = $this->bundleSize();
+		$remainder = $this->buyCartQuantity($order) % $bundleSize;
+
+		return $remainder === 0 ? $bundleSize : $bundleSize - $remainder;
 	}
 
 	/**
@@ -237,6 +273,20 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 		return array_merge(parent::defineRules(), [
 			[['buyPurchasableType', 'buyPurchasableIds', 'buyQuantity', 'discountedPurchasableType', 'discountedPurchasableIds', 'discountedQuantity', 'repeat', 'discountType', 'discountValue'], 'safe'],
 		]);
+	}
+
+	private function buyCartQuantity(Order $order): int
+	{
+		$totalQty = 0;
+
+		foreach ($order->getLineItems() as $lineItem) {
+			$purchasable = $lineItem->getPurchasable();
+			if ($purchasable !== null && Purchasables::matches($purchasable, $this->buyPurchasableType, $this->buyPurchasableIds)) {
+				$totalQty += $lineItem->qty;
+			}
+		}
+
+		return $totalQty;
 	}
 
 	/**
