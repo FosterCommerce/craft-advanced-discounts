@@ -18,6 +18,7 @@ return [
     'Line Items' => 'Artículos del pedido',
     'All line items' => 'Todos los artículos',
     'Matching line items' => 'Artículos coincidentes',
+    'Buy X, Get Y' => 'Compra X, lleva Y',
 
     // Campos de regla de descuento
     'Apply to' => 'Aplicar a',
@@ -30,6 +31,11 @@ return [
     'Percentage' => 'Porcentaje',
     'Discount a flat amount' => 'Descontar un monto fijo',
     'Discount a percentage' => 'Descontar un porcentaje',
+    'Buy' => 'Compra',
+    'Get' => 'Lleva',
+    'Buy quantity' => 'Cantidad a comprar',
+    'Get quantity' => 'Cantidad gratis',
+    'Apply repeatedly' => 'Aplicar repetidamente',
 
     // Campos de regla de mensaje
     'Message' => 'Mensaje',

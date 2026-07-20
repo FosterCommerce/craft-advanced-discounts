@@ -18,6 +18,7 @@ return [
     'Line Items' => 'Line Items',
     'All line items' => 'All line items',
     'Matching line items' => 'Matching line items',
+    'Buy X, Get Y' => 'Buy X, Get Y',
 
     // Discount rule fields
     'Apply to' => 'Apply to',
@@ -30,6 +31,11 @@ return [
     'Percentage' => 'Percentage',
     'Discount a flat amount' => 'Discount a flat amount',
     'Discount a percentage' => 'Discount a percentage',
+    'Buy' => 'Buy',
+    'Get' => 'Get',
+    'Buy quantity' => 'Buy quantity',
+    'Get quantity' => 'Get quantity',
+    'Apply repeatedly' => 'Apply repeatedly',
 
     // Message rule fields
     'Message' => 'Message',

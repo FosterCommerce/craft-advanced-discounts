@@ -18,6 +18,7 @@ return [
     'Line Items' => 'Artikelpositionen',
     'All line items' => 'Alle Artikelpositionen',
     'Matching line items' => 'Übereinstimmende Artikelpositionen',
+    'Buy X, Get Y' => 'Kaufe X, erhalte Y',
 
     // Felder der Rabattregel
     'Apply to' => 'Anwenden auf',
@@ -30,6 +31,11 @@ return [
     'Percentage' => 'Prozentsatz',
     'Discount a flat amount' => 'Einen Festbetrag abziehen',
     'Discount a percentage' => 'Einen Prozentsatz abziehen',
+    'Buy' => 'Kaufe',
+    'Get' => 'Erhalte',
+    'Buy quantity' => 'Kaufmenge',
+    'Get quantity' => 'Gratismenge',
+    'Apply repeatedly' => 'Wiederholt anwenden',
 
     // Felder der Nachrichtenregel
     'Message' => 'Nachricht',
