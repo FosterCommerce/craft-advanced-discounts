@@ -57,7 +57,7 @@ return [
     'Actions' => 'Actions',
     'Create actions to apply when the customer matches the rules above.' => 'Create actions to apply when the customer matches the rules above.',
     'Messages' => 'Messages',
-    'Create messages to show to customers, when they match certain conditions.' => 'Create messages to show to customers, when they match certain conditions.',
+    'Create messages to show to customers when they match certain conditions.' => 'Create messages to show to customers when they match certain conditions.',
 
     // Validation errors
     'At least one condition is required.' => 'At least one condition is required.',

@@ -57,7 +57,7 @@ return [
     'Actions' => 'Acciones',
     'Create actions to apply when the customer matches the rules above.' => 'Crea acciones para aplicar cuando el cliente cumpla las reglas anteriores.',
     'Messages' => 'Mensajes',
-    'Create messages to show to customers, when they match certain conditions.' => 'Crea mensajes para mostrar a los clientes cuando cumplan ciertas condiciones.',
+    'Create messages to show to customers when they match certain conditions.' => 'Crea mensajes para mostrar a los clientes cuando cumplan ciertas condiciones.',
 
     // Errores de validación
     'At least one condition is required.' => 'Se requiere al menos una condición.',
