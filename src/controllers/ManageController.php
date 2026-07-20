@@ -17,6 +17,13 @@ class ManageController extends Controller
 
 	public function actionIndex(): Response
 	{
+		Craft::$app->getView()->registerTranslations('advanced-discounts', [
+			'Code',
+			'Created',
+			'Updated',
+			'No discounts yet.',
+		]);
+
 		return $this->renderTemplate('advanced-discounts/index');
 	}
 
@@ -74,15 +81,15 @@ class ManageController extends Controller
 		$discount->name = $this->request->getBodyParam('name');
 		$discount->code = $this->request->getBodyParam('code') ?: null;
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
-		$discount->setTriggerCondition($this->request->getBodyParam('triggerCondition'));
-		$discount->setActionCondition($this->request->getBodyParam('actionCondition'));
+		$discount->setCartCondition($this->request->getBodyParam('cartCondition'));
+		$discount->setCartActionCondition($this->request->getBodyParam('cartActionCondition'));
 		$discount->setMessageCondition($this->request->getBodyParam('messageCondition'));
 
 		if (Plugin::getInstance()->discounts->saveDiscount($discount)) {
 			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Discount saved.'));
 			$this->redirectToPostedUrl($discount);
 		} else {
-			$this->setFailFlash(Craft::t('advanced-discounts', "Couldn\'t save discount."));
+			$this->setFailFlash(Craft::t('advanced-discounts', "Couldn't save discount."));
 			Craft::$app->getUrlManager()->setRouteParams([
 				'discount' => $discount,
 			]);

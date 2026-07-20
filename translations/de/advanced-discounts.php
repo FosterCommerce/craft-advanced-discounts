@@ -2,18 +2,16 @@
 
 return [
     // Bedingungsgenerator
-    'AND' => 'UND',
     'OR' => 'ODER',
-    'Add an action' => 'Aktion hinzufügen',
+    'Add a cart condition' => 'Bedingung hinzufügen',
+    'Add a cart action' => 'Aktion hinzufügen',
     'Add a message' => 'Nachricht hinzufügen',
     'Date Range' => 'Datumsbereich',
     'From' => 'Von',
     'To' => 'Bis',
     'Order' => 'Bestellung',
-    'Trigger' => 'Auslöser',
     'User' => 'Benutzer',
     'Related To' => 'In Beziehung zu',
-    'Specific Purchasable' => 'Bestimmtes Produkt',
     'Quantity' => 'Menge',
     'Any qty' => 'Beliebige Menge',
     'Shipping Method' => 'Versandmethode',
@@ -52,16 +50,16 @@ return [
     'Name' => 'Name',
     'Discount code' => 'Rabattcode',
     'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.' => 'Leer lassen, um den Rabatt auf jede zutreffende Bestellung anzuwenden (wie ein Angebot). Wenn ein Code angegeben wird, muss er an der Kasse eingegeben werden, damit der Rabatt gilt.',
-    'Conditions' => 'Bedingungen',
+    'Cart Conditions' => 'Warenkorb-Bedingungen',
     'Rules that decide when this discount applies.' => 'Regeln, die festlegen, wann dieser Rabatt gilt.',
-    'Actions' => 'Aktionen',
-    'Create actions to apply when the customer matches the rules above.' => 'Erstellen Sie Aktionen, die angewendet werden, wenn der Kunde die obigen Regeln erfüllt.',
+    'Cart Actions' => 'Warenkorb-Aktionen',
+    'Create cart actions to apply when the customer matches the rules above.' => 'Erstellen Sie Aktionen, die angewendet werden, wenn der Kunde die obigen Regeln erfüllt.',
     'Messages' => 'Nachrichten',
     'Create messages to show to customers when they match certain conditions.' => 'Erstellen Sie Nachrichten die Kunden angezeigt werden, wenn sie bestimmte Bedingungen erfüllen.',
 
     // Validierungsfehler
     'At least one condition is required.' => 'Es ist mindestens eine Bedingung erforderlich.',
-    'At least one action rule is required.' => 'Es ist mindestens eine Aktionsregel erforderlich.',
+    'At least one cart action rule is required.' => 'Es ist mindestens eine Aktionsregel erforderlich.',
 
     // Flash-Meldungen
     'Discount saved.' => 'Rabatt gespeichert.',

@@ -10,11 +10,11 @@ use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
 use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\commerce\elements\Order;
 use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\LineItemActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\OrderActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\TriggerConditionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
@@ -72,9 +72,9 @@ class AdvancedDiscountsVariable
 	{
 		$placeholders = [];
 
-		// {discountAmount} — value from the first action rule that has one
-		foreach ($discount->getActionCondition()->getConditionRules() as $rule) {
-			if (($rule instanceof OrderActionRule || $rule instanceof LineItemActionRule) && $rule->discountValue !== null) {
+		// {discountAmount} — value from the first cart action rule that has one
+		foreach ($discount->getCartActionCondition()->getConditionRules() as $rule) {
+			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule) && $rule->discountValue !== null) {
 				$placeholders['{discountAmount}'] = $rule->discountType === DiscountType::Percentage
 					? $rule->discountValue . '%'
 					: Craft::$app->getFormatter()->asCurrency($rule->discountValue, $order->paymentCurrency);
@@ -107,7 +107,7 @@ class AdvancedDiscountsVariable
 			TotalConditionRule::class => 'total',
 		];
 
-		foreach ($discount->getTriggerCondition()->getConditionRules() as $triggerRule) {
+		foreach ($discount->getCartCondition()->getConditionRules() as $triggerRule) {
 			if (! $triggerRule instanceof OrderConditionRule) {
 				continue;
 			}
@@ -132,7 +132,7 @@ class AdvancedDiscountsVariable
 
 	private function computeQuantityRemaining(Discount $discount, Order $order): ?int
 	{
-		foreach ($discount->getTriggerCondition()->getConditionRules() as $triggerRule) {
+		foreach ($discount->getCartCondition()->getConditionRules() as $triggerRule) {
 			if ($triggerRule instanceof OrderConditionRule) {
 				foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
 					if (
@@ -145,8 +145,8 @@ class AdvancedDiscountsVariable
 				}
 			}
 
-			if ($triggerRule instanceof TriggerConditionRule) {
-				foreach ($triggerRule->getTriggerCondition()->getConditionRules() as $rule) {
+			if ($triggerRule instanceof LineItemConditionRule) {
+				foreach ($triggerRule->getLineItemCondition()->getConditionRules() as $rule) {
 					if (
 						$rule instanceof HasPurchasableConditionRule
 						&& $rule->quantity !== null

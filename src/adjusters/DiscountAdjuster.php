@@ -5,9 +5,9 @@ namespace fostercommerce\advanceddiscounts\adjusters;
 use craft\commerce\base\AdjusterInterface;
 use craft\commerce\elements\Order;
 use craft\commerce\models\OrderAdjustment;
-use fostercommerce\advanceddiscounts\elements\conditions\LineItemActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\OrderActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\ShippingMethodActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\ShippingMethodCartActionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 use fostercommerce\advanceddiscounts\Plugin;
 
@@ -34,27 +34,27 @@ class DiscountAdjuster implements AdjusterInterface
 				continue;
 			}
 
-			if (! $discount->getTriggerCondition()->matchElement($order)) {
+			if (! $discount->getCartCondition()->matchElement($order)) {
 				continue;
 			}
 
-			$actionRules = $discount->getActionCondition()->getConditionRules();
+			$actionRules = $discount->getCartActionCondition()->getConditionRules();
 			$includeRuleLabel = count($actionRules) > 1;
 
 			foreach ($actionRules as $rule) {
 				$discountName = $includeRuleLabel ? $discount->name . ': ' . $rule->getLabel() : $discount->name;
 
-				if ($rule instanceof OrderActionRule) {
+				if ($rule instanceof OrderCartActionRule) {
 					$adjustment = $this->buildOrderAdjustment($rule, $order, $discountName);
 					if ($adjustment !== null) {
 						$adjustments[] = $adjustment;
 					}
-				} elseif ($rule instanceof ShippingMethodActionRule) {
+				} elseif ($rule instanceof ShippingMethodCartActionRule) {
 					$adjustment = $this->buildShippingAdjustment($rule, $order, $discountName);
 					if ($adjustment !== null) {
 						$adjustments[] = $adjustment;
 					}
-				} elseif ($rule instanceof LineItemActionRule) {
+				} elseif ($rule instanceof LineItemCartActionRule) {
 					array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $discountName));
 				}
 			}
@@ -63,7 +63,7 @@ class DiscountAdjuster implements AdjusterInterface
 		return $adjustments;
 	}
 
-	private function buildOrderAdjustment(OrderActionRule $rule, Order $order, string $discountName): ?OrderAdjustment
+	private function buildOrderAdjustment(OrderCartActionRule $rule, Order $order, string $discountName): ?OrderAdjustment
 	{
 		if (! $rule->discountValue) {
 			return null;
@@ -84,7 +84,7 @@ class DiscountAdjuster implements AdjusterInterface
 		return $adjustment;
 	}
 
-	private function buildShippingAdjustment(ShippingMethodActionRule $rule, Order $order, string $discountName): ?OrderAdjustment
+	private function buildShippingAdjustment(ShippingMethodCartActionRule $rule, Order $order, string $discountName): ?OrderAdjustment
 	{
 		if (! $rule->discountValue) {
 			return null;
@@ -115,7 +115,7 @@ class DiscountAdjuster implements AdjusterInterface
 	/**
 	 * @return OrderAdjustment[]
 	 */
-	private function buildLineItemAdjustments(LineItemActionRule $rule, Order $order, string $discountName): array
+	private function buildLineItemAdjustments(LineItemCartActionRule $rule, Order $order, string $discountName): array
 	{
 		if (! $rule->discountValue) {
 			return [];
@@ -132,7 +132,7 @@ class DiscountAdjuster implements AdjusterInterface
 			$amount = $rule->discountType === DiscountType::Percentage
 				? -($lineItem->subtotal * ($rule->discountValue / 100))
 				: -min(
-					(float) $rule->discountValue * ($rule->applyPer === LineItemActionRule::APPLY_PER_PURCHASABLE ? $lineItem->qty : 1),
+					(float) $rule->discountValue * ($rule->applyPer === LineItemCartActionRule::APPLY_PER_PURCHASABLE ? $lineItem->qty : 1),
 					$lineItem->subtotal
 				);
 
