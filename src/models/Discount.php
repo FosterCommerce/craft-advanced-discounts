@@ -6,8 +6,8 @@ use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
-use fostercommerce\advanceddiscounts\elements\conditions\ActionCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\AndTriggerCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\CartActionCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
 
 class Discount extends Model
@@ -39,10 +39,10 @@ class Discount extends Model
 	public null|ElementConditionInterface $_triggerCondition = null;
 
 	/**
-	 * @see getActionCondition()
-	 * @see setActionCondition()
+	 * @see getCartActionCondition()
+	 * @see setCartActionCondition()
 	 */
-	public null|ElementConditionInterface $_actionCondition = null;
+	public null|ElementConditionInterface $_cartActionCondition = null;
 
 	/**
 	 * @see getMessageCondition()
@@ -87,11 +87,11 @@ class Discount extends Model
 		$this->_triggerCondition = $condition;
 	}
 
-	public function getActionCondition(): ElementConditionInterface
+	public function getCartActionCondition(): ElementConditionInterface
 	{
-		$condition = $this->_actionCondition ?? new ActionCondition();
+		$condition = $this->_cartActionCondition ?? new CartActionCondition();
 		$condition->mainTag = 'div';
-		$condition->name = 'actionCondition';
+		$condition->name = 'cartActionCondition';
 
 		return $condition;
 	}
@@ -99,7 +99,7 @@ class Discount extends Model
 	/**
 	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
 	 */
-	public function setActionCondition(ElementConditionInterface|string|array|null $condition): void
+	public function setCartActionCondition(ElementConditionInterface|string|array|null $condition): void
 	{
 		if ($condition === null) {
 			$condition = [];
@@ -109,14 +109,14 @@ class Discount extends Model
 		}
 
 		if (! $condition instanceof ElementConditionInterface) {
-			$condition['class'] = ActionCondition::class;
+			$condition['class'] = CartActionCondition::class;
 			/** @phpstan-ignore-next-line */
 			$condition = Craft::$app->getConditions()->createCondition($condition);
 			/** @var ElementConditionInterface $condition */
 		}
 		$condition->forProjectConfig = false;
 
-		$this->_actionCondition = $condition;
+		$this->_cartActionCondition = $condition;
 	}
 
 	public function getMessageCondition(): ElementConditionInterface
@@ -170,10 +170,10 @@ class Discount extends Model
 				},
 			],
 			[
-				'actionCondition',
+				'cartActionCondition',
 				function (string $attribute): void {
-					if (empty($this->getActionCondition()->getConditionRules())) {
-						$this->addError($attribute, Craft::t('advanced-discounts', 'At least one action rule is required.'));
+					if (empty($this->getCartActionCondition()->getConditionRules())) {
+						$this->addError($attribute, Craft::t('advanced-discounts', 'At least one cart action rule is required.'));
 					}
 				},
 			],

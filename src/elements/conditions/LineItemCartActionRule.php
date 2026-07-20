@@ -14,7 +14,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 
-class LineItemActionRule extends BaseConditionRule implements ElementConditionRuleInterface
+class LineItemCartActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
 	public const FILTER_ALL = 'all';
 

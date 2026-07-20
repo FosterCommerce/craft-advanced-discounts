@@ -86,7 +86,7 @@ class Discounts extends Component
 		$record->code = $discount->code;
 		$record->enabled = $discount->enabled;
 		$record->triggerCondition = $discount->getTriggerCondition()->getConfig();
-		$record->actionCondition = $discount->getActionCondition()->getConfig();
+		$record->cartActionCondition = $discount->getCartActionCondition()->getConfig();
 		$record->messageCondition = $discount->getMessageCondition()->getConfig();
 
 		// In the future we may have multiple things that would need to be saved here.
@@ -125,7 +125,7 @@ class Discounts extends Component
 				'[[discounts.code]]',
 				'[[discounts.enabled]]',
 				'[[discounts.triggerCondition]]',
-				'[[discounts.actionCondition]]',
+				'[[discounts.cartActionCondition]]',
 				'[[discounts.messageCondition]]',
 				'[[discounts.dateCreated]]',
 				'[[discounts.dateUpdated]]',

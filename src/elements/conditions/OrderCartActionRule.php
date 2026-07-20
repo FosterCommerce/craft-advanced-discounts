@@ -12,7 +12,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 
-class OrderActionRule extends BaseConditionRule implements ElementConditionRuleInterface
+class OrderCartActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
 	public string $discountType = DiscountType::FlatAmount;
 

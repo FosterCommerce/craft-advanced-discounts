@@ -75,7 +75,7 @@ class ManageController extends Controller
 		$discount->code = $this->request->getBodyParam('code') ?: null;
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
 		$discount->setTriggerCondition($this->request->getBodyParam('triggerCondition'));
-		$discount->setActionCondition($this->request->getBodyParam('actionCondition'));
+		$discount->setCartActionCondition($this->request->getBodyParam('cartActionCondition'));
 		$discount->setMessageCondition($this->request->getBodyParam('messageCondition'));
 
 		if (Plugin::getInstance()->discounts->saveDiscount($discount)) {

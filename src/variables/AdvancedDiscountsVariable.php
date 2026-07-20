@@ -10,9 +10,9 @@ use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
 use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\commerce\elements\Order;
 use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\LineItemActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\OrderActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\TriggerConditionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
@@ -72,9 +72,9 @@ class AdvancedDiscountsVariable
 	{
 		$placeholders = [];
 
-		// {discountAmount} — value from the first action rule that has one
-		foreach ($discount->getActionCondition()->getConditionRules() as $rule) {
-			if (($rule instanceof OrderActionRule || $rule instanceof LineItemActionRule) && $rule->discountValue !== null) {
+		// {discountAmount} — value from the first cart action rule that has one
+		foreach ($discount->getCartActionCondition()->getConditionRules() as $rule) {
+			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule) && $rule->discountValue !== null) {
 				$placeholders['{discountAmount}'] = $rule->discountType === DiscountType::Percentage
 					? $rule->discountValue . '%'
 					: Craft::$app->getFormatter()->asCurrency($rule->discountValue, $order->paymentCurrency);

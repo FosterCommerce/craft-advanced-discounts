@@ -16,7 +16,7 @@ use craft\helpers\UrlHelper;
 use fostercommerce\advanceddiscounts\enums\DiscountType;
 use yii\base\InvalidConfigException;
 
-class ShippingMethodActionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
 	private const ANY_VALUE = '';
 

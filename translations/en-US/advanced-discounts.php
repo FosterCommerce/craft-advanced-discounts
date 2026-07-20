@@ -4,7 +4,7 @@ return [
     // Condition builder
     'AND' => 'AND',
     'OR' => 'OR',
-    'Add an action' => 'Add an action',
+    'Add a cart action' => 'Add a cart action',
     'Add a message' => 'Add a message',
     'Date Range' => 'Date Range',
     'From' => 'From',
@@ -54,14 +54,14 @@ return [
     'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.' => 'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.',
     'Conditions' => 'Conditions',
     'Rules that decide when this discount applies.' => 'Rules that decide when this discount applies.',
-    'Actions' => 'Actions',
-    'Create actions to apply when the customer matches the rules above.' => 'Create actions to apply when the customer matches the rules above.',
+    'Cart Actions' => 'Cart Actions',
+    'Create cart actions to apply when the customer matches the rules above.' => 'Create cart actions to apply when the customer matches the rules above.',
     'Messages' => 'Messages',
     'Create messages to show to customers when they match certain conditions.' => 'Create messages to show to customers when they match certain conditions.',
 
     // Validation errors
     'At least one condition is required.' => 'At least one condition is required.',
-    'At least one action rule is required.' => 'At least one action rule is required.',
+    'At least one cart action rule is required.' => 'At least one cart action rule is required.',
 
     // Flash messages
     'Discount saved.' => 'Discount saved.',

@@ -55,15 +55,15 @@
         errors: discount.getErrors('triggerCondition')
     }, triggerCondition) }}
 
-    {% set actionCondition %}
-        {{ discount.actionCondition.getBuilderHtml()|raw }}
+    {% set cartActionCondition %}
+        {{ discount.cartActionCondition.getBuilderHtml()|raw }}
     {% endset %}
 
     {{ forms.field({
-        label: 'Actions'|t('advanced-discounts'),
-        instructions: 'Create actions to apply when the customer matches the rules above.'|t('advanced-discounts'),
-        errors: discount.getErrors('actionCondition')
-    }, actionCondition) }}
+        label: 'Cart Actions'|t('advanced-discounts'),
+        instructions: 'Create cart actions to apply when the customer matches the rules above.'|t('advanced-discounts'),
+        errors: discount.getErrors('cartActionCondition')
+    }, cartActionCondition) }}
 
     {% set messageCondition %}
         {{ discount.messageCondition.getBuilderHtml()|raw }}

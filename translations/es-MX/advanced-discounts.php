@@ -4,7 +4,7 @@ return [
     // Generador de condiciones
     'AND' => 'Y',
     'OR' => 'O',
-    'Add an action' => 'Agregar una acción',
+    'Add a cart action' => 'Agregar una acción',
     'Add a message' => 'Agregar un mensaje',
     'Date Range' => 'Rango de fechas',
     'From' => 'Desde',
@@ -54,14 +54,14 @@ return [
     'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.' => 'Déjalo en blanco para aplicarlo a todos los pedidos aplicables (como una oferta). Si se indica un código, debe ingresarse al pagar para que se aplique el descuento.',
     'Conditions' => 'Condiciones',
     'Rules that decide when this discount applies.' => 'Reglas que determinan cuándo se aplica este descuento.',
-    'Actions' => 'Acciones',
-    'Create actions to apply when the customer matches the rules above.' => 'Crea acciones para aplicar cuando el cliente cumpla las reglas anteriores.',
+    'Cart Actions' => 'Acciones del carrito',
+    'Create cart actions to apply when the customer matches the rules above.' => 'Crea acciones para aplicar cuando el cliente cumpla las reglas anteriores.',
     'Messages' => 'Mensajes',
     'Create messages to show to customers when they match certain conditions.' => 'Crea mensajes para mostrar a los clientes cuando cumplan ciertas condiciones.',
 
     // Errores de validación
     'At least one condition is required.' => 'Se requiere al menos una condición.',
-    'At least one action rule is required.' => 'Se requiere al menos una regla de acción.',
+    'At least one cart action rule is required.' => 'Se requiere al menos una regla de acción.',
 
     // Mensajes flash
     'Discount saved.' => 'Descuento guardado.',
