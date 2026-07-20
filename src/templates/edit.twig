@@ -60,10 +60,20 @@
     {% endset %}
 
     {{ forms.field({
-        label: 'Action Rules'|t('advanced-discounts'),
-        instructions: 'Create rules to apply discounts.'|t('advanced-discounts'),
+        label: 'Actions'|t('advanced-discounts'),
+        instructions: 'Create actions to apply when the customer matches the rules above.'|t('advanced-discounts'),
         errors: discount.getErrors('actionCondition')
     }, actionCondition) }}
+
+    {% set messageCondition %}
+        {{ discount.messageCondition.getBuilderHtml()|raw }}
+    {% endset %}
+
+    {{ forms.field({
+        label: 'Messages'|t('advanced-discounts'),
+        instructions: 'Create messages to show to customers, when they match certain conditions.'|t('advanced-discounts'),
+        errors: discount.getErrors('messageCondition')
+    }, messageCondition) }}
 {% endblock %}
 
 {% block details %}

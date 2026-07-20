@@ -8,6 +8,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\elements\conditions\ActionCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\AndTriggerCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
 
 class Discount extends Model
 {
@@ -42,6 +43,12 @@ class Discount extends Model
 	 * @see setActionCondition()
 	 */
 	public null|ElementConditionInterface $_actionCondition = null;
+
+	/**
+	 * @see getMessageCondition()
+	 * @see setMessageCondition()
+	 */
+	public null|ElementConditionInterface $_messageCondition = null;
 
 	public ?\DateTime $dateCreated = null;
 
@@ -110,6 +117,38 @@ class Discount extends Model
 		$condition->forProjectConfig = false;
 
 		$this->_actionCondition = $condition;
+	}
+
+	public function getMessageCondition(): ElementConditionInterface
+	{
+		$condition = $this->_messageCondition ?? new MessageCondition();
+		$condition->mainTag = 'div';
+		$condition->name = 'messageCondition';
+
+		return $condition;
+	}
+
+	/**
+	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
+	 */
+	public function setMessageCondition(ElementConditionInterface|string|array|null $condition): void
+	{
+		if ($condition === null) {
+			$condition = [];
+		}
+		if (is_string($condition)) {
+			$condition = Json::decodeIfJson($condition);
+		}
+
+		if (! $condition instanceof ElementConditionInterface) {
+			$condition['class'] = MessageCondition::class;
+			/** @phpstan-ignore-next-line */
+			$condition = Craft::$app->getConditions()->createCondition($condition);
+			/** @var ElementConditionInterface $condition */
+		}
+		$condition->forProjectConfig = false;
+
+		$this->_messageCondition = $condition;
 	}
 
 	/**
