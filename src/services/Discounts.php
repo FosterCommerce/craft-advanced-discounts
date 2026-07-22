@@ -4,9 +4,11 @@ namespace fostercommerce\advanceddiscounts\services;
 
 use Craft;
 use craft\db\Query;
+use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\records\Discount as DiscountRecord;
 use yii\base\Component;
+use yii\db\Expression;
 
 class Discounts extends Component
 {
@@ -107,18 +109,25 @@ class Discounts extends Component
 		$record->code = $discount->code;
 		$record->enabled = $discount->enabled;
 		$record->stopProcessing = $discount->stopProcessing;
-		$record->cartCondition = $discount->getCartCondition()->getConfig();
-		$record->cartActionCondition = $discount->getCartActionCondition()->getConfig();
-		$record->messageCondition = $discount->getMessageCondition()->getConfig();
-
-		if ($isNew) {
-			$record->sortOrder = ((new Query())->from(DiscountRecord::TABLE_NAME)->max('[[sortOrder]]') ?? 0) + 1;
-		}
+		$record->type = $discount->type;
+		$record->settings = [
+			'globalCartCondition' => $discount->getGlobalCartCondition()->getConfig(),
+			'panels' => array_map(static fn ($panel): array => $panel->getConfig(), $discount->panels),
+		];
 
 		// In the future we may have multiple things that would need to be saved here.
 		$db = Craft::$app->db;
 		$transaction = $db->beginTransaction();
 		try {
+			if ($isNew) {
+				$db->createCommand()
+					->update(DiscountRecord::TABLE_NAME, [
+						'sortOrder' => new Expression('[[sortOrder]] + 1'),
+					])
+					->execute();
+				$record->sortOrder = 1;
+			}
+
 			$record->save();
 			$discount->id = $record->id;
 			$transaction->commit();
@@ -136,7 +145,25 @@ class Discounts extends Component
 	 */
 	private function _populateDiscount(array $record): Discount
 	{
-		return new Discount($record);
+		$discount = new Discount([
+			'id' => $record['id'],
+			'name' => $record['name'],
+			'code' => $record['code'],
+			'enabled' => $record['enabled'],
+			'stopProcessing' => $record['stopProcessing'] ?? false,
+			'sortOrder' => $record['sortOrder'] ?? null,
+			'type' => $record['type'] ?? 'advanced',
+			'dateCreated' => $record['dateCreated'],
+			'dateUpdated' => $record['dateUpdated'],
+		]);
+
+		$settings = Json::decodeIfJson($record['settings'] ?? '');
+		$settings = is_array($settings) ? $settings : [];
+
+		$discount->setGlobalCartCondition($settings['globalCartCondition'] ?? []);
+		$discount->setPanels($settings['panels'] ?? []);
+
+		return $discount;
 	}
 
 	/**
@@ -152,9 +179,8 @@ class Discounts extends Component
 				'[[discounts.enabled]]',
 				'[[discounts.stopProcessing]]',
 				'[[discounts.sortOrder]]',
-				'[[discounts.cartCondition]]',
-				'[[discounts.cartActionCondition]]',
-				'[[discounts.messageCondition]]',
+				'[[discounts.type]]',
+				'[[discounts.settings]]',
 				'[[discounts.dateCreated]]',
 				'[[discounts.dateUpdated]]',
 			])

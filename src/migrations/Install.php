@@ -14,8 +14,8 @@ class Install extends Migration
 			'name' => $this->string()->notNull(),
 			'code' => $this->string()->null(),
 			'enabled' => $this->boolean()->notNull()->defaultValue(true),
-			'triggerCondition' => $this->json()->null(),
-			'actionCondition' => $this->json()->null(),
+			'type' => $this->string()->notNull()->defaultValue('advanced'),
+			'settings' => $this->json()->null(),
 			'dateCreated' => $this->dateTime()->notNull(),
 			'dateUpdated' => $this->dateTime()->notNull(),
 		]);

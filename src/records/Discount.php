@@ -13,6 +13,8 @@ use craft\db\ActiveRecord;
  * @property bool $enabled
  * @property bool $stopProcessing
  * @property ?int $sortOrder
+ * @property string $type
+ * @property ?array $settings
  * @property ?array $cartCondition
  * @property ?array $cartActionCondition
  * @property ?array $messageCondition

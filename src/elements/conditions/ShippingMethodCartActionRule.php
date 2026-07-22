@@ -30,7 +30,7 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Shipping Method');
+		return Craft::t('advanced-discounts', 'Shipping');
 	}
 
 	public function getExclusiveQueryParams(): array

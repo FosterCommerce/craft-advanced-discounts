@@ -107,10 +107,13 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 			) .
 			Html::tag('p', Craft::t('advanced-discounts', 'Create rules to determine when to show this message'), [
 				'class' => 'instructions',
+				'style' => [
+					'margin' => '10px 0 4px',
+				],
 			]) .
 			$this->getMessageCondition()->getBuilderHtml(),
 			[
-				'class' => ['flex', 'flex-start', 'flex-grow'],
+				'class' => ['flex', 'flex-start', 'flex-grow', 'advanced-discount-message'],
 				'style' => [
 					'flex-direction' => 'column',
 				],

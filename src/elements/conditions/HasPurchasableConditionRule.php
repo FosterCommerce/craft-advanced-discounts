@@ -8,13 +8,13 @@ use craft\base\ElementInterface;
 use craft\commerce\elements\db\OrderQuery;
 use craft\commerce\elements\Order;
 use craft\commerce\elements\Variant;
-use craft\commerce\Plugin;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
 /**
  * @method array|string|null paramValue(?callable $normalizeValue = null)
@@ -47,7 +47,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		}
 
 		/** @var OrderQuery $query */
-		$query->hasPurchasables([(int) $this->getElementId()]);
+		$query->hasPurchasables(Purchasables::expandToVariantIds($this->purchasableType, [(int) $this->getElementId()]));
 	}
 
 	public function matchElement(ElementInterface $element): bool
@@ -62,7 +62,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 
 		foreach ($element->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable !== null && (int) $purchasable->id === $purchasableId) {
+			if ($purchasable !== null && Purchasables::matches($purchasable, $this->purchasableType, [$purchasableId])) {
 				$hasPurchasable = true;
 				$totalQty += $lineItem->qty;
 			}
@@ -143,7 +143,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 			Cp::selectHtml([
 				'id' => $id,
 				'name' => 'purchasableType',
-				'options' => $this->_purchasableTypeOptions(),
+				'options' => Purchasables::typeOptions(),
 				'value' => $this->purchasableType,
 				'inputAttributes' => [
 					'hx' => [
@@ -201,24 +201,5 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 		return Craft::$app->getConditions()->createCondition([
 			'class' => OrderCondition::class,
 		]);
-	}
-
-	/**
-	 * @return array<int, array{value: string, label: string}>
-	 */
-	private function _purchasableTypeOptions(): array
-	{
-		$options = [];
-
-		foreach ((Plugin::getInstance()?->getPurchasables()->getAllPurchasableElementTypes() ?? []) as $elementType) {
-			/** @var string|ElementInterface $elementType */
-			/** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-			$options[] = [
-				'value' => $elementType,
-				'label' => $elementType::displayName(),
-			];
-		}
-
-		return $options;
 	}
 }

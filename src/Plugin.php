@@ -15,6 +15,7 @@ use fostercommerce\advanceddiscounts\adjusters\DiscountAdjuster;
 use fostercommerce\advanceddiscounts\models\Settings;
 use fostercommerce\advanceddiscounts\services\AdvancedDiscountsService;
 use fostercommerce\advanceddiscounts\services\Discounts;
+use fostercommerce\advanceddiscounts\services\DiscountTypes;
 use fostercommerce\advanceddiscounts\variables\AdvancedDiscountsVariable;
 use yii\base\Event;
 
@@ -24,6 +25,7 @@ use yii\base\Event;
  * @method static Plugin getInstance()
  * @method Settings getSettings()
  * @property-read Discounts $discounts
+ * @property-read DiscountTypes $discountTypes
  */
 class Plugin extends BasePlugin
 {
@@ -31,7 +33,7 @@ class Plugin extends BasePlugin
 
 	public bool $hasCpSettings = true;
 
-	public string $schemaVersion = '1.0.2';
+	public string $schemaVersion = '1.0.4';
 
 	/**
 	 * @return array<string, mixed>
@@ -41,6 +43,7 @@ class Plugin extends BasePlugin
 		return [
 			'components' => [
 				'discounts' => Discounts::class,
+				'discountTypes' => DiscountTypes::class,
 			],
 		];
 	}
@@ -150,6 +153,8 @@ class Plugin extends BasePlugin
 			static function (RegisterUrlRulesEvent $registerUrlRulesEvent): void {
 				$registerUrlRulesEvent->rules['advanced-discounts'] = 'advanced-discounts/manage/index';
 				$registerUrlRulesEvent->rules['advanced-discounts/new'] = 'advanced-discounts/manage/edit';
+				$registerUrlRulesEvent->rules['advanced-discounts/panel'] = 'advanced-discounts/manage/panel';
+				$registerUrlRulesEvent->rules['advanced-discounts/type-settings'] = 'advanced-discounts/manage/type-settings';
 				$registerUrlRulesEvent->rules['advanced-discounts/<id:\d+>'] = 'advanced-discounts/manage/edit';
 			}
 		);

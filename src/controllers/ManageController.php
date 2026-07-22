@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\web\Controller;
+use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 use yii\web\Response;
@@ -27,18 +28,17 @@ class ManageController extends Controller
 			"Couldn't reorder discounts.",
 		]);
 
+		$formatter = Craft::$app->getFormatter();
 		$discounts = Plugin::getInstance()->discounts->getAllDiscounts();
-		$tableData = array_map(function (Discount $discount): array {
-			$row = $discount->toArray();
-			$row['url'] = "advanced-discounts/{$discount->id}";
-			$row['title'] = $discount->name;
-			$row['dateCreated'] = Craft::$app->getFormatter()
-				->asDate($row['dateCreated'], Locale::LENGTH_SHORT);
-			$row['dateUpdated'] = Craft::$app->getFormatter()
-				->asDate($row['dateUpdated'], Locale::LENGTH_SHORT);
-
-			return $row;
-		}, $discounts);
+		$tableData = array_map(static fn (Discount $discount): array => [
+			'id' => $discount->id,
+			'url' => "advanced-discounts/{$discount->id}",
+			'title' => $discount->name,
+			'enabled' => $discount->enabled,
+			'code' => $discount->code,
+			'dateCreated' => $discount->dateCreated !== null ? $formatter->asDate($discount->dateCreated, Locale::LENGTH_SHORT) : '',
+			'dateUpdated' => $discount->dateUpdated !== null ? $formatter->asDate($discount->dateUpdated, Locale::LENGTH_SHORT) : '',
+		], $discounts);
 
 		return $this->renderTemplate('advanced-discounts/index', [
 			'tableData' => $tableData,
@@ -50,9 +50,62 @@ class ManageController extends Controller
 		$discount = Craft::$app->getUrlManager()->getRouteParams()['discount']
 			?? ($id !== null ? Plugin::getInstance()->discounts->getDiscountById($id) : new Discount());
 
+		$typeOptions = [];
+		foreach (Plugin::getInstance()->discountTypes->getAllDiscountTypeInstances() as $type) {
+			$typeOptions[] = [
+				'value' => $type::handle(),
+				'label' => $type::displayName(),
+			];
+		}
+
 		return $this->renderTemplate('advanced-discounts/edit', [
 			'discount' => $discount,
 			'isNewDiscount' => $discount->id === null,
+			'typeOptions' => $typeOptions,
+			'typeSettingsHtml' => $discount->getType()->getSettingsHtml($discount),
+		]);
+	}
+
+	public function actionTypeSettings(): Response
+	{
+		$this->requirePostRequest();
+
+		$discount = new Discount([
+			'type' => $this->request->getBodyParam('type') ?: 'advanced',
+		]);
+
+		$view = Craft::$app->getView();
+		$html = $discount->getType()->getSettingsHtml($discount);
+
+		return $this->asJson([
+			'html' => $html,
+			'headHtml' => $view->getHeadHtml(),
+			'bodyHtml' => $view->getBodyHtml(),
+		]);
+	}
+
+	public function actionPanel(): Response
+	{
+		$this->requirePostRequest();
+
+		$type = Plugin::getInstance()->discountTypes->getDiscountTypeByHandle(
+			$this->request->getBodyParam('type') ?: 'advanced'
+		);
+		$discount = new Discount([
+			'type' => $type::handle(),
+		]);
+
+		$view = Craft::$app->getView();
+		$html = $view->renderTemplate('advanced-discounts/_panel', [
+			'panel' => $discount->panels[0],
+			'actionLabel' => $type::actionLabel(),
+			'bundle' => $type::actionConditionClass() === BundleCondition::class,
+		]);
+
+		return $this->asJson([
+			'html' => $html,
+			'headHtml' => $view->getHeadHtml(),
+			'bodyHtml' => $view->getBodyHtml(),
 		]);
 	}
 
@@ -95,9 +148,9 @@ class ManageController extends Controller
 		$discount->code = $this->request->getBodyParam('code') ?: null;
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
 		$discount->stopProcessing = (bool) $this->request->getBodyParam('stopProcessing');
-		$discount->setCartCondition($this->request->getBodyParam('cartCondition'));
-		$discount->setCartActionCondition($this->request->getBodyParam('cartActionCondition'));
-		$discount->setMessageCondition($this->request->getBodyParam('messageCondition'));
+		$discount->type = $this->request->getBodyParam('type') ?: 'advanced';
+		$discount->setGlobalCartCondition($this->request->getBodyParam('globalCartCondition'));
+		$discount->setPanels($this->request->getBodyParam('panels') ?? []);
 
 		if (Plugin::getInstance()->discounts->saveDiscount($discount)) {
 			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Discount saved.'));
