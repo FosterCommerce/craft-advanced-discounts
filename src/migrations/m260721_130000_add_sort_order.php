@@ -30,13 +30,4 @@ class m260721_130000_add_sort_order extends Migration
 
 		return true;
 	}
-
-	public function safeDown(): bool
-	{
-		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->dropColumn(Discount::TABLE_NAME, 'sortOrder');
-		}
-
-		return true;
-	}
 }

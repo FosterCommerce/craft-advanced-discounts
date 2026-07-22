@@ -41,12 +41,4 @@ class m260721_120000_add_discount_types_and_panels extends Migration
 
 		return true;
 	}
-
-	public function safeDown(): bool
-	{
-		$this->dropColumn(Discount::TABLE_NAME, 'settings');
-		$this->dropColumn(Discount::TABLE_NAME, 'type');
-
-		return true;
-	}
 }

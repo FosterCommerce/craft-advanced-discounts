@@ -22,17 +22,6 @@ class m260720_150000_rename_trigger_condition_to_cart_condition extends Migratio
 		return true;
 	}
 
-	public function safeDown(): bool
-	{
-		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->_remapStoredClasses(self::NEW_AND_CONDITION_CLASS, self::OLD_AND_CONDITION_CLASS);
-
-			$this->renameColumn(Discount::TABLE_NAME, 'cartCondition', 'triggerCondition');
-		}
-
-		return true;
-	}
-
 	/**
 	 * AndCondition (formerly AndTriggerCondition, later renamed to CartCondition) is
 	 * used both as the discount's top-level cartCondition and, nested, as each
