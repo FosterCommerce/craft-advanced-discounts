@@ -51,10 +51,14 @@ return [
     'Code' => 'Código',
     'Created' => 'Creado',
     'Updated' => 'Actualizado',
+    'Discounts reordered.' => 'Descuentos reordenados.',
+    "Couldn't reorder discounts." => 'No se pudieron reordenar los descuentos.',
 
     // Formulario de edición
     'Create discount' => 'Crear descuento',
     'Save discount' => 'Guardar descuento',
+    'Stop processing further discounts' => 'Dejar de procesar más descuentos',
+    'If this discount matches and is applied, no other discounts will be evaluated.' => 'Si este descuento coincide y se aplica, no se evaluará ningún otro descuento.',
     'Name' => 'Nombre',
     'Discount code' => 'Código de descuento',
     'Type' => 'Tipo',

@@ -33,6 +33,16 @@ class Discount extends Model
 	public bool $enabled = true;
 
 	/**
+	 * @var bool Whether to stop processing further discounts once this discount matches and is applied
+	 */
+	public bool $stopProcessing = false;
+
+	/**
+	 * @var int|null Position of this discount relative to other discounts; lower values are evaluated first
+	 */
+	public ?int $sortOrder = null;
+
+	/**
 	 * @var string Handle of the discount type
 	 */
 	public string $type = 'advanced';

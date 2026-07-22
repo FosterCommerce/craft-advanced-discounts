@@ -128,5 +128,13 @@
             name: 'enabled',
             on: discount.enabled,
         }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Stop processing further discounts'|t('advanced-discounts'),
+            instructions: 'If this discount matches and is applied, no other discounts will be evaluated.'|t('advanced-discounts'),
+            id: 'stopProcessing',
+            name: 'stopProcessing',
+            on: discount.stopProcessing,
+        }) }}
     </div>
 {% endblock %}

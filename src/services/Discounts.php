@@ -8,6 +8,7 @@ use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\records\Discount as DiscountRecord;
 use yii\base\Component;
+use yii\db\Expression;
 
 class Discounts extends Component
 {
@@ -52,6 +53,27 @@ class Discounts extends Component
 		return null;
 	}
 
+	/**
+	 * @param int[] $ids Discount IDs in their new order
+	 */
+	public function reorderDiscounts(array $ids): bool
+	{
+		$db = Craft::$app->db;
+		foreach ($ids as $sortOrder => $id) {
+			$db->createCommand()
+				->update(DiscountRecord::TABLE_NAME, [
+					'sortOrder' => $sortOrder + 1,
+				], [
+					'id' => $id,
+				])
+				->execute();
+		}
+
+		$this->_discounts = null;
+
+		return true;
+	}
+
 	public function deleteDiscount(int $id): bool
 	{
 		$record = DiscountRecord::findOne($id);
@@ -86,6 +108,7 @@ class Discounts extends Component
 		$record->name = $discount->name;
 		$record->code = $discount->code;
 		$record->enabled = $discount->enabled;
+		$record->stopProcessing = $discount->stopProcessing;
 		$record->type = $discount->type;
 		$record->settings = [
 			'globalCartCondition' => $discount->getGlobalCartCondition()->getConfig(),
@@ -96,6 +119,15 @@ class Discounts extends Component
 		$db = Craft::$app->db;
 		$transaction = $db->beginTransaction();
 		try {
+			if ($isNew) {
+				$db->createCommand()
+					->update(DiscountRecord::TABLE_NAME, [
+						'sortOrder' => new Expression('[[sortOrder]] + 1'),
+					])
+					->execute();
+				$record->sortOrder = 1;
+			}
+
 			$record->save();
 			$discount->id = $record->id;
 			$transaction->commit();
@@ -118,6 +150,8 @@ class Discounts extends Component
 			'name' => $record['name'],
 			'code' => $record['code'],
 			'enabled' => $record['enabled'],
+			'stopProcessing' => $record['stopProcessing'] ?? false,
+			'sortOrder' => $record['sortOrder'] ?? null,
 			'type' => $record['type'] ?? 'advanced',
 			'dateCreated' => $record['dateCreated'],
 			'dateUpdated' => $record['dateUpdated'],
@@ -143,6 +177,8 @@ class Discounts extends Component
 				'[[discounts.name]]',
 				'[[discounts.code]]',
 				'[[discounts.enabled]]',
+				'[[discounts.stopProcessing]]',
+				'[[discounts.sortOrder]]',
 				'[[discounts.type]]',
 				'[[discounts.settings]]',
 				'[[discounts.dateCreated]]',
@@ -152,7 +188,7 @@ class Discounts extends Component
 				'discounts' => DiscountRecord::TABLE_NAME,
 			])
 			->orderBy([
-				'dateUpdated' => SORT_DESC,
+				'sortOrder' => SORT_ASC,
 			]);
 	}
 }

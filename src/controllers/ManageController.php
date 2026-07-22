@@ -3,6 +3,7 @@
 namespace fostercommerce\advanceddiscounts\controllers;
 
 use Craft;
+use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
@@ -23,27 +24,24 @@ class ManageController extends Controller
 			'Created',
 			'Updated',
 			'No discounts yet.',
+			'Discounts reordered.',
+			"Couldn't reorder discounts.",
 		]);
 
-		return $this->renderTemplate('advanced-discounts/index');
-	}
-
-	public function actionList(): Response
-	{
+		$formatter = Craft::$app->getFormatter();
 		$discounts = Plugin::getInstance()->discounts->getAllDiscounts();
+		$tableData = array_map(static fn (Discount $discount): array => [
+			'id' => $discount->id,
+			'url' => "advanced-discounts/{$discount->id}",
+			'title' => $discount->name,
+			'enabled' => $discount->enabled,
+			'code' => $discount->code,
+			'dateCreated' => $discount->dateCreated !== null ? $formatter->asDate($discount->dateCreated, Locale::LENGTH_SHORT) : '',
+			'dateUpdated' => $discount->dateUpdated !== null ? $formatter->asDate($discount->dateUpdated, Locale::LENGTH_SHORT) : '',
+		], $discounts);
 
-		foreach ($discounts as &$discount) {
-			$discount = $discount->toArray();
-			$discount['url'] = "advanced-discounts/{$discount['id']}";
-			$discount['title'] = $discount['name'];
-			$discount['dateCreated'] = Craft::$app->getFormatter()
-				->asDate($discount['dateCreated'], Locale::LENGTH_SHORT);
-			$discount['dateUpdated'] = Craft::$app->getFormatter()
-				->asDate($discount['dateUpdated'], Locale::LENGTH_SHORT);
-		}
-		return $this->asJson([
-			'data' => $discounts,
-			'pagination' => false,
+		return $this->renderTemplate('advanced-discounts/index', [
+			'tableData' => $tableData,
 		]);
 	}
 
@@ -111,6 +109,20 @@ class ManageController extends Controller
 		]);
 	}
 
+	public function actionReorder(): ?Response
+	{
+		$this->requirePostRequest();
+		$this->requireAcceptsJson();
+
+		$ids = Json::decode($this->request->getRequiredBodyParam('ids'));
+
+		if (! Plugin::getInstance()->discounts->reorderDiscounts($ids)) {
+			return $this->asFailure(Craft::t('advanced-discounts', "Couldn't reorder discounts."));
+		}
+
+		return $this->asSuccess(Craft::t('advanced-discounts', 'Discounts reordered.'));
+	}
+
 	public function actionDelete(): ?Response
 	{
 		$this->requirePostRequest();
@@ -135,6 +147,7 @@ class ManageController extends Controller
 		$discount->name = $this->request->getBodyParam('name');
 		$discount->code = $this->request->getBodyParam('code') ?: null;
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
+		$discount->stopProcessing = (bool) $this->request->getBodyParam('stopProcessing');
 		$discount->type = $this->request->getBodyParam('type') ?: 'advanced';
 		$discount->setGlobalCartCondition($this->request->getBodyParam('globalCartCondition'));
 		$discount->setPanels($this->request->getBodyParam('panels') ?? []);

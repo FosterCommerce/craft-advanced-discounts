@@ -11,6 +11,8 @@ use craft\db\ActiveRecord;
  * @property ?string $name
  * @property ?string $code
  * @property bool $enabled
+ * @property bool $stopProcessing
+ * @property ?int $sortOrder
  * @property string $type
  * @property ?array $settings
  * @property ?array $cartCondition

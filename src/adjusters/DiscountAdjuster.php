@@ -33,7 +33,12 @@ class DiscountAdjuster implements AdjusterInterface
 				continue;
 			}
 
-			array_push($adjustments, ...$discount->getType()->getAdjustments($order, $discount));
+			$discountAdjustments = $discount->getType()->getAdjustments($order, $discount);
+			array_push($adjustments, ...$discountAdjustments);
+
+			if ($discountAdjustments !== [] && $discount->stopProcessing) {
+				break;
+			}
 		}
 
 		return $adjustments;

@@ -51,10 +51,14 @@ return [
     'Code' => 'Code',
     'Created' => 'Erstellt',
     'Updated' => 'Aktualisiert',
+    'Discounts reordered.' => 'Rabatte neu angeordnet.',
+    "Couldn't reorder discounts." => 'Rabatte konnten nicht neu angeordnet werden.',
 
     // Bearbeitungsformular
     'Create discount' => 'Rabatt erstellen',
     'Save discount' => 'Rabatt speichern',
+    'Stop processing further discounts' => 'Weitere Rabatte nicht mehr verarbeiten',
+    'If this discount matches and is applied, no other discounts will be evaluated.' => 'Wenn dieser Rabatt zutrifft und angewendet wird, werden keine weiteren Rabatte mehr geprüft.',
     'Name' => 'Name',
     'Discount code' => 'Rabattcode',
     'Type' => 'Typ',
