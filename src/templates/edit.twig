@@ -32,18 +32,144 @@
         errors: discount.getErrors('name'),
     }) }}
 
-    {{ forms.textField({
-        label: "Discount code"|t('advanced-discounts'),
-        id: 'code',
-        name: 'code',
-        value: discount.code,
-        type: 'text',
-        instructions: "Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply."|t('advanced-discounts'),
-        inputAttributes: {
-            data: {lpignore: 'true'},
-        },
-        errors: discount.getErrors('code'),
+    {{ forms.lightswitchField({
+        label: "Require Coupon Code"|t('advanced-discounts'),
+        id: 'requireCouponCode',
+        name: 'requireCouponCode',
+        on: discount.requireCouponCode,
+        instructions: "Off applies to every applicable order (like a sale). On requires one of the coupon codes below to be entered at checkout."|t('advanced-discounts'),
     }) }}
+
+    <div id="coupons-container"{% if not discount.requireCouponCode %} class="hidden"{% endif %}>
+        {% set couponRows = [] %}
+        {% for coupon in discount.coupons %}
+            {% set couponRows = couponRows|merge([{
+                id: coupon.id,
+                code: coupon.code,
+                uses: coupon.uses,
+                maxUses: coupon.maxUses,
+            }]) %}
+        {% endfor %}
+
+        {% set couponsField %}
+            {{ forms.editableTable({
+                id: 'coupons-table',
+                name: 'coupons',
+                cols: {
+                    id: {
+                        type: 'singleline',
+                        heading: 'id'|t('advanced-discounts'),
+                        class: 'hidden',
+                    },
+                    code: {
+                        type: 'singleline',
+                        heading: 'Code'|t('advanced-discounts'),
+                    },
+                    uses: {
+                        type: 'singleline',
+                        heading: 'Uses'|t('advanced-discounts'),
+                    },
+                    maxUses: {
+                        type: 'singleline',
+                        heading: 'Max Uses'|t('advanced-discounts'),
+                        info: 'Leave blank for unlimited uses.'|t('advanced-discounts'),
+                    },
+                },
+                rows: couponRows,
+                addRowLabel: 'Add a coupon'|t('advanced-discounts'),
+                allowAdd: true,
+                allowDelete: true,
+                defaultValues: {
+                    uses: 0,
+                },
+            }) }}
+        {% endset %}
+
+        {{ forms.field({
+            label: 'Coupons'|t('advanced-discounts'),
+            errors: discount.getErrors('coupons'),
+            headingSuffix: tag('button', {
+                id: 'generate-coupons',
+                type: 'button',
+                class: ['btn', 'small'],
+                text: 'Generate'|t('advanced-discounts'),
+            }),
+        }, couponsField) }}
+    </div>
+
+    {% js %}
+        (() => {
+            $(document).on('click keyup', '#requireCouponCode', () => {
+                $('#coupons-container').toggleClass('hidden', ! $('#requireCouponCode').hasClass('on'));
+            });
+        })();
+
+        (() => {
+            const generateButton = document.getElementById('generate-coupons');
+            const couponsTable = $('#coupons-table');
+            const editableTable = couponsTable.data('editable-table');
+            let hud;
+
+            const existingCodes = () => couponsTable
+                .find('[name$="[code]"]')
+                .map((index, input) => input.value)
+                .get()
+                .filter(Boolean);
+
+            generateButton.addEventListener('click', () => {
+                if (hud) {
+                    hud.show();
+                    return;
+                }
+
+                const body = $('<div/>');
+                const countField = Craft.ui.createTextField({
+                    label: Craft.t('advanced-discounts', 'Number of Coupons'),
+                    type: 'number',
+                    value: 1,
+                }).appendTo(body);
+                const formatField = Craft.ui.createTextField({
+                    label: Craft.t('advanced-discounts', 'Format'),
+                    instructions: Craft.t('advanced-discounts', 'Each # becomes a random character.'),
+                    value: 'DISCOUNT_####',
+                }).appendTo(body);
+                const submitButton = $('<button/>', {
+                    type: 'button',
+                    class: 'btn submit',
+                    text: Craft.t('advanced-discounts', 'Generate'),
+                }).appendTo($('<div class="buttons"/>').appendTo(body));
+
+                hud = new Garnish.HUD(generateButton, body);
+
+                submitButton.on('click', async () => {
+                    const count = parseInt(countField.find('input').val(), 10) || 0;
+                    if (count < 1) {
+                        return;
+                    }
+
+                    submitButton.addClass('loading');
+                    try {
+                        const { data } = await Craft.sendActionRequest('POST', 'advanced-discounts/manage/generate-coupons', {
+                            data: {
+                                count,
+                                format: formatField.find('input').val(),
+                                existingCodes: existingCodes(),
+                            },
+                        });
+                        (data.coupons || []).forEach((code) => {
+                            editableTable.addRow();
+                            couponsTable.find('tbody tr').last().find('[name$="[code]"]').val(code);
+                        });
+                        hud.hide();
+                    } catch (error) {
+                        Craft.cp.displayError(error?.response?.data?.message);
+                    } finally {
+                        submitButton.removeClass('loading');
+                    }
+                });
+            });
+        })();
+    {% endjs %}
 
     {% set globalCartCondition %}
         {{ discount.globalCartCondition.getBuilderHtml()|raw }}
@@ -130,7 +256,7 @@
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Stop processing further discounts'|t('advanced-discounts'),
+            label: 'Stop Processing Further Discounts'|t('advanced-discounts'),
             instructions: 'If this discount matches and is applied, no other discounts will be evaluated.'|t('advanced-discounts'),
             id: 'stopProcessing',
             name: 'stopProcessing',

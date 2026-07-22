@@ -27,4 +27,9 @@ class BuyXGetYDiscountType extends DiscountType
 	{
 		return Craft::t('advanced-discounts', 'Buy X, Get Y');
 	}
+
+	public static function actionInstructions(): string
+	{
+		return Craft::t('advanced-discounts', 'Choose the items the customer buys and the items they get.');
+	}
 }

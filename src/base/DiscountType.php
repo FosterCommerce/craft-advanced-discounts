@@ -34,6 +34,7 @@ abstract class DiscountType implements DiscountTypeInterface
 		return Craft::$app->getView()->renderTemplate('advanced-discounts/_groups', [
 			'discount' => $discount,
 			'actionLabel' => static::actionLabel(),
+			'actionInstructions' => static::actionInstructions(),
 			'bundle' => static::actionConditionClass() === BundleCondition::class,
 		]);
 	}
@@ -53,7 +54,14 @@ abstract class DiscountType implements DiscountTypeInterface
 
 			if ($panel->getCartActionCondition()->getConditionRules() !== []) {
 				$name = $panel->name !== '' ? $panel->name : $discount->name;
-				array_push($adjustments, ...$this->buildPanelAdjustments($panel, $order, $name));
+				$panelAdjustments = $this->buildPanelAdjustments($panel, $order, $name);
+				foreach ($panelAdjustments as $panelAdjustment) {
+					$panelAdjustment->sourceSnapshot = [
+						'advancedDiscountId' => $discount->id,
+					];
+				}
+
+				array_push($adjustments, ...$panelAdjustments);
 			}
 
 			if ($panel->stopProcessing) {

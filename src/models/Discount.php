@@ -23,9 +23,9 @@ class Discount extends Model
 	public string $name = '';
 
 	/**
-	 * @var string|null The discount's unique code, if any
+	 * @var bool Whether a coupon code must be entered at checkout for this discount to apply
 	 */
-	public ?string $code = null;
+	public bool $requireCouponCode = false;
 
 	/**
 	 * @var bool Whether the discount is enabled
@@ -36,6 +36,11 @@ class Discount extends Model
 	 * @var bool Whether to stop processing further discounts once this discount matches and is applied
 	 */
 	public bool $stopProcessing = false;
+
+	/**
+	 * @var int Number of completed orders this discount has applied to
+	 */
+	public int $uses = 0;
 
 	/**
 	 * @var int|null Position of this discount relative to other discounts; lower values are evaluated first
@@ -57,6 +62,11 @@ class Discount extends Model
 	public ?\DateTime $dateCreated = null;
 
 	public ?\DateTime $dateUpdated = null;
+
+	/**
+	 * @var Coupon[]|null
+	 */
+	private ?array $_coupons = null;
 
 	public function init(): void
 	{
@@ -129,13 +139,74 @@ class Discount extends Model
 	}
 
 	/**
+	 * @return Coupon[]
+	 */
+	public function getCoupons(): array
+	{
+		if ($this->_coupons === null) {
+			$this->_coupons = $this->id !== null
+				? Plugin::getInstance()->coupons->getCouponsByDiscountId($this->id)
+				: [];
+		}
+
+		return $this->_coupons;
+	}
+
+	/**
+	 * @param array<int, array<string, mixed>|Coupon> $coupons
+	 */
+	public function setCoupons(array $coupons): void
+	{
+		$this->_coupons = array_values(array_filter(array_map(static function (array|Coupon $config): ?Coupon {
+			if ($config instanceof Coupon) {
+				return $config;
+			}
+
+			$code = trim((string) ($config['code'] ?? ''));
+			if ($code === '') {
+				return null;
+			}
+
+			$maxUses = trim((string) ($config['maxUses'] ?? ''));
+
+			$coupon = new Coupon();
+			$coupon->id = ($config['id'] ?? null) ?: null;
+			$coupon->code = $code;
+			$coupon->uses = (int) ($config['uses'] ?? 0);
+			$coupon->maxUses = $maxUses !== '' ? (int) $maxUses : null;
+
+			return $coupon;
+		}, $coupons)));
+	}
+
+	public function matchesCouponCode(?string $couponCode): bool
+	{
+		if (! $this->requireCouponCode) {
+			return true;
+		}
+
+		$couponCode = trim((string) $couponCode);
+		if ($couponCode === '') {
+			return false;
+		}
+
+		foreach ($this->getCoupons() as $coupon) {
+			if (strcasecmp((string) $coupon->code, $couponCode) === 0) {
+				return $coupon->maxUses === null || $coupon->uses < $coupon->maxUses;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @return array<int, mixed>
 	 */
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
 			[['name'], 'required'],
-			[['name', 'code'],
+			[['name'],
 				'string',
 				'max' => 255],
 		]);

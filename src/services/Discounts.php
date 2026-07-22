@@ -6,6 +6,7 @@ use Craft;
 use craft\db\Query;
 use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\models\Discount;
+use fostercommerce\advanceddiscounts\Plugin;
 use fostercommerce\advanceddiscounts\records\Discount as DiscountRecord;
 use yii\base\Component;
 use yii\db\Expression;
@@ -44,13 +45,12 @@ class Discounts extends Component
 
 	public function getDiscountByCode(string $code): ?Discount
 	{
-		foreach ($this->getAllDiscounts() as $discount) {
-			if ($discount->code !== null && strcasecmp($discount->code, $code) === 0) {
-				return $discount;
-			}
+		$coupon = Plugin::getInstance()->coupons->getCouponByCode($code);
+		if ($coupon === null || $coupon->discountId === null) {
+			return null;
 		}
 
-		return null;
+		return $this->getDiscountById($coupon->discountId);
 	}
 
 	/**
@@ -72,6 +72,22 @@ class Discounts extends Component
 		$this->_discounts = null;
 
 		return true;
+	}
+
+	/**
+	 * @param int[] $discountIds Discounts that applied to a completed order
+	 */
+	public function incrementUses(array $discountIds): void
+	{
+		Craft::$app->db->createCommand()
+			->update(DiscountRecord::TABLE_NAME, [
+				'uses' => new Expression('[[uses]] + 1'),
+			], [
+				'id' => $discountIds,
+			])
+			->execute();
+
+		$this->_discounts = null;
 	}
 
 	public function deleteDiscount(int $id): bool
@@ -106,7 +122,7 @@ class Discounts extends Component
 		}
 
 		$record->name = $discount->name;
-		$record->code = $discount->code;
+		$record->requireCouponCode = $discount->requireCouponCode;
 		$record->enabled = $discount->enabled;
 		$record->stopProcessing = $discount->stopProcessing;
 		$record->type = $discount->type;
@@ -130,6 +146,12 @@ class Discounts extends Component
 
 			$record->save();
 			$discount->id = $record->id;
+
+			if (! Plugin::getInstance()->coupons->saveDiscountCoupons($discount)) {
+				$transaction->rollBack();
+				return false;
+			}
+
 			$transaction->commit();
 			$this->_discounts = null;
 		} catch (\Exception $e) {
@@ -148,9 +170,10 @@ class Discounts extends Component
 		$discount = new Discount([
 			'id' => $record['id'],
 			'name' => $record['name'],
-			'code' => $record['code'],
+			'requireCouponCode' => $record['requireCouponCode'] ?? false,
 			'enabled' => $record['enabled'],
 			'stopProcessing' => $record['stopProcessing'] ?? false,
+			'uses' => $record['uses'] ?? 0,
 			'sortOrder' => $record['sortOrder'] ?? null,
 			'type' => $record['type'] ?? 'advanced',
 			'dateCreated' => $record['dateCreated'],
@@ -175,9 +198,10 @@ class Discounts extends Component
 			->select([
 				'[[discounts.id]]',
 				'[[discounts.name]]',
-				'[[discounts.code]]',
+				'[[discounts.requireCouponCode]]',
 				'[[discounts.enabled]]',
 				'[[discounts.stopProcessing]]',
+				'[[discounts.uses]]',
 				'[[discounts.sortOrder]]',
 				'[[discounts.type]]',
 				'[[discounts.settings]]',

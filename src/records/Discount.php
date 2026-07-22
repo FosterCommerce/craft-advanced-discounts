@@ -9,9 +9,10 @@ use craft\db\ActiveRecord;
  *
  * @property int $id
  * @property ?string $name
- * @property ?string $code
+ * @property bool $requireCouponCode
  * @property bool $enabled
  * @property bool $stopProcessing
+ * @property int $uses
  * @property ?int $sortOrder
  * @property string $type
  * @property ?array $settings

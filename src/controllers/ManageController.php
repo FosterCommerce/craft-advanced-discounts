@@ -3,6 +3,8 @@
 namespace fostercommerce\advanceddiscounts\controllers;
 
 use Craft;
+use craft\commerce\Plugin as CommercePlugin;
+use craft\commerce\services\Coupons as CommerceCoupons;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\web\Controller;
@@ -20,24 +22,31 @@ class ManageController extends Controller
 	public function actionIndex(): Response
 	{
 		Craft::$app->getView()->registerTranslations('advanced-discounts', [
-			'Code',
-			'Created',
-			'Updated',
+			'Type',
+			'Require Coupon Code',
+			'Coupons',
+			'Times Used',
+			'Stops Processing?',
+			'Date Created',
 			'No discounts yet.',
 			'Discounts reordered.',
 			"Couldn't reorder discounts.",
 		]);
 
 		$formatter = Craft::$app->getFormatter();
+		$couponCounts = Plugin::getInstance()->coupons->getCouponCountsByDiscountId();
 		$discounts = Plugin::getInstance()->discounts->getAllDiscounts();
 		$tableData = array_map(static fn (Discount $discount): array => [
 			'id' => $discount->id,
 			'url' => "advanced-discounts/{$discount->id}",
 			'title' => $discount->name,
-			'enabled' => $discount->enabled,
-			'code' => $discount->code,
+			'status' => $discount->enabled ? 'enabled' : 'disabled',
+			'type' => $discount->getType()::displayName(),
+			'requireCouponCode' => $discount->requireCouponCode,
+			'coupons' => $couponCounts[$discount->id] ?? 0,
+			'timesUsed' => $discount->uses,
+			'stopProcessing' => $discount->stopProcessing,
 			'dateCreated' => $discount->dateCreated !== null ? $formatter->asDate($discount->dateCreated, Locale::LENGTH_SHORT) : '',
-			'dateUpdated' => $discount->dateUpdated !== null ? $formatter->asDate($discount->dateUpdated, Locale::LENGTH_SHORT) : '',
 		], $discounts);
 
 		return $this->renderTemplate('advanced-discounts/index', [
@@ -47,6 +56,13 @@ class ManageController extends Controller
 
 	public function actionEdit(?int $id = null): Response
 	{
+		Craft::$app->getView()->registerTranslations('advanced-discounts', [
+			'Number of Coupons',
+			'Format',
+			'Each # becomes a random character.',
+			'Generate',
+		]);
+
 		$discount = Craft::$app->getUrlManager()->getRouteParams()['discount']
 			?? ($id !== null ? Plugin::getInstance()->discounts->getDiscountById($id) : new Discount());
 
@@ -84,6 +100,29 @@ class ManageController extends Controller
 		]);
 	}
 
+	public function actionGenerateCoupons(): ?Response
+	{
+		$this->requirePostRequest();
+		$this->requireAcceptsJson();
+
+		$count = (int) $this->request->getBodyParam('count', 0);
+		$format = $this->request->getBodyParam('format') ?: CommerceCoupons::DEFAULT_COUPON_FORMAT;
+
+		$existingCodes = $this->request->getBodyParam('existingCodes') ?: [];
+		if (! is_array($existingCodes)) {
+			$existingCodes = [];
+		}
+		$existingCodes = array_merge($existingCodes, Plugin::getInstance()->coupons->getAllCodes());
+
+		/** @var CommercePlugin $commerce */
+		$commerce = CommercePlugin::getInstance();
+		$coupons = $commerce->getCoupons()->generateCouponCodes($count, $format, $existingCodes);
+
+		return $this->asSuccess(data: [
+			'coupons' => $coupons,
+		]);
+	}
+
 	public function actionPanel(): Response
 	{
 		$this->requirePostRequest();
@@ -99,6 +138,7 @@ class ManageController extends Controller
 		$html = $view->renderTemplate('advanced-discounts/_panel', [
 			'panel' => $discount->panels[0],
 			'actionLabel' => $type::actionLabel(),
+			'actionInstructions' => $type::actionInstructions(),
 			'bundle' => $type::actionConditionClass() === BundleCondition::class,
 		]);
 
@@ -145,7 +185,8 @@ class ManageController extends Controller
 
 		$discount->id = $this->request->getBodyParam('id');
 		$discount->name = $this->request->getBodyParam('name');
-		$discount->code = $this->request->getBodyParam('code') ?: null;
+		$discount->requireCouponCode = (bool) $this->request->getBodyParam('requireCouponCode');
+		$discount->setCoupons($this->request->getBodyParam('coupons') ?? []);
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
 		$discount->stopProcessing = (bool) $this->request->getBodyParam('stopProcessing');
 		$discount->type = $this->request->getBodyParam('type') ?: 'advanced';
