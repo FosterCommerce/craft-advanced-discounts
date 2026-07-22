@@ -4,7 +4,7 @@
 {% set crumbs = [
     { label: "Advanced Discounts"|t('advanced-discounts'), url: url('advanced-discounts') },
 ] %}
-{% set title = "Create discount"|t('advanced-discounts') %}
+{% set title = discount.id ? discount.name : "Create discount"|t('advanced-discounts') %}
 {% import '_includes/forms.twig' as forms %}
 
 {% block actionButton %}
@@ -45,35 +45,79 @@
         errors: discount.getErrors('code'),
     }) }}
 
-    {% set cartCondition %}
-        {{ discount.cartCondition.getBuilderHtml()|raw }}
+    {% set globalCartCondition %}
+        {{ discount.globalCartCondition.getBuilderHtml()|raw }}
     {% endset %}
 
     {{ forms.field({
-        label: 'Cart Conditions'|t('advanced-discounts'),
-        instructions: 'Rules that decide when this discount applies.'|t('advanced-discounts'),
-        errors: discount.getErrors('cartCondition')
-    }, cartCondition) }}
+        label: 'Global Cart Conditions'|t('advanced-discounts'),
+        instructions: 'Conditions that gate the entire discount.'|t('advanced-discounts'),
+    }, globalCartCondition) }}
 
-    {% set cartActionCondition %}
-        {{ discount.cartActionCondition.getBuilderHtml()|raw }}
-    {% endset %}
+    {{ forms.selectField({
+        label: "Type"|t('advanced-discounts'),
+        id: 'type',
+        name: 'type',
+        options: typeOptions,
+        value: discount.type,
+    }) }}
 
-    {{ forms.field({
-        label: 'Cart Actions'|t('advanced-discounts'),
-        instructions: 'Create cart actions to apply when the customer matches the rules above.'|t('advanced-discounts'),
-        errors: discount.getErrors('cartActionCondition')
-    }, cartActionCondition) }}
+    <div id="type-settings">
+        {{ typeSettingsHtml|raw }}
+    </div>
 
-    {% set messageCondition %}
-        {{ discount.messageCondition.getBuilderHtml()|raw }}
-    {% endset %}
+    {% js %}
+        (() => {
+            const select = document.getElementById('type');
+            const container = document.getElementById('type-settings');
 
-    {{ forms.field({
-        label: 'Messages'|t('advanced-discounts'),
-        instructions: 'Create messages to show to customers when they match certain conditions.'|t('advanced-discounts'),
-        errors: discount.getErrors('messageCondition')
-    }, messageCondition) }}
+            select.addEventListener('change', async () => {
+                const { data } = await Craft.sendActionRequest('POST', 'advanced-discounts/manage/type-settings', {
+                    data: { type: select.value },
+                });
+                container.innerHTML = data.html;
+                Craft.appendHeadHtml(data.headHtml);
+                Craft.appendBodyHtml(data.bodyHtml);
+                Craft.initUiElements(container);
+                htmx.process(container);
+            });
+        })();
+    {% endjs %}
+
+    <div class="pane tip">
+        <h2>{{ 'Helpful notes'|t('advanced-discounts') }}</h2>
+        <ul class="bullets">
+            <li>{{ 'Groups apply top to bottom. Turn on “Stop processing further groups” to make tiers, so only the first matching group applies.'|t('advanced-discounts') }}</li>
+            <li>{{ 'For tiers, order groups from the highest threshold to the lowest.'|t('advanced-discounts') }}</li>
+            <li>{{ 'Global Cart Conditions gate the whole discount, like a date range.'|t('advanced-discounts') }}</li>
+            <li>{{ 'A message with no “show when” rule appears whenever its group applies.'|t('advanced-discounts') }}</li>
+            <li>{{ 'When several messages qualify, the storefront shows the first one. That means the topmost group, then the topmost message. Reorder groups or use non-overlapping “show when” rules to control it.'|t('advanced-discounts') }}</li>
+            <li><code>{amountRemaining}</code> {{ 'counts down to its group’s threshold. Give it a “show when” rule that stays below the threshold, or it shows $0.00.'|t('advanced-discounts') }}</li>
+        </ul>
+    </div>
+
+    {% css %}
+        .advanced-discount-placeholders { background-color: var(--green-050) !important; border-color: var(--green-600) !important; color: var(--green-800); padding-inline-start: 50px; position: relative; }
+        .advanced-discount-placeholders:before { font-family: Craft; content: 'draft'; position: absolute; inset-inline-start: 16px; top: 15px; font-size: 24px; color: var(--green-600); }
+        .advanced-discount-placeholders h2 { color: var(--green-800); }
+        .advanced-discount-placeholders table.data th,
+        .advanced-discount-placeholders table.data td { background: transparent; border-color: var(--green-200); color: var(--green-800); }
+        .advanced-discount-placeholders table.data tr:hover th,
+        .advanced-discount-placeholders table.data tr:hover td { background: var(--green-100); }
+    {% endcss %}
+
+    <div class="pane advanced-discount-placeholders">
+        <h2>{{ 'Message placeholders'|t('advanced-discounts') }}</h2>
+        <table class="data fullwidth">
+            <tbody>
+                <tr><th><code>{discountAmount}</code></th><td>{{ 'The discount value (percentage or amount).'|t('advanced-discounts') }}</td></tr>
+                <tr><th><code>{amountRemaining}</code></th><td>{{ 'Amount left to reach the group’s threshold.'|t('advanced-discounts') }}</td></tr>
+                <tr><th><code>{quantityRemaining}</code></th><td>{{ 'Items left to reach a quantity condition.'|t('advanced-discounts') }}</td></tr>
+                <tr><th><code>{buyQuantityRemaining}</code></th><td>{{ 'Buy items left for the next Buy X, Get Y reward.'|t('advanced-discounts') }}</td></tr>
+                <tr><th><code>{discountedQuantity}</code></th><td>{{ 'Units currently discounted for Buy X, Get Y.'|t('advanced-discounts') }}</td></tr>
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
 
 {% block details %}

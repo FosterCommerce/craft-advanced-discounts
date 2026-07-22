@@ -20,7 +20,7 @@ class OrderCartActionRule extends BaseConditionRule implements ElementConditionR
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Order');
+		return Craft::t('advanced-discounts', 'Item Subtotal');
 	}
 
 	public function getExclusiveQueryParams(): array

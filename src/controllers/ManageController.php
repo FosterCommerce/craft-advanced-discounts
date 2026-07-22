@@ -5,6 +5,7 @@ namespace fostercommerce\advanceddiscounts\controllers;
 use Craft;
 use craft\i18n\Locale;
 use craft\web\Controller;
+use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 use yii\web\Response;
@@ -51,9 +52,62 @@ class ManageController extends Controller
 		$discount = Craft::$app->getUrlManager()->getRouteParams()['discount']
 			?? ($id !== null ? Plugin::getInstance()->discounts->getDiscountById($id) : new Discount());
 
+		$typeOptions = [];
+		foreach (Plugin::getInstance()->discountTypes->getAllDiscountTypeInstances() as $type) {
+			$typeOptions[] = [
+				'value' => $type::handle(),
+				'label' => $type::displayName(),
+			];
+		}
+
 		return $this->renderTemplate('advanced-discounts/edit', [
 			'discount' => $discount,
 			'isNewDiscount' => $discount->id === null,
+			'typeOptions' => $typeOptions,
+			'typeSettingsHtml' => $discount->getType()->getSettingsHtml($discount),
+		]);
+	}
+
+	public function actionTypeSettings(): Response
+	{
+		$this->requirePostRequest();
+
+		$discount = new Discount([
+			'type' => $this->request->getBodyParam('type') ?: 'advanced',
+		]);
+
+		$view = Craft::$app->getView();
+		$html = $discount->getType()->getSettingsHtml($discount);
+
+		return $this->asJson([
+			'html' => $html,
+			'headHtml' => $view->getHeadHtml(),
+			'bodyHtml' => $view->getBodyHtml(),
+		]);
+	}
+
+	public function actionPanel(): Response
+	{
+		$this->requirePostRequest();
+
+		$type = Plugin::getInstance()->discountTypes->getDiscountTypeByHandle(
+			$this->request->getBodyParam('type') ?: 'advanced'
+		);
+		$discount = new Discount([
+			'type' => $type::handle(),
+		]);
+
+		$view = Craft::$app->getView();
+		$html = $view->renderTemplate('advanced-discounts/_panel', [
+			'panel' => $discount->panels[0],
+			'actionLabel' => $type::actionLabel(),
+			'bundle' => $type::actionConditionClass() === BundleCondition::class,
+		]);
+
+		return $this->asJson([
+			'html' => $html,
+			'headHtml' => $view->getHeadHtml(),
+			'bodyHtml' => $view->getBodyHtml(),
 		]);
 	}
 
@@ -81,9 +135,9 @@ class ManageController extends Controller
 		$discount->name = $this->request->getBodyParam('name');
 		$discount->code = $this->request->getBodyParam('code') ?: null;
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
-		$discount->setCartCondition($this->request->getBodyParam('cartCondition'));
-		$discount->setCartActionCondition($this->request->getBodyParam('cartActionCondition'));
-		$discount->setMessageCondition($this->request->getBodyParam('messageCondition'));
+		$discount->type = $this->request->getBodyParam('type') ?: 'advanced';
+		$discount->setGlobalCartCondition($this->request->getBodyParam('globalCartCondition'));
+		$discount->setPanels($this->request->getBodyParam('panels') ?? []);
 
 		if (Plugin::getInstance()->discounts->saveDiscount($discount)) {
 			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Discount saved.'));

@@ -1,0 +1,61 @@
+{% import '_includes/forms.twig' as forms %}
+
+<div class="advanced-discount-panel{{ not panel.enabled ? ' is-disabled is-collapsed' }}" data-panel>
+    <div class="advanced-discount-panel-header">
+        <a class="move icon" title="{{ 'Reorder'|t('app') }}"></a>
+        <span class="advanced-discount-panel-title">{{ panel.name }}</span>
+        <div class="advanced-discount-panel-actions">
+            {{ forms.lightswitch({
+                name: 'panels[' ~ panel.key ~ '][enabled]',
+                on: panel.enabled,
+                small: true,
+            }) }}
+            <button type="button" class="btn small advanced-discount-panel-collapse" data-panel-collapse>{{ 'Collapse'|t('app') }}</button>
+            <button type="button" class="delete icon" data-panel-delete title="{{ 'Delete'|t('app') }}"></button>
+        </div>
+    </div>
+
+    <div class="advanced-discount-panel-body">
+        {{ forms.textField({
+            label: 'Discount name'|t('advanced-discounts'),
+            instructions: 'Overrides the discount name shown on the order for this group.'|t('advanced-discounts'),
+            name: 'panels[' ~ panel.key ~ '][name]',
+            value: panel.name,
+        }) }}
+
+        {% set cartCondition %}
+            {{ panel.cartCondition.getBuilderHtml()|raw }}
+        {% endset %}
+
+        {{ forms.field({
+            label: 'Cart Conditions'|t('advanced-discounts'),
+            instructions: 'Rules that decide when this group applies.'|t('advanced-discounts'),
+        }, cartCondition) }}
+
+        {% set cartActionCondition %}
+            <div class="{{ bundle ? 'advanced-discount-bundle' }}">
+                {{ panel.cartActionCondition.getBuilderHtml()|raw }}
+            </div>
+        {% endset %}
+
+        {{ forms.field({
+            label: actionLabel,
+        }, cartActionCondition) }}
+
+        {% set messageCondition %}
+            {{ panel.messageCondition.getBuilderHtml()|raw }}
+        {% endset %}
+
+        {{ forms.field({
+            label: 'Messages'|t('advanced-discounts'),
+            instructions: 'Create messages to show to customers when they match certain conditions.'|t('advanced-discounts'),
+        }, messageCondition) }}
+
+        {{ forms.lightswitchField({
+            label: 'Stop processing further groups'|t('advanced-discounts'),
+            instructions: 'When this group applies, skip the groups below it.'|t('advanced-discounts'),
+            name: 'panels[' ~ panel.key ~ '][stopProcessing]',
+            on: panel.stopProcessing,
+        }) }}
+    </div>
+</div>

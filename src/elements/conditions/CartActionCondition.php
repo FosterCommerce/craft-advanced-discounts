@@ -22,7 +22,6 @@ class CartActionCondition extends ElementCondition
 			OrderCartActionRule::class,
 			LineItemCartActionRule::class,
 			ShippingMethodCartActionRule::class,
-			BogoCartActionRule::class,
 		]);
 	}
 }

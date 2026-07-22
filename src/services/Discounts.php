@@ -4,6 +4,7 @@ namespace fostercommerce\advanceddiscounts\services;
 
 use Craft;
 use craft\db\Query;
+use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\records\Discount as DiscountRecord;
 use yii\base\Component;
@@ -85,9 +86,11 @@ class Discounts extends Component
 		$record->name = $discount->name;
 		$record->code = $discount->code;
 		$record->enabled = $discount->enabled;
-		$record->cartCondition = $discount->getCartCondition()->getConfig();
-		$record->cartActionCondition = $discount->getCartActionCondition()->getConfig();
-		$record->messageCondition = $discount->getMessageCondition()->getConfig();
+		$record->type = $discount->type;
+		$record->settings = [
+			'globalCartCondition' => $discount->getGlobalCartCondition()->getConfig(),
+			'panels' => array_map(static fn ($panel): array => $panel->getConfig(), $discount->panels),
+		];
 
 		// In the future we may have multiple things that would need to be saved here.
 		$db = Craft::$app->db;
@@ -110,7 +113,23 @@ class Discounts extends Component
 	 */
 	private function _populateDiscount(array $record): Discount
 	{
-		return new Discount($record);
+		$discount = new Discount([
+			'id' => $record['id'],
+			'name' => $record['name'],
+			'code' => $record['code'],
+			'enabled' => $record['enabled'],
+			'type' => $record['type'] ?? 'advanced',
+			'dateCreated' => $record['dateCreated'],
+			'dateUpdated' => $record['dateUpdated'],
+		]);
+
+		$settings = Json::decodeIfJson($record['settings'] ?? '');
+		$settings = is_array($settings) ? $settings : [];
+
+		$discount->setGlobalCartCondition($settings['globalCartCondition'] ?? []);
+		$discount->setPanels($settings['panels'] ?? []);
+
+		return $discount;
 	}
 
 	/**
@@ -124,9 +143,8 @@ class Discounts extends Component
 				'[[discounts.name]]',
 				'[[discounts.code]]',
 				'[[discounts.enabled]]',
-				'[[discounts.cartCondition]]',
-				'[[discounts.cartActionCondition]]',
-				'[[discounts.messageCondition]]',
+				'[[discounts.type]]',
+				'[[discounts.settings]]',
 				'[[discounts.dateCreated]]',
 				'[[discounts.dateUpdated]]',
 			])

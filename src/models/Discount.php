@@ -6,9 +6,9 @@ use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
-use fostercommerce\advanceddiscounts\elements\conditions\CartActionCondition;
+use fostercommerce\advanceddiscounts\base\DiscountTypeInterface;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
-use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
+use fostercommerce\advanceddiscounts\Plugin;
 
 class Discount extends Model
 {
@@ -33,32 +33,40 @@ class Discount extends Model
 	public bool $enabled = true;
 
 	/**
-	 * @see getCartCondition()
-	 * @see setCartCondition()
+	 * @var string Handle of the discount type
 	 */
-	public null|ElementConditionInterface $_cartCondition = null;
+	public string $type = 'advanced';
+
+	public null|ElementConditionInterface $_globalCartCondition = null;
 
 	/**
-	 * @see getCartActionCondition()
-	 * @see setCartActionCondition()
+	 * @var DiscountPanel[]
 	 */
-	public null|ElementConditionInterface $_cartActionCondition = null;
-
-	/**
-	 * @see getMessageCondition()
-	 * @see setMessageCondition()
-	 */
-	public null|ElementConditionInterface $_messageCondition = null;
+	public array $panels = [];
 
 	public ?\DateTime $dateCreated = null;
 
 	public ?\DateTime $dateUpdated = null;
 
-	public function getCartCondition(): ElementConditionInterface
+	public function init(): void
 	{
-		$condition = $this->_cartCondition ?? new CartCondition();
+		parent::init();
+
+		if ($this->panels === []) {
+			$this->panels = [$this->newPanel()];
+		}
+	}
+
+	public function getType(): DiscountTypeInterface
+	{
+		return Plugin::getInstance()->discountTypes->getDiscountTypeByHandle($this->type);
+	}
+
+	public function getGlobalCartCondition(): ElementConditionInterface
+	{
+		$condition = $this->_globalCartCondition ?? new CartCondition();
 		$condition->mainTag = 'div';
-		$condition->name = 'cartCondition';
+		$condition->name = 'globalCartCondition';
 
 		return $condition;
 	}
@@ -66,7 +74,7 @@ class Discount extends Model
 	/**
 	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
 	 */
-	public function setCartCondition(ElementConditionInterface|string|array|null $condition): void
+	public function setGlobalCartCondition(ElementConditionInterface|string|array|null $condition): void
 	{
 		if ($condition === null) {
 			$condition = [];
@@ -84,71 +92,30 @@ class Discount extends Model
 		}
 		$condition->forProjectConfig = false;
 
-		$this->_cartCondition = $condition;
-	}
-
-	public function getCartActionCondition(): ElementConditionInterface
-	{
-		$condition = $this->_cartActionCondition ?? new CartActionCondition();
-		$condition->mainTag = 'div';
-		$condition->name = 'cartActionCondition';
-
-		return $condition;
+		$this->_globalCartCondition = $condition;
 	}
 
 	/**
-	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
+	 * @param array<int, array<string, mixed>> $panels
 	 */
-	public function setCartActionCondition(ElementConditionInterface|string|array|null $condition): void
+	public function setPanels(array $panels): void
 	{
-		if ($condition === null) {
-			$condition = [];
-		}
-		if (is_string($condition)) {
-			$condition = Json::decodeIfJson($condition);
+		if ($panels === []) {
+			$this->panels = [$this->newPanel()];
+			return;
 		}
 
-		if (! $condition instanceof ElementConditionInterface) {
-			$condition['class'] = CartActionCondition::class;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
-		}
-		$condition->forProjectConfig = false;
+		$this->panels = array_map(function (array $config): DiscountPanel {
+			$panel = $this->newPanel();
+			$panel->name = $config['name'] ?? '';
+			$panel->enabled = (bool) ($config['enabled'] ?? true);
+			$panel->stopProcessing = (bool) ($config['stopProcessing'] ?? false);
+			$panel->setCartCondition($config['cartCondition'] ?? []);
+			$panel->setCartActionCondition($config['cartActionCondition'] ?? []);
+			$panel->setMessageCondition($config['messageCondition'] ?? []);
 
-		$this->_cartActionCondition = $condition;
-	}
-
-	public function getMessageCondition(): ElementConditionInterface
-	{
-		$condition = $this->_messageCondition ?? new MessageCondition();
-		$condition->mainTag = 'div';
-		$condition->name = 'messageCondition';
-
-		return $condition;
-	}
-
-	/**
-	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
-	 */
-	public function setMessageCondition(ElementConditionInterface|string|array|null $condition): void
-	{
-		if ($condition === null) {
-			$condition = [];
-		}
-		if (is_string($condition)) {
-			$condition = Json::decodeIfJson($condition);
-		}
-
-		if (! $condition instanceof ElementConditionInterface) {
-			$condition['class'] = MessageCondition::class;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
-		}
-		$condition->forProjectConfig = false;
-
-		$this->_messageCondition = $condition;
+			return $panel;
+		}, array_values($panels));
 	}
 
 	/**
@@ -161,22 +128,14 @@ class Discount extends Model
 			[['name', 'code'],
 				'string',
 				'max' => 255],
-			[
-				'cartCondition',
-				function (string $attribute): void {
-					if (empty($this->getCartCondition()->getConditionRules())) {
-						$this->addError($attribute, Craft::t('advanced-discounts', 'At least one condition is required.'));
-					}
-				},
-			],
-			[
-				'cartActionCondition',
-				function (string $attribute): void {
-					if (empty($this->getCartActionCondition()->getConditionRules())) {
-						$this->addError($attribute, Craft::t('advanced-discounts', 'At least one cart action rule is required.'));
-					}
-				},
-			],
 		]);
+	}
+
+	private function newPanel(): DiscountPanel
+	{
+		$panel = new DiscountPanel();
+		$panel->actionConditionClass = $this->getType()::actionConditionClass();
+
+		return $panel;
 	}
 }

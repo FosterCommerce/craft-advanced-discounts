@@ -1,0 +1,77 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% if discount.getErrors('panels') %}
+    <ul class="errors">
+        {% for error in discount.getErrors('panels') %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<div id="panels" class="advanced-discount-panels" data-discount-type="{{ discount.type }}">
+    {% for panel in discount.panels %}
+        {% include 'advanced-discounts/_panel' with { panel: panel, actionLabel: actionLabel, bundle: bundle } only %}
+    {% endfor %}
+</div>
+
+<button type="button" class="btn add icon" id="add-panel">{{ 'Add group'|t('advanced-discounts') }}</button>
+
+{% css %}
+    .advanced-discount-panel { background: var(--gray-050); border: 1px solid var(--hairline-color); border-radius: var(--medium-border-radius); padding: 14px 16px; margin-bottom: 10px; }
+    .advanced-discount-panel-header { display: flex; align-items: center; gap: 8px; }
+    .advanced-discount-panel-title { font-weight: bold; flex: 1 1 auto; }
+    .advanced-discount-panel-actions { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
+    .advanced-discount-panel-body { margin-top: 24px; }
+    .advanced-discount-panel-body .field { margin-top: 14px; }
+    .advanced-discount-panel-body .field:first-of-type { margin-top: 0; }
+    .advanced-discount-panel.is-collapsed .advanced-discount-panel-body { display: none; }
+    .advanced-discount-panel.is-disabled { opacity: .6; }
+    .advanced-discount-bundle .condition-footer,
+    .advanced-discount-bundle .rule-switcher,
+    .advanced-discount-bundle .rule-actions,
+    .advanced-discount-bundle .rule-move { display: none; }
+    .advanced-discount-message > .condition-container { margin-top: 0; }
+    .advanced-discount-message .condition-main { margin-top: 0; }
+{% endcss %}
+
+{% js %}
+    (() => {
+        const container = document.getElementById('panels');
+        const dragSort = new Garnish.DragSort(container.querySelectorAll('[data-panel]'), {
+            handle: '.move',
+            axis: Garnish.Y_AXIS,
+        });
+
+        document.getElementById('add-panel').addEventListener('click', async () => {
+            const { data } = await Craft.sendActionRequest('POST', 'advanced-discounts/manage/panel', {
+                data: { type: container.dataset.discountType },
+            });
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = data.html;
+            const el = wrapper.firstElementChild;
+            container.appendChild(el);
+            Craft.appendHeadHtml(data.headHtml);
+            Craft.appendBodyHtml(data.bodyHtml);
+            Craft.initUiElements(el);
+            htmx.process(el);
+            dragSort.addItems(el);
+        });
+
+        container.addEventListener('click', (event) => {
+            if (event.target.closest('[data-panel-delete]')) {
+                event.target.closest('[data-panel]').remove();
+            } else if (event.target.closest('[data-panel-collapse]')) {
+                event.target.closest('[data-panel]').classList.toggle('is-collapsed');
+            }
+        });
+
+        $(container).on('change', 'input[name$="[enabled]"]', function () {
+            const panel = this.closest('[data-panel]');
+            const enabled = this.value === '1';
+            panel.classList.toggle('is-disabled', !enabled);
+            if (!enabled) {
+                panel.classList.add('is-collapsed');
+            }
+        });
+    })();
+{% endjs %}

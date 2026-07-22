@@ -2,38 +2,12 @@
 
 namespace fostercommerce\advanceddiscounts\variables;
 
-use Craft;
-use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
-use craft\commerce\elements\conditions\orders\ItemTotalConditionRule;
-use craft\commerce\elements\conditions\orders\TotalConditionRule;
-use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
-use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\commerce\elements\Order;
-use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
-use fostercommerce\advanceddiscounts\enums\DiscountType;
-use fostercommerce\advanceddiscounts\helpers\Purchasables;
-use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 
 class AdvancedDiscountsVariable
 {
 	/**
-	 * Returns messages from all applicable discounts for the given order,
-	 * with placeholders resolved against the order and discount rules.
-	 *
-	 * Supported placeholders:
-	 *   {discountAmount}         — the discount value (currency or percentage)
-	 *   {amountRemaining}        — how much more the customer needs to spend to qualify
-	 *   {quantityRemaining}      — how many more of an item the customer needs
-	 *   {buyQuantityRemaining}   — how many more of the buy items earn the next reward
-	 *   {discountedQuantity}     — units the customer currently gets discounted
-	 *
 	 * @return string[]
 	 */
 	public function getMessages(Order $order): array
@@ -49,150 +23,18 @@ class AdvancedDiscountsVariable
 				continue;
 			}
 
-			foreach ($discount->getMessageCondition()->getConditionRules() as $rule) {
-				if (! $rule instanceof MessageActionRule || $rule->message === '') {
-					continue;
-				}
-
-				if (! $rule->getMessageCondition()->matchElement($order)) {
-					continue;
-				}
-
-				$messages[] = $this->resolvePlaceholders($rule->message, $discount, $order);
+			if (! $discount->getGlobalCartCondition()->matchElement($order)) {
+				continue;
 			}
+
+			array_push($messages, ...$discount->getType()->getMessages($order, $discount));
 		}
 
 		return $messages;
 	}
 
-	/**
-	 * Returns the first applicable message for the given order, or null if none.
-	 */
 	public function getMessage(Order $order): ?string
 	{
 		return $this->getMessages($order)[0] ?? null;
-	}
-
-	private function resolvePlaceholders(string $message, Discount $discount, Order $order): string
-	{
-		$placeholders = [];
-
-		// {discountAmount} — value from the first cart action rule that has one
-		foreach ($discount->getCartActionCondition()->getConditionRules() as $rule) {
-			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule || $rule instanceof BogoCartActionRule) && $rule->discountValue !== null) {
-				$placeholders['{discountAmount}'] = $rule->discountType === DiscountType::Percentage
-					? $rule->discountValue . '%'
-					: Craft::$app->getFormatter()->asCurrency($rule->discountValue, $order->paymentCurrency);
-				break;
-			}
-		}
-
-		// {amountRemaining} — how much more the customer needs to spend
-		$amountRemaining = $this->computeAmountRemaining($discount, $order);
-		if ($amountRemaining !== null) {
-			$placeholders['{amountRemaining}'] = Craft::$app->getFormatter()->asCurrency($amountRemaining, $order->paymentCurrency);
-		}
-
-		// {quantityRemaining} - how many more of an item the customer needs
-		$quantityRemaining = $this->computeQuantityRemaining($discount, $order);
-		if ($quantityRemaining !== null) {
-			$placeholders['{quantityRemaining}'] = $quantityRemaining;
-		}
-
-		$bogoRule = $this->firstBogoRule($discount);
-		if ($bogoRule !== null) {
-			// {buyQuantityRemaining} — how many more of the buy items earn the next reward
-			$placeholders['{buyQuantityRemaining}'] = $bogoRule->buyQuantityRemaining($order);
-
-			// {discountedQuantity} — units the customer currently gets discounted
-			$placeholders['{discountedQuantity}'] = $bogoRule->earnedQuantity($order);
-		}
-
-		return strtr($message, $placeholders);
-	}
-
-	private function firstBogoRule(Discount $discount): ?BogoCartActionRule
-	{
-		foreach ($discount->getCartActionCondition()->getConditionRules() as $rule) {
-			if ($rule instanceof BogoCartActionRule) {
-				return $rule;
-			}
-		}
-
-		return null;
-	}
-
-	private function computeAmountRemaining(Discount $discount, Order $order): ?float
-	{
-		// Maps Commerce condition rule class → the Order property it compares against
-		$ruleFieldMap = [
-			ItemSubtotalConditionRule::class => 'itemSubtotal',
-			ItemTotalConditionRule::class => 'itemTotal',
-			TotalPriceConditionRule::class => 'totalPrice',
-			TotalConditionRule::class => 'total',
-		];
-
-		foreach ($discount->getCartCondition()->getConditionRules() as $triggerRule) {
-			if (! $triggerRule instanceof OrderConditionRule) {
-				continue;
-			}
-
-			foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
-				foreach ($ruleFieldMap as $ruleClass => $field) {
-					if (
-						$orderRule instanceof $ruleClass
-						&& property_exists($orderRule, 'value')
-						&& property_exists($orderRule, 'operator')
-						&& $orderRule->value !== null
-						&& in_array($orderRule->operator, ['>=', '>'], true)
-					) {
-						return max(0.0, (float) $orderRule->value - (float) $order->{$field});
-					}
-				}
-			}
-		}
-
-		return null;
-	}
-
-	private function computeQuantityRemaining(Discount $discount, Order $order): ?int
-	{
-		foreach ($discount->getCartCondition()->getConditionRules() as $triggerRule) {
-			if ($triggerRule instanceof OrderConditionRule) {
-				foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
-					if (
-						$orderRule instanceof TotalQtyConditionRule
-						&& $orderRule->value !== null
-						&& in_array($orderRule->operator, ['>=', '>'], true)
-					) {
-						return max(0, (int) $orderRule->value - $order->totalQty);
-					}
-				}
-			}
-
-			if ($triggerRule instanceof LineItemConditionRule) {
-				foreach ($triggerRule->getLineItemCondition()->getConditionRules() as $rule) {
-					if (
-						$rule instanceof HasPurchasableConditionRule
-						&& $rule->quantity !== null
-						&& in_array($rule->operator, ['>=', '>'], true)
-					) {
-						$purchasableId = (int) $rule->getElementId();
-						$totalQty = 0;
-
-						foreach ($order->getLineItems() as $lineItem) {
-							$purchasable = $lineItem->getPurchasable();
-							if ($purchasable !== null && Purchasables::matches($purchasable, $rule->purchasableType, [$purchasableId])) {
-								$totalQty += $lineItem->qty;
-							}
-						}
-
-						return max(0, $rule->quantity - $totalQty);
-					}
-				}
-			}
-		}
-
-		return null;
 	}
 }
