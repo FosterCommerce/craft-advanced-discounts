@@ -10,7 +10,7 @@
 
 <div id="panels" class="advanced-discount-panels" data-discount-type="{{ discount.type }}">
     {% for panel in discount.panels %}
-        {% include 'advanced-discounts/_panel' with { panel: panel, actionLabel: actionLabel, bundle: bundle } only %}
+        {% include 'advanced-discounts/_panel' with { panel: panel, actionLabel: actionLabel, actionInstructions: actionInstructions, bundle: bundle } only %}
     {% endfor %}
 </div>
 

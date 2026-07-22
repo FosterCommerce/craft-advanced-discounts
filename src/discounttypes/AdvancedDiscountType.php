@@ -27,4 +27,9 @@ class AdvancedDiscountType extends DiscountType
 	{
 		return Craft::t('advanced-discounts', 'Cart Actions');
 	}
+
+	public static function actionInstructions(): string
+	{
+		return Craft::t('advanced-discounts', 'Applied when the customer matches the rules above.');
+	}
 }

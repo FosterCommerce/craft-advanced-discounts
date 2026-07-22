@@ -19,7 +19,7 @@ class AdvancedDiscountsVariable
 				continue;
 			}
 
-			if ($discount->code !== null && strcasecmp($discount->code, $order->couponCode ?? '') !== 0) {
+			if (! $discount->matchesCouponCode($order->couponCode)) {
 				continue;
 			}
 

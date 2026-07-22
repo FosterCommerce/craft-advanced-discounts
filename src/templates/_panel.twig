@@ -17,7 +17,7 @@
 
     <div class="advanced-discount-panel-body">
         {{ forms.textField({
-            label: 'Discount name'|t('advanced-discounts'),
+            label: 'Discount Name'|t('advanced-discounts'),
             instructions: 'Overrides the discount name shown on the order for this group.'|t('advanced-discounts'),
             name: 'panels[' ~ panel.key ~ '][name]',
             value: panel.name,
@@ -40,6 +40,7 @@
 
         {{ forms.field({
             label: actionLabel,
+            instructions: actionInstructions,
         }, cartActionCondition) }}
 
         {% set messageCondition %}
@@ -48,11 +49,11 @@
 
         {{ forms.field({
             label: 'Messages'|t('advanced-discounts'),
-            instructions: 'Create messages to show to customers when they match certain conditions.'|t('advanced-discounts'),
+            instructions: 'Shown to customers when they match certain conditions.'|t('advanced-discounts'),
         }, messageCondition) }}
 
         {{ forms.lightswitchField({
-            label: 'Stop processing further groups'|t('advanced-discounts'),
+            label: 'Stop Processing Further Groups'|t('advanced-discounts'),
             instructions: 'When this group applies, skip the groups below it.'|t('advanced-discounts'),
             name: 'panels[' ~ panel.key ~ '][stopProcessing]',
             on: panel.stopProcessing,

@@ -19,6 +19,8 @@ interface DiscountTypeInterface
 
 	public static function actionLabel(): string;
 
+	public static function actionInstructions(): string;
+
 	public function getSettingsHtml(Discount $discount): string;
 
 	/**

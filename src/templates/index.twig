@@ -14,24 +14,40 @@
 
 {% js %}
 	let columns = [
-		{ name: 'enabled', title: '', callback: (value) => `<span class="status ${value ? 'enabled' : 'disabled'}"></span>` },
 		{ name: '__slot:title', title: Craft.t('app', 'Name') },
 		{
-			name: 'code',
-			title: Craft.t('advanced-discounts', 'Code'),
+			name: 'type',
+			title: Craft.t('advanced-discounts', 'Type'),
+		},
+		{
+			name: 'requireCouponCode',
+			title: Craft.t('advanced-discounts', 'Require Coupon Code'),
+			callback: (value) => value ? '<span data-icon="check"></span>' : '',
+		},
+		{
+			name: 'coupons',
+			title: Craft.t('advanced-discounts', 'Coupons'),
+			callback: (value) => value ? value : '',
+		},
+		{
+			name: 'timesUsed',
+			title: Craft.t('advanced-discounts', 'Times Used'),
+			callback: (value) => value ? value : '',
+		},
+		{
+			name: 'stopProcessing',
+			title: Craft.t('advanced-discounts', 'Stops Processing?'),
+			callback: (value) => value ? '<span data-icon="check"></span>' : '',
 		},
 		{
 			name: 'dateCreated',
-			title: Craft.t('advanced-discounts', 'Created'),
-		},
-		{
-			name: 'dateUpdated',
-			title: Craft.t('advanced-discounts', 'Updated'),
+			title: Craft.t('advanced-discounts', 'Date Created'),
 		},
 	];
 
 	new Craft.VueAdminTable({
 		columns,
+		padded: true,
 		container: '#advanced-discounts-list',
 		emptyMessage: Craft.t('advanced-discounts', 'No discounts yet.'),
 		search: true,

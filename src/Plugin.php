@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\commerce\elements\Order;
+use craft\commerce\models\OrderAdjustment;
 use craft\commerce\services\OrderAdjustments;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -14,6 +15,7 @@ use craft\web\UrlManager;
 use fostercommerce\advanceddiscounts\adjusters\DiscountAdjuster;
 use fostercommerce\advanceddiscounts\models\Settings;
 use fostercommerce\advanceddiscounts\services\AdvancedDiscountsService;
+use fostercommerce\advanceddiscounts\services\Coupons;
 use fostercommerce\advanceddiscounts\services\Discounts;
 use fostercommerce\advanceddiscounts\services\DiscountTypes;
 use fostercommerce\advanceddiscounts\variables\AdvancedDiscountsVariable;
@@ -26,6 +28,7 @@ use yii\base\Event;
  * @method Settings getSettings()
  * @property-read Discounts $discounts
  * @property-read DiscountTypes $discountTypes
+ * @property-read Coupons $coupons
  */
 class Plugin extends BasePlugin
 {
@@ -33,7 +36,7 @@ class Plugin extends BasePlugin
 
 	public bool $hasCpSettings = true;
 
-	public string $schemaVersion = '1.0.4';
+	public string $schemaVersion = '1.0.6';
 
 	/**
 	 * @return array<string, mixed>
@@ -44,6 +47,7 @@ class Plugin extends BasePlugin
 			'components' => [
 				'discounts' => Discounts::class,
 				'discountTypes' => DiscountTypes::class,
+				'coupons' => Coupons::class,
 			],
 		];
 	}
@@ -143,6 +147,37 @@ class Plugin extends BasePlugin
 				$order->recalculate();
 			}
 		);
+
+		Event::on(
+			Order::class,
+			Order::EVENT_AFTER_COMPLETE_ORDER,
+			static function (Event $event): void {
+				/** @var Order $order */
+				$order = $event->sender;
+
+				/** @var OrderAdjustment[] $adjustments */
+				$adjustments = $order->getAdjustments();
+
+				$appliedDiscountIds = [];
+				foreach ($adjustments as $adjustment) {
+					$discountId = $adjustment->sourceSnapshot['advancedDiscountId'] ?? null;
+					if ($discountId !== null) {
+						$appliedDiscountIds[$discountId] = true;
+					}
+				}
+
+				if ($appliedDiscountIds === []) {
+					return;
+				}
+
+				$discountIds = array_keys($appliedDiscountIds);
+				Plugin::getInstance()->discounts->incrementUses($discountIds);
+
+				if ($order->couponCode) {
+					Plugin::getInstance()->coupons->incrementUses($order->couponCode, $discountIds);
+				}
+			}
+		);
 	}
 
 	private function registerCpRoutes(): void
@@ -155,6 +190,7 @@ class Plugin extends BasePlugin
 				$registerUrlRulesEvent->rules['advanced-discounts/new'] = 'advanced-discounts/manage/edit';
 				$registerUrlRulesEvent->rules['advanced-discounts/panel'] = 'advanced-discounts/manage/panel';
 				$registerUrlRulesEvent->rules['advanced-discounts/type-settings'] = 'advanced-discounts/manage/type-settings';
+				$registerUrlRulesEvent->rules['advanced-discounts/generate-coupons'] = 'advanced-discounts/manage/generate-coupons';
 				$registerUrlRulesEvent->rules['advanced-discounts/<id:\d+>'] = 'advanced-discounts/manage/edit';
 			}
 		);
