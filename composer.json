@@ -4,12 +4,17 @@
   "type": "craft-plugin",
   "license": "proprietary",
   "support": {
-    "email": "support@fostercommerce.com"
+    "email": "support@fostercommerce.com",
+    "issues": "https://github.com/FosterCommerce/craft-advanced-discounts/issues?state=open",
+    "source": "https://github.com/FosterCommerce/craft-advanced-discounts",
+    "docs": "https://github.com/FosterCommerce/craft-advanced-discounts",
+    "rss": "https://github.com/FosterCommerce/craft-advanced-discounts/releases.atom"
   },
   "require": {
     "php": ">=8.2",
     "craftcms/cms": "^5.0.0",
-    "craftcms/commerce": "^5.0.0"
+    "craftcms/commerce": "^5.0.0",
+    "moneyphp/money": "^4.0"
   },
   "require-dev": {
     "craftcms/phpstan": "dev-main",
@@ -28,7 +33,7 @@
     "handle": "advanced-discounts",
     "name": "Advanced Discounts",
     "developer": "Foster Commerce",
-    "documentationUrl": ""
+    "documentationUrl": "https://github.com/FosterCommerce/craft-advanced-discounts"
   },
   "config": {
     "sort-packages": true,

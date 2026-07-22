@@ -7,6 +7,7 @@ use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\commerce\elements\Order;
 use craft\commerce\models\OrderAdjustment;
+use craft\commerce\models\OrderNotice;
 use craft\commerce\services\OrderAdjustments;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -123,9 +124,20 @@ class Plugin extends BasePlugin
 					return;
 				}
 				$discount = Plugin::getInstance()->discounts->getDiscountByCode($order->couponCode);
-				if ($discount === null || ! $discount->enabled) {
+				if ($discount === null) {
 					return;
 				}
+
+				if (! $discount->enabled) {
+					$this->removeCouponCode($order, Craft::t('advanced-discounts', 'This coupon is no longer available.'));
+					return;
+				}
+
+				if (! $discount->matchesCouponCode($order->couponCode)) {
+					$this->removeCouponCode($order, Craft::t('advanced-discounts', 'This coupon has reached its usage limit.'));
+					return;
+				}
+
 				$id = spl_object_id($order);
 				$savedModes[$id] = $order->recalculationMode;
 				$order->recalculationMode = Order::RECALCULATION_MODE_NONE;
@@ -178,6 +190,19 @@ class Plugin extends BasePlugin
 				}
 			}
 		);
+	}
+
+	private function removeCouponCode(Order $order, string $message): void
+	{
+		$order->couponCode = null;
+		$order->addNotice(Craft::createObject([
+			'class' => OrderNotice::class,
+			'attributes' => [
+				'type' => 'invalidCouponRemoved',
+				'attribute' => 'couponCode',
+				'message' => $message,
+			],
+		]));
 	}
 
 	private function registerCpRoutes(): void
