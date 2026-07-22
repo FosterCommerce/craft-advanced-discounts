@@ -8,8 +8,13 @@
 	<a class="btn submit add icon" href="{{ url('advanced-discounts/new') }}">{{ "New discount"|t('advanced-discounts') }}</a>
 {% endset %}
 
+{% css %}
+	{% include 'advanced-discounts/_includes/plugin-footer-css' %}
+{% endcss %}
+
 {% set content %}
 	<div id="advanced-discounts-list"></div>
+	{% include 'advanced-discounts/_includes/plugin-footer' %}
 {% endset %}
 
 {% js %}
