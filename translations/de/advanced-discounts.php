@@ -43,10 +43,14 @@ return [
     'Code' => 'Code',
     'Created' => 'Erstellt',
     'Updated' => 'Aktualisiert',
+    'Discounts reordered.' => 'Rabatte neu angeordnet.',
+    "Couldn't reorder discounts." => 'Rabatte konnten nicht neu angeordnet werden.',
 
     // Bearbeitungsformular
     'Create discount' => 'Rabatt erstellen',
     'Save discount' => 'Rabatt speichern',
+    'Stop processing further discounts' => 'Weitere Rabatte nicht mehr verarbeiten',
+    'If this discount matches and is applied, no other discounts will be evaluated.' => 'Wenn dieser Rabatt zutrifft und angewendet wird, werden keine weiteren Rabatte mehr geprüft.',
     'Name' => 'Name',
     'Discount code' => 'Rabattcode',
     'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.' => 'Leer lassen, um den Rabatt auf jede zutreffende Bestellung anzuwenden (wie ein Angebot). Wenn ein Code angegeben wird, muss er an der Kasse eingegeben werden, damit der Rabatt gilt.',

@@ -23,12 +23,10 @@
 		{
 			name: 'dateCreated',
 			title: Craft.t('advanced-discounts', 'Created'),
-			sortField: 'dateCreated',
 		},
 		{
 			name: 'dateUpdated',
 			title: Craft.t('advanced-discounts', 'Updated'),
-			sortField: 'dateUpdated',
 		},
 	];
 
@@ -38,7 +36,10 @@
 		emptyMessage: Craft.t('advanced-discounts', 'No discounts yet.'),
 		search: true,
 		checkboxes: true,
-		tableDataEndpoint: '/admin/actions/advanced-discounts/manage/list',
+		tableData: {{ tableData|json_encode|raw }},
 		deleteAction: 'advanced-discounts/manage/delete',
+		reorderAction: 'advanced-discounts/manage/reorder',
+		reorderSuccessMessage: Craft.t('advanced-discounts', 'Discounts reordered.'),
+		reorderFailMessage: Craft.t('advanced-discounts', "Couldn't reorder discounts."),
 	});
 {% endjs %}

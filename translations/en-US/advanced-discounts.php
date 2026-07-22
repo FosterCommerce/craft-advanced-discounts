@@ -43,10 +43,14 @@ return [
     'Code' => 'Code',
     'Created' => 'Created',
     'Updated' => 'Updated',
+    'Discounts reordered.' => 'Discounts reordered.',
+    "Couldn't reorder discounts." => "Couldn't reorder discounts.",
 
     // CP edit form
     'Create discount' => 'Create discount',
     'Save discount' => 'Save discount',
+    'Stop processing further discounts' => 'Stop processing further discounts',
+    'If this discount matches and is applied, no other discounts will be evaluated.' => 'If this discount matches and is applied, no other discounts will be evaluated.',
     'Name' => 'Name',
     'Discount code' => 'Discount code',
     'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.' => 'Leave blank to apply to every applicable order (like a sale). Entering a code requires the code to be entered during checkout for the discount to apply.',
