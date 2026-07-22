@@ -28,6 +28,10 @@ class AdvancedDiscountsVariable
 			}
 
 			array_push($messages, ...$discount->getType()->getMessages($order, $discount));
+
+			if ($discount->stopProcessing && $discount->getType()->getAdjustments($order, $discount) !== []) {
+				break;
+			}
 		}
 
 		return $messages;
