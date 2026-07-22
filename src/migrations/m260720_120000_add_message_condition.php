@@ -56,13 +56,4 @@ class m260720_120000_add_message_condition extends Migration
 
 		return true;
 	}
-
-	public function safeDown(): bool
-	{
-		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->dropColumn(Discount::TABLE_NAME, 'messageCondition');
-		}
-
-		return true;
-	}
 }

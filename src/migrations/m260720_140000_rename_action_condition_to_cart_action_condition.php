@@ -30,17 +30,6 @@ class m260720_140000_rename_action_condition_to_cart_action_condition extends Mi
 		return true;
 	}
 
-	public function safeDown(): bool
-	{
-		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->_remapStoredConditions(CartActionCondition::class, self::OLD_CONDITION_CLASS, array_flip(self::OLD_RULE_CLASS_MAP));
-
-			$this->renameColumn(Discount::TABLE_NAME, 'cartActionCondition', 'actionCondition');
-		}
-
-		return true;
-	}
-
 	/**
 	 * @param array<string, string> $ruleClassMap
 	 */

@@ -13,13 +13,4 @@ class m260721_120000_add_stop_processing extends Migration
 
 		return true;
 	}
-
-	public function safeDown(): bool
-	{
-		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->dropColumn(Discount::TABLE_NAME, 'stopProcessing');
-		}
-
-		return true;
-	}
 }

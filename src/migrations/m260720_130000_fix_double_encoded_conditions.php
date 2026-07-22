@@ -46,9 +46,4 @@ class m260720_130000_fix_double_encoded_conditions extends Migration
 
 		return true;
 	}
-
-	public function safeDown(): bool
-	{
-		return true;
-	}
 }

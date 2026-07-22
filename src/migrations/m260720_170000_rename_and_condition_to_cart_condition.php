@@ -19,15 +19,6 @@ class m260720_170000_rename_and_condition_to_cart_condition extends Migration
 		return true;
 	}
 
-	public function safeDown(): bool
-	{
-		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->_remapStoredClasses(CartCondition::class, self::OLD_CONDITION_CLASS);
-		}
-
-		return true;
-	}
-
 	/**
 	 * CartCondition (formerly AndCondition) is used both as the discount's
 	 * top-level cartCondition and, nested, as each message rule's messageCondition.

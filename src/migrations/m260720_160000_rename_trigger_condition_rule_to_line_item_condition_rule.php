@@ -33,22 +33,6 @@ class m260720_160000_rename_trigger_condition_rule_to_line_item_condition_rule e
 		return true;
 	}
 
-	public function safeDown(): bool
-	{
-		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->_remapStoredRows(
-				LineItemConditionRule::class,
-				self::OLD_RULE_CLASS,
-				LineItemCondition::class,
-				self::OLD_NESTED_CONDITION_CLASS,
-				self::NEW_NESTED_KEY,
-				self::OLD_NESTED_KEY
-			);
-		}
-
-		return true;
-	}
-
 	private function _remapStoredRows(
 		string $oldRuleClass,
 		string $newRuleClass,
