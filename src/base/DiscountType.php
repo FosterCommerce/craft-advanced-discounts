@@ -11,6 +11,7 @@ use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\commerce\elements\Order;
 use craft\commerce\models\LineItem;
 use craft\commerce\models\OrderAdjustment;
+use craft\helpers\MoneyHelper;
 use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
@@ -24,6 +25,7 @@ use fostercommerce\advanceddiscounts\enums\DiscountType as DiscountValueType;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\models\DiscountPanel;
+use Money\Money;
 
 abstract class DiscountType implements DiscountTypeInterface
 {
@@ -132,16 +134,12 @@ abstract class DiscountType implements DiscountTypeInterface
 			return null;
 		}
 
-		$subtotal = $order->itemSubtotal;
-
-		$amount = $rule->discountType === DiscountValueType::Percentage
-			? -($subtotal * ($rule->discountValue / 100))
-			: -min((float) $rule->discountValue, $subtotal);
+		$discount = $this->discountMoney($this->toMoney($order->itemSubtotal, $order), $rule->discountType, $rule->discountValue);
 
 		$adjustment = new OrderAdjustment();
 		$adjustment->type = 'discount';
 		$adjustment->name = $discountName;
-		$adjustment->amount = $amount;
+		$adjustment->amount = -$this->toFloat($discount);
 		$adjustment->orderId = $order->id;
 
 		return $adjustment;
@@ -162,14 +160,12 @@ abstract class DiscountType implements DiscountTypeInterface
 			return null;
 		}
 
-		$amount = $rule->discountType === DiscountValueType::Percentage
-			? -($shippingCost * ($rule->discountValue / 100))
-			: -min((float) $rule->discountValue, $shippingCost);
+		$discount = $this->discountMoney($this->toMoney($shippingCost, $order), $rule->discountType, $rule->discountValue);
 
 		$adjustment = new OrderAdjustment();
 		$adjustment->type = 'discount';
 		$adjustment->name = $discountName;
-		$adjustment->amount = $amount;
+		$adjustment->amount = -$this->toFloat($discount);
 		$adjustment->orderId = $order->id;
 
 		return $adjustment;
@@ -192,17 +188,20 @@ abstract class DiscountType implements DiscountTypeInterface
 				continue;
 			}
 
-			$amount = $rule->discountType === DiscountValueType::Percentage
-				? -($lineItem->subtotal * ($rule->discountValue / 100))
-				: -min(
-					(float) $rule->discountValue * ($rule->applyPer === LineItemCartActionRule::APPLY_PER_PURCHASABLE ? $lineItem->qty : 1),
-					$lineItem->subtotal
-				);
+			$base = $this->toMoney($lineItem->subtotal, $order);
+
+			if ($rule->discountType === DiscountValueType::Percentage) {
+				$discount = $base->multiply((string) $rule->discountValue)->divide('100');
+			} else {
+				$quantityFactor = $rule->applyPer === LineItemCartActionRule::APPLY_PER_PURCHASABLE ? $lineItem->qty : 1;
+				$flat = $this->toMoney($rule->discountValue, $order)->multiply((string) $quantityFactor);
+				$discount = $flat->greaterThan($base) ? $base : $flat;
+			}
 
 			$adjustment = new OrderAdjustment();
 			$adjustment->type = 'discount';
 			$adjustment->name = $discountName;
-			$adjustment->amount = $amount;
+			$adjustment->amount = -$this->toFloat($discount);
 			$adjustment->orderId = $order->id;
 			$adjustment->lineItemId = $lineItem->id;
 			$adjustment->setLineItem($lineItem);
@@ -248,24 +247,22 @@ abstract class DiscountType implements DiscountTypeInterface
 		$lineItemsByKey = [];
 
 		foreach (array_slice($discountableUnits, 0, $discountedQty) as $lineItem) {
-			$unitAmount = $rule->discountType === DiscountValueType::Percentage
-				? $lineItem->salePrice * ($rule->discountValue / 100)
-				: min((float) $rule->discountValue, $lineItem->salePrice);
+			$unitDiscount = $this->discountMoney($this->toMoney($lineItem->salePrice, $order), $rule->discountType, $rule->discountValue);
 
 			$key = spl_object_id($lineItem);
-			$amountsByLineItem[$key] = ($amountsByLineItem[$key] ?? 0.0) + $unitAmount;
+			$amountsByLineItem[$key] = isset($amountsByLineItem[$key]) ? $amountsByLineItem[$key]->add($unitDiscount) : $unitDiscount;
 			$lineItemsByKey[$key] = $lineItem;
 		}
 
 		$adjustments = [];
 
-		foreach ($amountsByLineItem as $key => $amount) {
+		foreach ($amountsByLineItem as $key => $discount) {
 			$lineItem = $lineItemsByKey[$key];
 
 			$adjustment = new OrderAdjustment();
 			$adjustment->type = 'discount';
 			$adjustment->name = $discountName;
-			$adjustment->amount = -$amount;
+			$adjustment->amount = -$this->toFloat($discount);
 			$adjustment->orderId = $order->id;
 			$adjustment->lineItemId = $lineItem->id;
 			$adjustment->setLineItem($lineItem);
@@ -274,6 +271,43 @@ abstract class DiscountType implements DiscountTypeInterface
 		}
 
 		return $adjustments;
+	}
+
+	private function toMoney(float $value, Order $order): Money
+	{
+		$money = MoneyHelper::toMoney([
+			'value' => (string) $value,
+			'currency' => (string) $order->currency,
+		]);
+
+		if ($money === false) {
+			throw new \RuntimeException("Could not build a money value for “{$value} {$order->currency}”.");
+		}
+
+		return $money;
+	}
+
+	private function discountMoney(Money $base, string $discountType, float $discountValue): Money
+	{
+		if ($discountType === DiscountValueType::Percentage) {
+			return $base->multiply((string) $discountValue)->divide('100');
+		}
+
+		$flat = MoneyHelper::toMoney([
+			'value' => (string) $discountValue,
+			'currency' => $base->getCurrency(),
+		]);
+
+		if ($flat === false) {
+			throw new \RuntimeException("Could not build a money value for the discount amount “{$discountValue}”.");
+		}
+
+		return $flat->greaterThan($base) ? $base : $flat;
+	}
+
+	private function toFloat(Money $money): float
+	{
+		return (float) MoneyHelper::toDecimal($money);
 	}
 
 	private function resolvePlaceholders(string $message, DiscountPanel $panel, Order $order): string
