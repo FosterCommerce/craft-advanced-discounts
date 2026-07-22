@@ -51,6 +51,27 @@ class Discounts extends Component
 		return null;
 	}
 
+	/**
+	 * @param int[] $ids Discount IDs in their new order
+	 */
+	public function reorderDiscounts(array $ids): bool
+	{
+		$db = Craft::$app->db;
+		foreach ($ids as $sortOrder => $id) {
+			$db->createCommand()
+				->update(DiscountRecord::TABLE_NAME, [
+					'sortOrder' => $sortOrder + 1,
+				], [
+					'id' => $id,
+				])
+				->execute();
+		}
+
+		$this->_discounts = null;
+
+		return true;
+	}
+
 	public function deleteDiscount(int $id): bool
 	{
 		$record = DiscountRecord::findOne($id);
@@ -85,9 +106,14 @@ class Discounts extends Component
 		$record->name = $discount->name;
 		$record->code = $discount->code;
 		$record->enabled = $discount->enabled;
+		$record->stopProcessing = $discount->stopProcessing;
 		$record->cartCondition = $discount->getCartCondition()->getConfig();
 		$record->cartActionCondition = $discount->getCartActionCondition()->getConfig();
 		$record->messageCondition = $discount->getMessageCondition()->getConfig();
+
+		if ($isNew) {
+			$record->sortOrder = ((new Query())->from(DiscountRecord::TABLE_NAME)->max('[[sortOrder]]') ?? 0) + 1;
+		}
 
 		// In the future we may have multiple things that would need to be saved here.
 		$db = Craft::$app->db;
@@ -124,6 +150,8 @@ class Discounts extends Component
 				'[[discounts.name]]',
 				'[[discounts.code]]',
 				'[[discounts.enabled]]',
+				'[[discounts.stopProcessing]]',
+				'[[discounts.sortOrder]]',
 				'[[discounts.cartCondition]]',
 				'[[discounts.cartActionCondition]]',
 				'[[discounts.messageCondition]]',
@@ -134,7 +162,7 @@ class Discounts extends Component
 				'discounts' => DiscountRecord::TABLE_NAME,
 			])
 			->orderBy([
-				'dateUpdated' => SORT_DESC,
+				'sortOrder' => SORT_ASC,
 			]);
 	}
 }

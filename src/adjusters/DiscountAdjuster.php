@@ -40,6 +40,7 @@ class DiscountAdjuster implements AdjusterInterface
 
 			$actionRules = $discount->getCartActionCondition()->getConditionRules();
 			$includeRuleLabel = count($actionRules) > 1;
+			$discountApplied = false;
 
 			foreach ($actionRules as $rule) {
 				$discountName = $includeRuleLabel ? $discount->name . ': ' . $rule->getLabel() : $discount->name;
@@ -48,15 +49,25 @@ class DiscountAdjuster implements AdjusterInterface
 					$adjustment = $this->buildOrderAdjustment($rule, $order, $discountName);
 					if ($adjustment !== null) {
 						$adjustments[] = $adjustment;
+						$discountApplied = true;
 					}
 				} elseif ($rule instanceof ShippingMethodCartActionRule) {
 					$adjustment = $this->buildShippingAdjustment($rule, $order, $discountName);
 					if ($adjustment !== null) {
 						$adjustments[] = $adjustment;
+						$discountApplied = true;
 					}
 				} elseif ($rule instanceof LineItemCartActionRule) {
-					array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $discountName));
+					$lineItemAdjustments = $this->buildLineItemAdjustments($rule, $order, $discountName);
+					if ($lineItemAdjustments !== []) {
+						array_push($adjustments, ...$lineItemAdjustments);
+						$discountApplied = true;
+					}
 				}
+			}
+
+			if ($discountApplied && $discount->stopProcessing) {
+				break;
 			}
 		}
 
