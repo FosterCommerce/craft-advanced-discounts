@@ -35,6 +35,23 @@
         {% set cartActionCondition %}
             <div class="{{ bundle ? 'advanced-discount-bundle' }}">
                 {{ panel.cartActionCondition.getBuilderHtml()|raw }}
+                {% set nonPromotableVariants = panel.nonPromotableVariants %}
+                {% if nonPromotableVariants|length %}
+                    <button type="button" class="btn small advanced-discount-excluded-trigger" data-icon="alert">
+                        {{ nonPromotableVariants|length == 1
+                            ? '1 variant not promotable'|t('advanced-discounts')
+                            : '{count} variants not promotable'|t('advanced-discounts', { count: nonPromotableVariants|length }) }}
+                    </button>
+                    <div class="advanced-discount-excluded-list hidden">
+                        <h2>{{ 'Not promotable'|t('advanced-discounts') }}</h2>
+                        <p class="light">{{ 'These selected variants will not be discounted.'|t('advanced-discounts') }}</p>
+                        <ul>
+                            {% for variant in nonPromotableVariants %}
+                                <li><a href="{{ variant.product.cpEditUrl }}" target="_blank">{{ variant.sku }} {{ variant.title }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
             </div>
         {% endset %}
 

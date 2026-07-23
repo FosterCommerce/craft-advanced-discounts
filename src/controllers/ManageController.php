@@ -3,12 +3,16 @@
 namespace fostercommerce\advanceddiscounts\controllers;
 
 use Craft;
+use craft\base\Element;
+use craft\commerce\elements\Variant;
 use craft\commerce\Plugin as CommercePlugin;
 use craft\commerce\services\Coupons as CommerceCoupons;
+use craft\helpers\AdminTable;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
+use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 use yii\web\Response;
@@ -51,6 +55,65 @@ class ManageController extends Controller
 
 		return $this->renderTemplate('advanced-discounts/index', [
 			'tableData' => $tableData,
+		]);
+	}
+
+	public function actionExcludedVariants(): Response
+	{
+		Craft::$app->getView()->registerTranslations('advanced-discounts', [
+			'Variant',
+			'SKU',
+			'Product',
+			'No excluded variants.',
+		]);
+
+		return $this->renderTemplate('advanced-discounts/excluded-variants');
+	}
+
+	public function actionExcludedVariantsData(): ?Response
+	{
+		$this->requireAcceptsJson();
+
+		$page = (int) $this->request->getParam('page', 1);
+		$perPage = (int) $this->request->getParam('per_page', 100);
+		$search = $this->request->getParam('search');
+
+		/** @var CommercePlugin $commerce */
+		$commerce = CommercePlugin::getInstance();
+		$store = $commerce->getStores()->getPrimaryStore();
+		$variantIds = $store !== null && $store->id !== null
+			? Purchasables::nonPromotablePurchasableIds($store->id)
+			: [];
+
+		$tableData = [];
+		$total = 0;
+		if ($variantIds !== []) {
+			$query = Variant::find()
+				->id($variantIds)
+				->status(Element::STATUS_ENABLED)
+				->productStatus(Element::STATUS_ENABLED);
+
+			if ($search) {
+				$query->search($search);
+			}
+
+			$total = (int) (clone $query)->count();
+
+			foreach ($query->offset(($page - 1) * $perPage)->limit($perPage)->all() as $variant) {
+				$product = $variant->getProduct();
+				$tableData[] = [
+					'id' => $variant->id,
+					'title' => $variant->title,
+					'url' => $product?->getCpEditUrl(),
+					'sku' => $variant->sku,
+					'product' => $product?->title ?? '',
+				];
+			}
+		}
+
+		return $this->asSuccess(data: [
+			'pagination' => AdminTable::paginationLinks($page, $total, $perPage),
+			'data' => $tableData,
 		]);
 	}
 
@@ -186,7 +249,8 @@ class ManageController extends Controller
 		$discount->id = $this->request->getBodyParam('id');
 		$discount->name = $this->request->getBodyParam('name');
 		$discount->requireCouponCode = (bool) $this->request->getBodyParam('requireCouponCode');
-		$discount->setCoupons($this->request->getBodyParam('coupons') ?? []);
+		$coupons = $this->request->getBodyParam('coupons') ?: [];
+		$discount->setCoupons(is_array($coupons) ? $coupons : []);
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
 		$discount->stopProcessing = (bool) $this->request->getBodyParam('stopProcessing');
 		$discount->type = $this->request->getBodyParam('type') ?: 'advanced';

@@ -3,6 +3,7 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% set title = "Advanced Discounts"|t('advanced-discounts') %}
+{% set selectedSubnavItem = 'discounts' %}
 
 {% set additionalButtons %}
 	<a class="btn submit add icon" href="{{ url('advanced-discounts/new') }}">{{ "New discount"|t('advanced-discounts') }}</a>
