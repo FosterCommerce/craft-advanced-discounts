@@ -377,10 +377,10 @@ abstract class DiscountType implements DiscountTypeInterface
 	private function computeAmountRemaining(DiscountPanel $panel, Order $order): ?float
 	{
 		$ruleFieldMap = [
-			ItemSubtotalConditionRule::class => 'itemSubtotal',
-			ItemTotalConditionRule::class => 'itemTotal',
-			TotalPriceConditionRule::class => 'totalPrice',
-			TotalConditionRule::class => 'total',
+			ItemSubtotalConditionRule::class => ['itemSubtotal', 'subtotal'],
+			ItemTotalConditionRule::class => ['itemTotal', 'total'],
+			TotalPriceConditionRule::class => ['totalPrice', 'total'],
+			TotalConditionRule::class => ['total', 'total'],
 		];
 
 		foreach ($panel->getCartCondition()->getConditionRules() as $triggerRule) {
@@ -389,7 +389,7 @@ abstract class DiscountType implements DiscountTypeInterface
 			}
 
 			foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
-				foreach ($ruleFieldMap as $ruleClass => $field) {
+				foreach ($ruleFieldMap as $ruleClass => [$orderField, $lineItemField]) {
 					if (
 						$orderRule instanceof $ruleClass
 						&& property_exists($orderRule, 'value')
@@ -397,7 +397,14 @@ abstract class DiscountType implements DiscountTypeInterface
 						&& $orderRule->value !== null
 						&& in_array($orderRule->operator, ['>=', '>'], true)
 					) {
-						return max(0.0, (float) $orderRule->value - (float) $order->{$field});
+						$promotableValue = (float) $order->{$orderField};
+						foreach ($order->getLineItems() as $lineItem) {
+							if (! $lineItem->getIsPromotable()) {
+								$promotableValue -= (float) $lineItem->{$lineItemField};
+							}
+						}
+
+						return max(0.0, (float) $orderRule->value - $promotableValue);
 					}
 				}
 			}
