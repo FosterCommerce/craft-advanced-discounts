@@ -4,6 +4,7 @@ namespace fostercommerce\advanceddiscounts\adjusters;
 
 use craft\commerce\base\AdjusterInterface;
 use craft\commerce\elements\Order;
+use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 use fostercommerce\advanceddiscounts\Plugin;
 
 /**
@@ -30,6 +31,10 @@ class DiscountAdjuster implements AdjusterInterface
 			}
 
 			if (! $discount->getGlobalCartCondition()->matchElement($order)) {
+				continue;
+			}
+
+			if (! PromotableThreshold::reached($discount->getGlobalCartCondition(), $order)) {
 				continue;
 			}
 

@@ -3,6 +3,7 @@
 namespace fostercommerce\advanceddiscounts\variables;
 
 use craft\commerce\elements\Order;
+use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 use fostercommerce\advanceddiscounts\Plugin;
 
 class AdvancedDiscountsVariable
@@ -24,6 +25,10 @@ class AdvancedDiscountsVariable
 			}
 
 			if (! $discount->getGlobalCartCondition()->matchElement($order)) {
+				continue;
+			}
+
+			if (! PromotableThreshold::reached($discount->getGlobalCartCondition(), $order)) {
 				continue;
 			}
 
