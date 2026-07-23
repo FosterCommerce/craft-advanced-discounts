@@ -3,25 +3,18 @@
 namespace fostercommerce\advanceddiscounts\base;
 
 use Craft;
-use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
-use craft\commerce\elements\conditions\orders\ItemTotalConditionRule;
-use craft\commerce\elements\conditions\orders\TotalConditionRule;
-use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
-use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\commerce\elements\Order;
 use craft\commerce\models\LineItem;
 use craft\commerce\models\OrderAdjustment;
 use craft\helpers\MoneyHelper;
 use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
-use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\ShippingMethodCartActionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType as DiscountValueType;
+use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\models\DiscountPanel;
@@ -49,6 +42,10 @@ abstract class DiscountType implements DiscountTypeInterface
 			}
 
 			if (! $panel->getCartCondition()->matchElement($order)) {
+				continue;
+			}
+
+			if (! PromotableThreshold::reached($panel->getCartCondition(), $order)) {
 				continue;
 			}
 
@@ -81,7 +78,8 @@ abstract class DiscountType implements DiscountTypeInterface
 				continue;
 			}
 
-			$groupApplies = $panel->getCartCondition()->matchElement($order);
+			$groupApplies = $panel->getCartCondition()->matchElement($order)
+				&& PromotableThreshold::reached($panel->getCartCondition(), $order);
 
 			foreach ($panel->getMessageCondition()->getConditionRules() as $rule) {
 				if (! $rule instanceof MessageActionRule || $rule->message === '') {
@@ -90,7 +88,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 				$messageCondition = $rule->getMessageCondition();
 				$shows = $messageCondition->getConditionRules() !== []
-					? $messageCondition->matchElement($order)
+					? $messageCondition->matchElement($order) && PromotableThreshold::reached($messageCondition, $order)
 					: $groupApplies;
 
 				if (! $shows) {
@@ -344,12 +342,12 @@ abstract class DiscountType implements DiscountTypeInterface
 			}
 		}
 
-		$amountRemaining = $this->computeAmountRemaining($panel, $order);
+		$amountRemaining = PromotableThreshold::amountRemaining($panel->getCartCondition(), $order);
 		if ($amountRemaining !== null) {
 			$placeholders['{amountRemaining}'] = Craft::$app->getFormatter()->asCurrency($amountRemaining, $order->paymentCurrency);
 		}
 
-		$quantityRemaining = $this->computeQuantityRemaining($panel, $order);
+		$quantityRemaining = PromotableThreshold::quantityRemaining($panel->getCartCondition(), $order);
 		if ($quantityRemaining !== null) {
 			$placeholders['{quantityRemaining}'] = $quantityRemaining;
 		}
@@ -368,86 +366,6 @@ abstract class DiscountType implements DiscountTypeInterface
 		foreach ($panel->getCartActionCondition()->getConditionRules() as $rule) {
 			if ($rule instanceof BogoCartActionRule) {
 				return $rule;
-			}
-		}
-
-		return null;
-	}
-
-	private function computeAmountRemaining(DiscountPanel $panel, Order $order): ?float
-	{
-		$ruleFieldMap = [
-			ItemSubtotalConditionRule::class => ['itemSubtotal', 'subtotal'],
-			ItemTotalConditionRule::class => ['itemTotal', 'total'],
-			TotalPriceConditionRule::class => ['totalPrice', 'total'],
-			TotalConditionRule::class => ['total', 'total'],
-		];
-
-		foreach ($panel->getCartCondition()->getConditionRules() as $triggerRule) {
-			if (! $triggerRule instanceof OrderConditionRule) {
-				continue;
-			}
-
-			foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
-				foreach ($ruleFieldMap as $ruleClass => [$orderField, $lineItemField]) {
-					if (
-						$orderRule instanceof $ruleClass
-						&& property_exists($orderRule, 'value')
-						&& property_exists($orderRule, 'operator')
-						&& $orderRule->value !== null
-						&& in_array($orderRule->operator, ['>=', '>'], true)
-					) {
-						$promotableValue = (float) $order->{$orderField};
-						foreach ($order->getLineItems() as $lineItem) {
-							if (! $lineItem->getIsPromotable()) {
-								$promotableValue -= (float) $lineItem->{$lineItemField};
-							}
-						}
-
-						return max(0.0, (float) $orderRule->value - $promotableValue);
-					}
-				}
-			}
-		}
-
-		return null;
-	}
-
-	private function computeQuantityRemaining(DiscountPanel $panel, Order $order): ?int
-	{
-		foreach ($panel->getCartCondition()->getConditionRules() as $triggerRule) {
-			if ($triggerRule instanceof OrderConditionRule) {
-				foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
-					if (
-						$orderRule instanceof TotalQtyConditionRule
-						&& $orderRule->value !== null
-						&& in_array($orderRule->operator, ['>=', '>'], true)
-					) {
-						return max(0, (int) $orderRule->value - $order->totalQty);
-					}
-				}
-			}
-
-			if ($triggerRule instanceof LineItemConditionRule) {
-				foreach ($triggerRule->getLineItemCondition()->getConditionRules() as $rule) {
-					if (
-						$rule instanceof HasPurchasableConditionRule
-						&& $rule->quantity !== null
-						&& in_array($rule->operator, ['>=', '>'], true)
-					) {
-						$purchasableId = (int) $rule->getElementId();
-						$totalQty = 0;
-
-						foreach ($order->getLineItems() as $lineItem) {
-							$purchasable = $lineItem->getPurchasable();
-							if ($purchasable !== null && Purchasables::matches($purchasable, $rule->purchasableType, [$purchasableId])) {
-								$totalQty += $lineItem->qty;
-							}
-						}
-
-						return max(0, $rule->quantity - $totalQty);
-					}
-				}
 			}
 		}
 
