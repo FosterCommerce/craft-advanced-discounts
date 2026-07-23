@@ -258,7 +258,7 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 			'div',
 			$buyHeading . $buyRow . $discountedHeading . $discountedRow . $discountRow . $repeatRow,
 			[
-				'class' => ['flex', 'flex-start', 'flex-grow'],
+				'class' => ['flex', 'flex-start', 'flex-grow', 'advanced-discount-bundle-inner'],
 				'style' => [
 					'flex-direction' => 'column',
 				],
@@ -291,7 +291,7 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 
 		foreach ($order->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable !== null && Purchasables::matches($purchasable, $this->buyPurchasableType, $this->buyPurchasableIds)) {
+			if ($purchasable !== null && $lineItem->getIsPromotable() && Purchasables::matches($purchasable, $this->buyPurchasableType, $this->buyPurchasableIds)) {
 				$totalQty += $lineItem->qty;
 			}
 		}

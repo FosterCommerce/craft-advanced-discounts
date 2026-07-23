@@ -32,6 +32,7 @@
     .advanced-discount-bundle .rule-move { display: none; }
     .advanced-discount-message > .condition-container { margin-top: 0; }
     .advanced-discount-message .condition-main { margin-top: 0; }
+    .advanced-discount-excluded-trigger { margin-top: 8px; }
 {% endcss %}
 
 {% js %}
@@ -41,6 +42,21 @@
             handle: '.move',
             axis: Garnish.Y_AXIS,
         });
+
+        const moveExcludedIntoBundle = (scope) => {
+            scope.querySelectorAll('.advanced-discount-bundle').forEach((bundle) => {
+                const inner = bundle.querySelector('.advanced-discount-bundle-inner');
+                const trigger = bundle.querySelector(':scope > .advanced-discount-excluded-trigger');
+                const list = bundle.querySelector(':scope > .advanced-discount-excluded-list');
+                if (inner && trigger) {
+                    inner.appendChild(trigger);
+                    if (list) {
+                        inner.appendChild(list);
+                    }
+                }
+            });
+        };
+        moveExcludedIntoBundle(container);
 
         document.getElementById('add-panel').addEventListener('click', async () => {
             const { data } = await Craft.sendActionRequest('POST', 'advanced-discounts/manage/panel', {
@@ -62,6 +78,9 @@
                 event.target.closest('[data-panel]').remove();
             } else if (event.target.closest('[data-panel-collapse]')) {
                 event.target.closest('[data-panel]').classList.toggle('is-collapsed');
+            } else if (event.target.closest('.advanced-discount-excluded-trigger')) {
+                const list = event.target.closest('.advanced-discount-excluded-trigger').nextElementSibling;
+                new Craft.Slideout(list.innerHTML);
             }
         });
 

@@ -3,9 +3,11 @@
 namespace fostercommerce\advanceddiscounts\helpers;
 
 use craft\base\ElementInterface;
+use craft\commerce\db\Table;
 use craft\commerce\elements\Product;
 use craft\commerce\elements\Variant;
 use craft\commerce\Plugin as CommercePlugin;
+use craft\db\Query;
 
 final class Purchasables
 {
@@ -58,5 +60,20 @@ final class Purchasables
 		}
 
 		return array_map('intval', $purchasableIds);
+	}
+
+	/**
+	 * @return int[]
+	 */
+	public static function nonPromotablePurchasableIds(int $storeId): array
+	{
+		return array_map('intval', (new Query())
+			->select(['purchasableId'])
+			->from(Table::PURCHASABLES_STORES)
+			->where([
+				'storeId' => $storeId,
+				'promotable' => false,
+			])
+			->column());
 	}
 }

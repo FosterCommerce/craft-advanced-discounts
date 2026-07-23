@@ -66,6 +66,30 @@ class Plugin extends BasePlugin
 		});
 	}
 
+	/**
+	 * @return array<string, mixed>|null
+	 */
+	public function getCpNavItem(): ?array
+	{
+		$navItem = parent::getCpNavItem();
+		if ($navItem === null) {
+			return null;
+		}
+
+		$navItem['subnav'] = [
+			'discounts' => [
+				'label' => Craft::t('advanced-discounts', 'Discounts'),
+				'url' => 'advanced-discounts',
+			],
+			'excluded-variants' => [
+				'label' => Craft::t('advanced-discounts', 'Excluded Variants'),
+				'url' => 'advanced-discounts/excluded-variants',
+			],
+		];
+
+		return $navItem;
+	}
+
 	protected function createSettingsModel(): ?Model
 	{
 		return Craft::createObject(Settings::class);
@@ -212,6 +236,7 @@ class Plugin extends BasePlugin
 			UrlManager::EVENT_REGISTER_CP_URL_RULES,
 			static function (RegisterUrlRulesEvent $registerUrlRulesEvent): void {
 				$registerUrlRulesEvent->rules['advanced-discounts'] = 'advanced-discounts/manage/index';
+				$registerUrlRulesEvent->rules['advanced-discounts/excluded-variants'] = 'advanced-discounts/manage/excluded-variants';
 				$registerUrlRulesEvent->rules['advanced-discounts/new'] = 'advanced-discounts/manage/edit';
 				$registerUrlRulesEvent->rules['advanced-discounts/panel'] = 'advanced-discounts/manage/panel';
 				$registerUrlRulesEvent->rules['advanced-discounts/type-settings'] = 'advanced-discounts/manage/type-settings';

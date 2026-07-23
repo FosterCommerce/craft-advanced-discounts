@@ -1,0 +1,32 @@
+{% extends '_layouts/cp' %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% set title = "Excluded Variants"|t('advanced-discounts') %}
+{% set selectedSubnavItem = 'excluded-variants' %}
+
+{% css %}
+	{% include 'advanced-discounts/_includes/plugin-footer-css' %}
+{% endcss %}
+
+{% set content %}
+	<p>{{ 'These variants are not promotable, so no discount applies to them. Disabled products and variants are not listed.'|t('advanced-discounts') }}</p>
+	<div id="excluded-variants-list"></div>
+	{% include 'advanced-discounts/_includes/plugin-footer' %}
+{% endset %}
+
+{% js %}
+	new Craft.VueAdminTable({
+		columns: [
+			{ name: '__slot:title', title: Craft.t('advanced-discounts', 'Variant') },
+			{ name: 'sku', title: Craft.t('advanced-discounts', 'SKU') },
+			{ name: 'product', title: Craft.t('advanced-discounts', 'Product') },
+		],
+		container: '#excluded-variants-list',
+		emptyMessage: Craft.t('advanced-discounts', 'No excluded variants.'),
+		search: true,
+		padded: true,
+		perPage: 100,
+		tableDataEndpoint: 'advanced-discounts/manage/excluded-variants-data',
+	});
+{% endjs %}

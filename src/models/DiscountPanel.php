@@ -4,6 +4,7 @@ namespace fostercommerce\advanceddiscounts\models;
 
 use Craft;
 use craft\base\Model;
+use craft\commerce\elements\Variant;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -11,7 +12,9 @@ use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\CartActionCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
+use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
 class DiscountPanel extends Model
 {
@@ -111,6 +114,36 @@ class DiscountPanel extends Model
 			'cartActionCondition' => $this->getCartActionCondition()->getConfig(),
 			'messageCondition' => $this->getMessageCondition()->getConfig(),
 		];
+	}
+
+	/**
+	 * @return Variant[]
+	 */
+	public function getNonPromotableVariants(): array
+	{
+		$variantIds = [];
+		foreach ($this->getCartActionCondition()->getConditionRules() as $rule) {
+			if ($rule instanceof LineItemCartActionRule) {
+				$variantIds = array_merge($variantIds, Purchasables::expandToVariantIds($rule->purchasableType, $rule->purchasableIds));
+			} elseif ($rule instanceof BogoCartActionRule) {
+				$variantIds = array_merge(
+					$variantIds,
+					Purchasables::expandToVariantIds($rule->buyPurchasableType, $rule->buyPurchasableIds),
+					Purchasables::expandToVariantIds($rule->discountedPurchasableType, $rule->discountedPurchasableIds)
+				);
+			}
+		}
+
+		if ($variantIds === []) {
+			return [];
+		}
+
+		$variants = Variant::find()
+			->id(array_unique($variantIds))
+			->status(null)
+			->all();
+
+		return array_values(array_filter($variants, static fn (Variant $variant): bool => ! $variant->getIsPromotable()));
 	}
 
 	/**

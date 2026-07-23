@@ -142,7 +142,20 @@ abstract class DiscountType implements DiscountTypeInterface
 			return null;
 		}
 
-		$discount = $this->discountMoney($this->toMoney($order->itemSubtotal, $order), $rule->discountType, $rule->discountValue);
+		$promotableSubtotal = $this->toMoney(0, $order);
+		foreach ($order->getLineItems() as $lineItem) {
+			if (! $lineItem->getIsPromotable()) {
+				continue;
+			}
+
+			$promotableSubtotal = $promotableSubtotal->add($this->toMoney($lineItem->subtotal, $order));
+		}
+
+		if ($promotableSubtotal->isZero()) {
+			return null;
+		}
+
+		$discount = $this->discountMoney($promotableSubtotal, $rule->discountType, $rule->discountValue);
 
 		$adjustment = new OrderAdjustment();
 		$adjustment->type = 'discount';
@@ -192,7 +205,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 		foreach ($order->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable === null || ! $rule->matchElement($purchasable)) {
+			if ($purchasable === null || ! $lineItem->getIsPromotable() || ! $rule->matchElement($purchasable)) {
 				continue;
 			}
 
@@ -238,7 +251,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 		foreach ($order->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable === null || ! Purchasables::matches($purchasable, $rule->discountedPurchasableType, $rule->discountedPurchasableIds)) {
+			if ($purchasable === null || ! $lineItem->getIsPromotable() || ! Purchasables::matches($purchasable, $rule->discountedPurchasableType, $rule->discountedPurchasableIds)) {
 				continue;
 			}
 
