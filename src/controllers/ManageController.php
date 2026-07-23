@@ -44,7 +44,7 @@ class ManageController extends Controller
 			'id' => $discount->id,
 			'url' => "advanced-discounts/{$discount->id}",
 			'title' => $discount->name,
-			'status' => $discount->enabled ? 'enabled' : 'disabled',
+			'status' => $discount->enabled,
 			'type' => $discount->getType()::displayName(),
 			'requireCouponCode' => $discount->requireCouponCode,
 			'coupons' => $couponCounts[$discount->id] ?? 0,
