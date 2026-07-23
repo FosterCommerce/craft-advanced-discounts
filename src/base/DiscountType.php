@@ -41,11 +41,7 @@ abstract class DiscountType implements DiscountTypeInterface
 				continue;
 			}
 
-			if (! $panel->getCartCondition()->matchElement($order)) {
-				continue;
-			}
-
-			if (! PromotableThreshold::reached($panel->getCartCondition(), $order)) {
+			if (! PromotableThreshold::matches($panel->getCartCondition(), $order)) {
 				continue;
 			}
 
@@ -78,8 +74,7 @@ abstract class DiscountType implements DiscountTypeInterface
 				continue;
 			}
 
-			$groupApplies = $panel->getCartCondition()->matchElement($order)
-				&& PromotableThreshold::reached($panel->getCartCondition(), $order);
+			$groupApplies = PromotableThreshold::matches($panel->getCartCondition(), $order);
 
 			foreach ($panel->getMessageCondition()->getConditionRules() as $rule) {
 				if (! $rule instanceof MessageActionRule || $rule->message === '') {
@@ -88,7 +83,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 				$messageCondition = $rule->getMessageCondition();
 				$shows = $messageCondition->getConditionRules() !== []
-					? $messageCondition->matchElement($order) && PromotableThreshold::reached($messageCondition, $order)
+					? PromotableThreshold::matches($messageCondition, $order)
 					: $groupApplies;
 
 				if (! $shows) {

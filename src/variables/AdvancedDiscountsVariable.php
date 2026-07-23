@@ -24,11 +24,7 @@ class AdvancedDiscountsVariable
 				continue;
 			}
 
-			if (! $discount->getGlobalCartCondition()->matchElement($order)) {
-				continue;
-			}
-
-			if (! PromotableThreshold::reached($discount->getGlobalCartCondition(), $order)) {
+			if (! PromotableThreshold::matches($discount->getGlobalCartCondition(), $order)) {
 				continue;
 			}
 
