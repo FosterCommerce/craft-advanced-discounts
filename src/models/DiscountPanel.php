@@ -12,8 +12,11 @@ use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\CartActionCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\RelatedToConditionRule;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
 class DiscountPanel extends Model
@@ -117,6 +120,36 @@ class DiscountPanel extends Model
 	}
 
 	/**
+	 * @return int[]
+	 */
+	public function getCartConditionVariantIds(): array
+	{
+		$variantIds = [];
+
+		foreach ($this->getCartCondition()->getConditionRules() as $cartConditionRule) {
+			if (! $cartConditionRule instanceof LineItemConditionRule) {
+				continue;
+			}
+
+			foreach ($cartConditionRule->getLineItemCondition()->getConditionRules() as $lineItemRule) {
+				if ($lineItemRule instanceof HasPurchasableConditionRule) {
+					$purchasableId = (int) $lineItemRule->getElementId();
+					if ($purchasableId !== 0) {
+						$variantIds = array_merge($variantIds, Purchasables::expandToVariantIds($lineItemRule->purchasableType, [$purchasableId]));
+					}
+				} elseif ($lineItemRule instanceof RelatedToConditionRule) {
+					$relatedToId = (int) $lineItemRule->getElementId();
+					if ($relatedToId !== 0) {
+						$variantIds = array_merge($variantIds, array_map('intval', Variant::find()->relatedTo($relatedToId)->status(null)->ids()));
+					}
+				}
+			}
+		}
+
+		return array_values(array_unique($variantIds));
+	}
+
+	/**
 	 * @return Variant[]
 	 */
 	public function getNonPromotableVariants(): array
@@ -124,7 +157,9 @@ class DiscountPanel extends Model
 		$variantIds = [];
 		foreach ($this->getCartActionCondition()->getConditionRules() as $rule) {
 			if ($rule instanceof LineItemCartActionRule) {
-				$variantIds = array_merge($variantIds, Purchasables::expandToVariantIds($rule->purchasableType, $rule->purchasableIds));
+				$variantIds = array_merge($variantIds, $rule->lineItemsFilter === LineItemCartActionRule::FILTER_CART_CONDITION
+					? $this->getCartConditionVariantIds()
+					: Purchasables::expandToVariantIds($rule->purchasableType, $rule->purchasableIds));
 			} elseif ($rule instanceof BogoCartActionRule) {
 				$variantIds = array_merge(
 					$variantIds,

@@ -112,7 +112,7 @@ abstract class DiscountType implements DiscountTypeInterface
 				$ruleAdjustments = $adjustment !== null ? [$adjustment] : [];
 			} elseif ($rule instanceof LineItemCartActionRule) {
 				$ruleHandle = 'lineItem';
-				$ruleAdjustments = $this->buildLineItemAdjustments($rule, $order, $name);
+				$ruleAdjustments = $this->buildLineItemAdjustments($rule, $panel, $order, $name);
 			} elseif ($rule instanceof BogoCartActionRule) {
 				$ruleHandle = 'bogo';
 				$ruleAdjustments = $this->buildBogoAdjustments($rule, $order, $name);
@@ -206,17 +206,28 @@ abstract class DiscountType implements DiscountTypeInterface
 	/**
 	 * @return OrderAdjustment[]
 	 */
-	private function buildLineItemAdjustments(LineItemCartActionRule $rule, Order $order, string $discountName): array
+	private function buildLineItemAdjustments(LineItemCartActionRule $rule, DiscountPanel $panel, Order $order, string $discountName): array
 	{
 		if (! $rule->discountValue) {
 			return [];
 		}
 
+		$usesCartCondition = $rule->lineItemsFilter === LineItemCartActionRule::FILTER_CART_CONDITION;
+		$cartConditionVariantIds = $usesCartCondition ? $panel->getCartConditionVariantIds() : [];
+
 		$adjustments = [];
 
 		foreach ($order->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable === null || ! $lineItem->getIsPromotable() || ! $rule->matchElement($purchasable)) {
+			if ($purchasable === null || ! $lineItem->getIsPromotable()) {
+				continue;
+			}
+
+			$matches = $usesCartCondition
+				? in_array((int) $purchasable->id, $cartConditionVariantIds, true)
+				: $rule->matchElement($purchasable);
+
+			if (! $matches) {
 				continue;
 			}
 

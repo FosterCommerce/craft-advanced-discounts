@@ -20,6 +20,8 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 
 	public const FILTER_MATCHING = 'matching';
 
+	public const FILTER_CART_CONDITION = 'cartCondition';
+
 	public const APPLY_PER_LINE_ITEM = 'lineItem';
 
 	public const APPLY_PER_PURCHASABLE = 'purchasable';
@@ -91,6 +93,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 		$filterOptions = [
 			self::FILTER_ALL => Craft::t('advanced-discounts', 'All line items'),
 			self::FILTER_MATCHING => Craft::t('advanced-discounts', 'Matching line items'),
+			self::FILTER_CART_CONDITION => Craft::t('advanced-discounts', 'Same line items as cart conditions'),
 		];
 
 		$purchasableSelectHtml = '';
