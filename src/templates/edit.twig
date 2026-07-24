@@ -100,7 +100,12 @@
     {% js %}
         (() => {
             $(document).on('click keyup', '#requireCouponCode', () => {
-                $('#coupons-container').toggleClass('hidden', ! $('#requireCouponCode').hasClass('on'));
+                const on = $('#requireCouponCode').hasClass('on');
+                $('#coupons-container').toggleClass('hidden', ! on);
+
+                if (on) {
+                    $('#coupons-table').data('editable-table').initialize();
+                }
             });
         })();
 
