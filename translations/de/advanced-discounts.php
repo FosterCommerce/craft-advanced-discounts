@@ -19,6 +19,7 @@ return [
     'Line Items' => 'Artikelpositionen',
     'All line items' => 'Alle Artikelpositionen',
     'Matching line items' => 'Übereinstimmende Artikelpositionen',
+    'Same line items as cart conditions' => 'Dieselben Artikelpositionen wie die Warenkorbbedingungen',
     'Buy X, Get Y' => 'Kaufe X, erhalte Y',
 
     // Felder der Rabattregel

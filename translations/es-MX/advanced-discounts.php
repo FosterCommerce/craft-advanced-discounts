@@ -19,6 +19,7 @@ return [
     'Line Items' => 'Artículos del pedido',
     'All line items' => 'Todos los artículos',
     'Matching line items' => 'Artículos coincidentes',
+    'Same line items as cart conditions' => 'Los mismos artículos que las condiciones del carrito',
     'Buy X, Get Y' => 'Compra X, lleva Y',
 
     // Campos de regla de descuento
