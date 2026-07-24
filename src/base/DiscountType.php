@@ -129,6 +129,8 @@ abstract class DiscountType implements DiscountTypeInterface
 				'rule' => $ruleHandle,
 				'discountType' => $rule->discountType,
 				'discountValue' => $rule->discountValue,
+				'requireCouponCode' => $discount->requireCouponCode,
+				'couponCode' => $discount->requireCouponCode ? $order->couponCode : null,
 			];
 
 			foreach ($ruleAdjustments as $ruleAdjustment) {
