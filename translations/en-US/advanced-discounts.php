@@ -18,7 +18,7 @@ return [
     'Shipping' => 'Shipping',
     'Line Items' => 'Line Items',
     'All line items' => 'All line items',
-    'Matching line items' => 'Matching line items',
+    'Selected line items' => 'Selected line items',
     'Same line items as cart conditions' => 'Same line items as cart conditions',
     'Buy X, Get Y' => 'Buy X, Get Y',
 

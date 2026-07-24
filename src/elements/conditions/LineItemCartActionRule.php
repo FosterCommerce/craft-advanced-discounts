@@ -18,7 +18,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 {
 	public const FILTER_ALL = 'all';
 
-	public const FILTER_MATCHING = 'matching';
+	public const FILTER_SELECTED = 'matching';
 
 	public const FILTER_CART_CONDITION = 'cartCondition';
 
@@ -57,11 +57,11 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		if ($this->lineItemsFilter !== self::FILTER_MATCHING) {
+		if ($this->lineItemsFilter === self::FILTER_ALL) {
 			return true;
 		}
 
-		if (empty($this->purchasableIds)) {
+		if ($this->lineItemsFilter !== self::FILTER_SELECTED || $this->purchasableIds === []) {
 			return false;
 		}
 
@@ -92,13 +92,13 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 
 		$filterOptions = [
 			self::FILTER_ALL => Craft::t('advanced-discounts', 'All line items'),
-			self::FILTER_MATCHING => Craft::t('advanced-discounts', 'Matching line items'),
+			self::FILTER_SELECTED => Craft::t('advanced-discounts', 'Selected line items'),
 			self::FILTER_CART_CONDITION => Craft::t('advanced-discounts', 'Same line items as cart conditions'),
 		];
 
 		$purchasableSelectHtml = '';
 
-		if ($this->lineItemsFilter === self::FILTER_MATCHING) {
+		if ($this->lineItemsFilter === self::FILTER_SELECTED) {
 			$selectedElements = [];
 			if (! empty($this->purchasableIds)) {
 				/** @var class-string<ElementInterface> $type */
