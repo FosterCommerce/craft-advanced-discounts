@@ -47,14 +47,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 			if ($panel->getCartActionCondition()->getConditionRules() !== []) {
 				$name = $panel->name !== '' ? $panel->name : $discount->name;
-				$panelAdjustments = $this->buildPanelAdjustments($panel, $order, $name);
-				foreach ($panelAdjustments as $panelAdjustment) {
-					$panelAdjustment->sourceSnapshot = array_merge($panelAdjustment->sourceSnapshot, [
-						'advancedDiscountId' => $discount->id,
-					]);
-				}
-
-				array_push($adjustments, ...$panelAdjustments);
+				array_push($adjustments, ...$this->buildPanelAdjustments($discount, $panel, $order, $name));
 			}
 
 			if ($panel->stopProcessing) {
@@ -100,30 +93,49 @@ abstract class DiscountType implements DiscountTypeInterface
 	/**
 	 * @return OrderAdjustment[]
 	 */
-	private function buildPanelAdjustments(DiscountPanel $panel, Order $order, string $discountName): array
+	private function buildPanelAdjustments(Discount $discount, DiscountPanel $panel, Order $order, string $adjustmentName): array
 	{
 		$adjustments = [];
 		$actionRules = $panel->getCartActionCondition()->getConditionRules();
 		$includeRuleLabel = count($actionRules) > 1;
 
 		foreach ($actionRules as $rule) {
-			$name = $includeRuleLabel ? $discountName . ': ' . $rule->getLabel() : $discountName;
+			$name = $includeRuleLabel ? $adjustmentName . ': ' . $rule->getLabel() : $adjustmentName;
 
 			if ($rule instanceof OrderCartActionRule) {
+				$ruleHandle = 'order';
 				$adjustment = $this->buildOrderAdjustment($rule, $order, $name);
-				if ($adjustment !== null) {
-					$adjustments[] = $adjustment;
-				}
+				$ruleAdjustments = $adjustment !== null ? [$adjustment] : [];
 			} elseif ($rule instanceof ShippingMethodCartActionRule) {
+				$ruleHandle = 'shipping';
 				$adjustment = $this->buildShippingAdjustment($rule, $order, $name);
-				if ($adjustment !== null) {
-					$adjustments[] = $adjustment;
-				}
+				$ruleAdjustments = $adjustment !== null ? [$adjustment] : [];
 			} elseif ($rule instanceof LineItemCartActionRule) {
-				array_push($adjustments, ...$this->buildLineItemAdjustments($rule, $order, $name));
+				$ruleHandle = 'lineItem';
+				$ruleAdjustments = $this->buildLineItemAdjustments($rule, $order, $name);
 			} elseif ($rule instanceof BogoCartActionRule) {
-				array_push($adjustments, ...$this->buildBogoAdjustments($rule, $order, $name));
+				$ruleHandle = 'bogo';
+				$ruleAdjustments = $this->buildBogoAdjustments($rule, $order, $name);
+			} else {
+				continue;
 			}
+
+			if ($ruleAdjustments === []) {
+				continue;
+			}
+
+			$snapshot = [
+				'advancedDiscountId' => $discount->id,
+				'rule' => $ruleHandle,
+				'discountType' => $rule->discountType,
+				'discountValue' => $rule->discountValue,
+			];
+
+			foreach ($ruleAdjustments as $ruleAdjustment) {
+				$ruleAdjustment->sourceSnapshot = array_merge($ruleAdjustment->sourceSnapshot, $snapshot);
+			}
+
+			array_push($adjustments, ...$ruleAdjustments);
 		}
 
 		return $adjustments;
