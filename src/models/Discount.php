@@ -8,6 +8,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\base\DiscountTypeInterface;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
+use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\Plugin;
 
 class Discount extends Model
@@ -51,6 +52,8 @@ class Discount extends Model
 	 * @var string Handle of the discount type
 	 */
 	public string $type = 'advanced';
+
+	public ?string $taxBasis = null;
 
 	public null|ElementConditionInterface $_globalCartCondition = null;
 
@@ -209,6 +212,9 @@ class Discount extends Model
 			[['name'],
 				'string',
 				'max' => 255],
+			[['taxBasis'],
+				'in',
+				'range' => [TaxBasis::AfterDiscount, TaxBasis::BeforeDiscount]],
 		]);
 	}
 

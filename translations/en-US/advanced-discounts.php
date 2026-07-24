@@ -101,4 +101,12 @@ return [
     "Couldn't save discount." => "Couldn't save discount.",
     'Discount deleted.' => 'Discount deleted.',
     'Discount not found.' => 'Discount not found.',
+
+    // Tax basis
+    'Tax Basis' => 'Tax Basis',
+    'After discounts' => 'After discounts',
+    'Before discounts' => 'Before discounts',
+    'Use plugin default' => 'Use plugin default',
+    'After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.' => 'After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.',
+    'Overrides the plugin setting. After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.' => 'Overrides the plugin setting. After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.',
 ];

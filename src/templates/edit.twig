@@ -100,7 +100,12 @@
     {% js %}
         (() => {
             $(document).on('click keyup', '#requireCouponCode', () => {
-                $('#coupons-container').toggleClass('hidden', ! $('#requireCouponCode').hasClass('on'));
+                const on = $('#requireCouponCode').hasClass('on');
+                $('#coupons-container').toggleClass('hidden', ! on);
+
+                if (on) {
+                    $('#coupons-table').data('editable-table').initialize();
+                }
             });
         })();
 
@@ -262,6 +267,15 @@
             id: 'stopProcessing',
             name: 'stopProcessing',
             on: discount.stopProcessing,
+        }) }}
+
+        {{ forms.selectField({
+            label: 'Tax Basis'|t('advanced-discounts'),
+            instructions: 'Overrides the plugin setting. After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.'|t('advanced-discounts'),
+            id: 'taxBasis',
+            name: 'taxBasis',
+            options: [{ label: 'Use plugin default'|t('advanced-discounts'), value: '' }]|merge(taxBasisOptions),
+            value: discount.taxBasis,
         }) }}
     </div>
 {% endblock %}

@@ -4,6 +4,7 @@ namespace fostercommerce\advanceddiscounts\adjusters;
 
 use craft\commerce\base\AdjusterInterface;
 use craft\commerce\elements\Order;
+use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 use fostercommerce\advanceddiscounts\Plugin;
 
@@ -17,8 +18,14 @@ use fostercommerce\advanceddiscounts\Plugin;
  */
 class DiscountAdjuster implements AdjusterInterface
 {
+	protected string $servesTaxBasis = TaxBasis::AfterDiscount;
+
 	public function adjust(Order $order): array
 	{
+		if (Plugin::getInstance()->discounts->getTaxBasis($order) !== $this->servesTaxBasis) {
+			return [];
+		}
+
 		$adjustments = [];
 
 		foreach (Plugin::getInstance()->discounts->getAllDiscounts() as $discount) {
