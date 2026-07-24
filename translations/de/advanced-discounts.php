@@ -88,4 +88,12 @@ return [
     "Couldn't save discount." => 'Rabatt konnte nicht gespeichert werden.',
     'Discount deleted.' => 'Rabatt gelöscht.',
     'Discount not found.' => 'Rabatt nicht gefunden.',
+
+    // Steuerbemessung
+    'Tax Basis' => 'Steuerbemessung',
+    'After discounts' => 'Nach Rabatten',
+    'Before discounts' => 'Vor Rabatten',
+    'Use plugin default' => 'Plugin-Standard verwenden',
+    'After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.' => 'Nach Rabatten bedeutet, dass die Steuer nach Anwendung der Rabatte berechnet wird. Vor Rabatten bedeutet, dass die Steuer vor Anwendung der Rabatte berechnet wird.',
+    'Overrides the plugin setting. After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.' => 'Überschreibt die Plugin-Einstellung. Nach Rabatten bedeutet, dass die Steuer nach Anwendung der Rabatte berechnet wird. Vor Rabatten bedeutet, dass die Steuer vor Anwendung der Rabatte berechnet wird.',
 ];

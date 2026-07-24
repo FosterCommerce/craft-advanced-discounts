@@ -3,8 +3,10 @@
 namespace fostercommerce\advanceddiscounts\services;
 
 use Craft;
+use craft\commerce\elements\Order;
 use craft\db\Query;
 use craft\helpers\Json;
+use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 use fostercommerce\advanceddiscounts\records\Discount as DiscountRecord;
@@ -51,6 +53,25 @@ class Discounts extends Component
 		}
 
 		return $this->getDiscountById($coupon->discountId);
+	}
+
+	public function getTaxBasis(Order $order): string
+	{
+		/** @var Plugin $plugin */
+		$plugin = Plugin::getInstance();
+		$defaultTaxBasis = $plugin->getSettings()->taxBasis;
+
+		foreach ($this->getAllDiscounts() as $discount) {
+			if (! $discount->enabled || ! $discount->matchesCouponCode($order->couponCode)) {
+				continue;
+			}
+
+			if (($discount->taxBasis ?? $defaultTaxBasis) === TaxBasis::BeforeDiscount) {
+				return TaxBasis::BeforeDiscount;
+			}
+		}
+
+		return TaxBasis::AfterDiscount;
 	}
 
 	/**
@@ -127,6 +148,7 @@ class Discounts extends Component
 		$record->stopProcessing = $discount->stopProcessing;
 		$record->type = $discount->type;
 		$record->settings = [
+			'taxBasis' => $discount->taxBasis,
 			'globalCartCondition' => $discount->getGlobalCartCondition()->getConfig(),
 			'panels' => array_map(static fn ($panel): array => $panel->getConfig(), $discount->panels),
 		];
@@ -183,6 +205,7 @@ class Discounts extends Component
 		$settings = Json::decodeIfJson($record['settings'] ?? '');
 		$settings = is_array($settings) ? $settings : [];
 
+		$discount->taxBasis = $settings['taxBasis'] ?? null;
 		$discount->setGlobalCartCondition($settings['globalCartCondition'] ?? []);
 		$discount->setPanels($settings['panels'] ?? []);
 

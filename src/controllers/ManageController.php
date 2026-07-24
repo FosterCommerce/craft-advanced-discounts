@@ -12,6 +12,7 @@ use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
+use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
@@ -141,6 +142,7 @@ class ManageController extends Controller
 			'discount' => $discount,
 			'isNewDiscount' => $discount->id === null,
 			'typeOptions' => $typeOptions,
+			'taxBasisOptions' => TaxBasis::options(),
 			'typeSettingsHtml' => $discount->getType()->getSettingsHtml($discount),
 		]);
 	}
@@ -254,6 +256,7 @@ class ManageController extends Controller
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
 		$discount->stopProcessing = (bool) $this->request->getBodyParam('stopProcessing');
 		$discount->type = $this->request->getBodyParam('type') ?: 'advanced';
+		$discount->taxBasis = $this->request->getBodyParam('taxBasis') ?: null;
 		$discount->setGlobalCartCondition($this->request->getBodyParam('globalCartCondition'));
 		$discount->setPanels($this->request->getBodyParam('panels') ?? []);
 

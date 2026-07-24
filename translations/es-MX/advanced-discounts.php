@@ -88,4 +88,12 @@ return [
     "Couldn't save discount." => 'No se pudo guardar el descuento.',
     'Discount deleted.' => 'Descuento eliminado.',
     'Discount not found.' => 'Descuento no encontrado.',
+
+    // Base del impuesto
+    'Tax Basis' => 'Base del impuesto',
+    'After discounts' => 'Después de los descuentos',
+    'Before discounts' => 'Antes de los descuentos',
+    'Use plugin default' => 'Usar el valor predeterminado del plugin',
+    'After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.' => 'Después de los descuentos significa que el impuesto se calcula después de aplicar los descuentos. Antes de los descuentos significa que el impuesto se calcula antes de aplicar los descuentos.',
+    'Overrides the plugin setting. After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.' => 'Anula la configuración del plugin. Después de los descuentos significa que el impuesto se calcula después de aplicar los descuentos. Antes de los descuentos significa que el impuesto se calcula antes de aplicar los descuentos.',
 ];

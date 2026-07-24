@@ -3,4 +3,17 @@
 
 {% import '_includes/forms.twig' as forms %}
 
-{# ... #}
+{% css %}
+    {% include 'advanced-discounts/_includes/plugin-footer-css' %}
+{% endcss %}
+
+{{ forms.selectField({
+    label: 'Tax Basis'|t('advanced-discounts'),
+    instructions: 'After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.'|t('advanced-discounts'),
+    id: 'taxBasis',
+    name: 'taxBasis',
+    options: taxBasisOptions,
+    value: settings.taxBasis,
+}) }}
+
+{% include 'advanced-discounts/_includes/plugin-footer' %}

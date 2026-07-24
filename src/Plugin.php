@@ -13,7 +13,9 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use fostercommerce\advanceddiscounts\adjusters\AfterTaxDiscountAdjuster;
 use fostercommerce\advanceddiscounts\adjusters\DiscountAdjuster;
+use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\models\Settings;
 use fostercommerce\advanceddiscounts\services\AdvancedDiscountsService;
 use fostercommerce\advanceddiscounts\services\Coupons;
@@ -100,6 +102,7 @@ class Plugin extends BasePlugin
 		return Craft::$app->view->renderTemplate('advanced-discounts/_settings.twig', [
 			'plugin' => $this,
 			'settings' => $this->getSettings(),
+			'taxBasisOptions' => TaxBasis::options(),
 		]);
 	}
 
@@ -122,12 +125,20 @@ class Plugin extends BasePlugin
 			}
 		);
 
-		// register adjuster
+		// register adjusters
+		Event::on(
+			OrderAdjustments::class,
+			OrderAdjustments::EVENT_REGISTER_DISCOUNT_ADJUSTERS,
+			static function (RegisterComponentTypesEvent $event): void {
+				$event->types[] = DiscountAdjuster::class;
+			}
+		);
+
 		Event::on(
 			OrderAdjustments::class,
 			OrderAdjustments::EVENT_REGISTER_ORDER_ADJUSTERS,
 			static function (RegisterComponentTypesEvent $event): void {
-				$event->types[] = DiscountAdjuster::class;
+				$event->types[] = AfterTaxDiscountAdjuster::class;
 			}
 		);
 
