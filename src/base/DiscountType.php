@@ -49,9 +49,9 @@ abstract class DiscountType implements DiscountTypeInterface
 				$name = $panel->name !== '' ? $panel->name : $discount->name;
 				$panelAdjustments = $this->buildPanelAdjustments($panel, $order, $name);
 				foreach ($panelAdjustments as $panelAdjustment) {
-					$panelAdjustment->sourceSnapshot = [
+					$panelAdjustment->sourceSnapshot = array_merge($panelAdjustment->sourceSnapshot, [
 						'advancedDiscountId' => $discount->id,
-					];
+					]);
 				}
 
 				array_push($adjustments, ...$panelAdjustments);
@@ -136,12 +136,15 @@ abstract class DiscountType implements DiscountTypeInterface
 		}
 
 		$promotableSubtotal = $this->toMoney(0, $order);
+		$discountedPurchasableIds = [];
+
 		foreach ($order->getLineItems() as $lineItem) {
 			if (! $lineItem->getIsPromotable()) {
 				continue;
 			}
 
 			$promotableSubtotal = $promotableSubtotal->add($this->toMoney($lineItem->subtotal, $order));
+			$discountedPurchasableIds[] = $lineItem->purchasableId;
 		}
 
 		if ($promotableSubtotal->isZero()) {
@@ -155,6 +158,9 @@ abstract class DiscountType implements DiscountTypeInterface
 		$adjustment->name = $discountName;
 		$adjustment->amount = -$this->toFloat($discount);
 		$adjustment->orderId = $order->id;
+		$adjustment->sourceSnapshot = [
+			'discountedPurchasableIds' => $discountedPurchasableIds,
+		];
 
 		return $adjustment;
 	}
@@ -219,6 +225,9 @@ abstract class DiscountType implements DiscountTypeInterface
 			$adjustment->orderId = $order->id;
 			$adjustment->lineItemId = $lineItem->id;
 			$adjustment->setLineItem($lineItem);
+			$adjustment->sourceSnapshot = [
+				'discountedPurchasableIds' => [$lineItem->purchasableId],
+			];
 
 			$adjustments[] = $adjustment;
 		}
@@ -280,6 +289,9 @@ abstract class DiscountType implements DiscountTypeInterface
 			$adjustment->orderId = $order->id;
 			$adjustment->lineItemId = $lineItem->id;
 			$adjustment->setLineItem($lineItem);
+			$adjustment->sourceSnapshot = [
+				'discountedPurchasableIds' => [$lineItem->purchasableId],
+			];
 
 			$adjustments[] = $adjustment;
 		}
