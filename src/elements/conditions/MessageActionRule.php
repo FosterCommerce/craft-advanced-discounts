@@ -178,7 +178,9 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 					static fn (string $token, string $description): string => Html::tag('span', $token, [
 						'class' => 'advanced-discount-token-chip',
 						'draggable' => 'true',
-						'data' => ['token' => $token],
+						'data' => [
+							'token' => $token,
+						],
 						'title' => Craft::t('advanced-discounts', $description),
 						'tabindex' => '0',
 						'role' => 'button',
