@@ -24,7 +24,9 @@
         }) }}
 
         {% set cartCondition %}
+					<div class="advanced-discount-cart-condition">
             {{ panel.cartCondition.getBuilderHtml()|raw }}
+					</div>
         {% endset %}
 
         {{ forms.field({
@@ -33,7 +35,7 @@
         }, cartCondition) }}
 
         {% set cartActionCondition %}
-            <div class="{{ bundle ? 'advanced-discount-bundle' }}">
+            <div class="{{ bundle ? 'advanced-discount-bundle' }} advanced-discount-action-condition">
                 {{ panel.cartActionCondition.getBuilderHtml()|raw }}
                 {% set nonPromotableVariants = panel.nonPromotableVariants %}
                 {% if nonPromotableVariants|length %}

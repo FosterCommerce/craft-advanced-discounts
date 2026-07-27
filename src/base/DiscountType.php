@@ -22,6 +22,20 @@ use Money\Money;
 
 abstract class DiscountType implements DiscountTypeInterface
 {
+	/**
+	 * Message placeholders available in `MessageActionRule::message`, keyed by
+	 * token with a human-readable description for UI display (chips, docs table).
+	 *
+	 * @var array<string, string>
+	 */
+	public const MESSAGE_PLACEHOLDERS = [
+		'{discountAmount}' => 'The discount value (percentage or amount).',
+		'{amountRemaining}' => 'Amount left to reach the group’s threshold.',
+		'{quantityRemaining}' => 'Items left to reach a quantity condition.',
+		'{buyQuantityRemaining}' => 'Buy items left for the next Buy X, Get Y reward.',
+		'{discountedQuantity}' => 'Units currently discounted for Buy X, Get Y.',
+	];
+
 	public function getSettingsHtml(Discount $discount): string
 	{
 		return Craft::$app->getView()->renderTemplate('advanced-discounts/_groups', [

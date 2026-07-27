@@ -11,6 +11,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use fostercommerce\advanceddiscounts\base\DiscountType;
 
 class MessageActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
@@ -88,7 +89,73 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 
 	protected function inputHtml(): string
 	{
-		return Html::tag(
+		Craft::$app->getView()->registerJs(<<<'JS'
+			(function() {
+				var insertToken = function(textarea, token) {
+					var start = textarea.selectionStart ?? textarea.value.length;
+					var end = textarea.selectionEnd ?? textarea.value.length;
+					var value = textarea.value;
+					textarea.value = value.slice(0, start) + token + value.slice(end);
+					var caret = start + token.length;
+					textarea.setSelectionRange(caret, caret);
+					textarea.focus();
+					$(textarea).trigger('input').trigger('change');
+				};
+
+				$(document).off('.advancedDiscountsTokenChip');
+
+				$(document).on('click.advancedDiscountsTokenChip keydown.advancedDiscountsTokenChip', '.advanced-discount-token-chip', function(ev) {
+					if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') {
+						return;
+					}
+					ev.preventDefault();
+					var textarea = $(this).closest('.advanced-discount-message').find('textarea').get(0);
+					if (textarea) {
+						insertToken(textarea, $(this).data('token'));
+					}
+				});
+
+				$(document).on('dragstart.advancedDiscountsTokenChip', '.advanced-discount-token-chip', function(ev) {
+					ev.originalEvent.dataTransfer.setData('text/plain', $(this).data('token'));
+					ev.originalEvent.dataTransfer.effectAllowed = 'copy';
+				});
+
+				$(document).on('dragover.advancedDiscountsTokenChip', '.advanced-discount-message textarea', function(ev) {
+					ev.preventDefault();
+				});
+
+				$(document).on('drop.advancedDiscountsTokenChip', '.advanced-discount-message textarea', function(ev) {
+					ev.preventDefault();
+					var token = ev.originalEvent.dataTransfer.getData('text/plain');
+					if (token) {
+						insertToken(this, token);
+					}
+				});
+			})();
+			JS);
+
+		return Html::tag('style', <<<'CSS'
+			.advanced-discount-token-chips {
+				gap: 6px;
+				margin: 6px 0 0;
+			}
+			.advanced-discount-token-chip {
+				background: var(--gray-100);
+				border: 1px solid var(--gray-200);
+				border-radius: 12px;
+				color: var(--gray-700);
+				cursor: grab;
+				font-size: 12px;
+				padding: 2px 10px;
+				user-select: none;
+			}
+			.advanced-discount-token-chip:hover,
+			.advanced-discount-token-chip:focus-visible {
+				background: var(--gray-150);
+				border-color: var(--gray-300);
+			}
+			CSS) .
+		Html::tag(
 			'div',
 			Html::tag(
 				'div',
@@ -103,6 +170,24 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 				]),
 				[
 					'class' => ['flex', 'flex-start', 'flex-grow'],
+				]
+			) .
+			Html::tag(
+				'div',
+				implode('', array_map(
+					static fn (string $token, string $description): string => Html::tag('span', $token, [
+						'class' => 'advanced-discount-token-chip',
+						'draggable' => 'true',
+						'data' => ['token' => $token],
+						'title' => Craft::t('advanced-discounts', $description),
+						'tabindex' => '0',
+						'role' => 'button',
+					]),
+					array_keys(DiscountType::MESSAGE_PLACEHOLDERS),
+					DiscountType::MESSAGE_PLACEHOLDERS
+				)),
+				[
+					'class' => ['flex', 'flex-wrap', 'advanced-discount-token-chips'],
 				]
 			) .
 			Html::tag('p', Craft::t('advanced-discounts', 'Create rules to determine when to show this message'), [
