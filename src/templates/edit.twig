@@ -242,11 +242,9 @@
         <h2>{{ 'Message placeholders'|t('advanced-discounts') }}</h2>
         <table class="data fullwidth">
             <tbody>
-                <tr><th><code>{discountAmount}</code></th><td>{{ 'The discount value (percentage or amount).'|t('advanced-discounts') }}</td></tr>
-                <tr><th><code>{amountRemaining}</code></th><td>{{ 'Amount left to reach the group’s threshold.'|t('advanced-discounts') }}</td></tr>
-                <tr><th><code>{quantityRemaining}</code></th><td>{{ 'Items left to reach a quantity condition.'|t('advanced-discounts') }}</td></tr>
-                <tr><th><code>{buyQuantityRemaining}</code></th><td>{{ 'Buy items left for the next Buy X, Get Y reward.'|t('advanced-discounts') }}</td></tr>
-                <tr><th><code>{discountedQuantity}</code></th><td>{{ 'Units currently discounted for Buy X, Get Y.'|t('advanced-discounts') }}</td></tr>
+                {% for token, description in constant('fostercommerce\\advanceddiscounts\\base\\DiscountType::MESSAGE_PLACEHOLDERS') %}
+                    <tr><th><code>{{ token }}</code></th><td>{{ description|t('advanced-discounts') }}</td></tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
