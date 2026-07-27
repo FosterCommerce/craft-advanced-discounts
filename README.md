@@ -35,3 +35,18 @@ Access the Advanced Discounts setting page by clicking "Advanced Discounts" in t
 This is the place for creating and managing all of your discounts. The list is searchable and sortable.
 
 ## Excluded Variants
+
+
+## Creating a Discount
+
+### Discount Types
+
+#### Advanced
+
+#### Buy X, Get Y
+
+## Discount Panels
+
+## Cart Conditions
+
+## Cart Actions
