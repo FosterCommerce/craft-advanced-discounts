@@ -38,6 +38,8 @@ From here you can adjust how tax is applied to an order.
 "After discounts" - tax will be applied to the total after the discounts have been calculated.
 "Before discounts" - tax will be applied first and then discounts applied to the total including tax.
 
+It is also possible to override the Tax Basis setting on a per-discount basis.
+
 ## Discounts
 
 This is the place for creating and managing all of your discounts. The list is searchable and sortable.
@@ -55,6 +57,7 @@ Each tier can also have its own Messages that will be displayed to the customer 
 ## Creating a Discount
 To create a new discount click the "New Discount" button on the to right of the Discounts list page.
 
+The order in which the Discounts are arranged matters. Conditions are processed from the top down and you have the opportunity to stop processing once a Discount is matched, or indeed to continue and apply further discounts should you wish.
 
 ### Discount Name
 Give your discount a name, this will be shown in the cart when the customer has the discount applied.
@@ -112,17 +115,86 @@ Global Conditions are optional and multiple Sets can be defined if you wish. So 
 ### Cart Conditions
 Cart Conditions are applied only if the Global Conditions for the discount have been met.
 
-You can create multiple groups of Cart Conditions with each group having its own Cart Actions.
+You can create multiple groups of Cart Conditions with each group having its own Cart Actions. These are displayed in Discount Panels.
 
 
 ## Discount Panels
+Each group of Conditions, Actions, and Messages are shown together in a Discount Panel. 
 
-## Cart Conditions
+![alt text](docs/images/discount-panel-empty.png "Discount Panel")
+
+Set the Discount Name field to display it in the cart when the customer cart matches the conditions for this panel.
+
+Cart Conditions allow you to set the rules that apply the discount defined in this panel. Avaialble options are the same as with the Global Conditions.
+
+Cart Actions define what happens when the Conditions in this panel are matched.
+
+Messages are your opportunity to tell the customer if they are close to or if they have reached the threshold to get the discount.
+
+If you want to prevent any further groups within the same discount from being processed, then switch on "Stop Processing Further Groups".
+
+The panels are collapsible to reduce visual clutter should you need to build out a particularly complex discount.
+
+![alt text](docs/images/discount-panel-collapsed.png "Collapsed Discount Panel")
+
+### Cart Conditions
+You can set up multiple Cart Conditions within a single Group. Each Condition in the Group must be matched to obtain the Discount.
+
+---
+# Cart Conditions
+
+
+### Date Range
+Set a date range when this discount can be applied. 
+
+### Line Items
+#### Has Purchasable
+Configure which items, and how many of each, must be in the customer's cart in order to meet the Condition.
+
+You may set this condition up to look for one of multiple different products by clicking "+ OR" and adding another criteria.
+
+*Hint: if you require a particular combination of products to trigger the discount, then use the "Buy X, Get Y" type*
+
+#### Related To
+Trigger this discount if any of the Line Items in the cart are related to either the specified Entry or Category
+
+### Order
+A condition based on the totals of the Order. Choose from 
+
+- **Item subtotal**. The total value of line items before any adjustments are made.
+- **Item total**. The total value of line items after any adjustments have been made.
+- **Total**. The grand total (item subtotal + shipping + any discounts + tax). Could theoretically be a negative value.
+- **Total price**. The grand total (item subtotal + shipping + any discounts + tax) based on the Store's minimum total price strategy. i.e. never below \$0 or never below shipping cost.
+- **Total quantity**. The total number of items in the cart.
+
+### User
+Conditions based on the current User. Customers need to have an account and be logged in for these to apply.
+
+If multiple conditions are set within a single Group then all must match for the Discount Actions to be applied.
 
 ## Cart Actions
+When the necessary Conditions are met, this section defines what will happen.
+
+**Item Subtotal** Adjust the total value of the items in the cart either by a flat amount or percentage of their value.
+
+**Line Items** Adjust the total value of specific line items in the cart. Again, either by a flat amount or a percentage.
+
+**Shipping** Adjust the amount being charged for shipping based on the shipping method. Again, either by a flat amount or a percentage.
+
+Multiple Cart Actions can be added for each Group.
 
 ## Promotional Messages
+Use Messages to display notifications to the customer.
+Each Message has its own set of Conditions that will control when the message is displayed. 
 
-## Coupon Codes
+If configured within a Group, the Group Cart Conditions must be matched before any Message Conditions are matched.
+
+Messages can contain a number of special tokens that will display dynamic values. Build your message by adding these tokens in the message text. They will be replaced with appropriate values when the message is displayed.
+
+**{discountAmount}** - the amount of money being discounted
+**{amountRemaining}** - the amount remaining to trigger the discount
+**{quantityRemaining}** - the number of items remaining to trigger the discount
+**{buyQuantityRemaining}** - 
+**{discountedQuantity}** - 
 
 ## Excluded Products
