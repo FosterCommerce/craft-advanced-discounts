@@ -40,8 +40,50 @@ Here's what the finished set up should look like.
 
 ![alt text](images/demo-big10-coupon-setup.png "Set up for a 10% off coupon")
 
+Once done, click on "Save Discount" to return to the list of configured Advanced Discounts.
 
-## Discounting a specific product for a week
+Since we don't want to allow any other discounts to be applied, make sure that this discount is at the top of the list so it will be processed first.
+
+![alt text](images/site-wide-coupon-at-top.png "Site wide coupon at top of list")
+
+Now during checkout your customer can enter the code "BIG10" and they will receive 10% off the cost of items in their order.
+
+
+## Discounting a few specific products for a week
+
+Assume that you want to provide a discount for a group of products to encourage sales. No coupon code is required. Anybody purchasing those items will get them at a 5% discounted price and you want to run the promotion for a week starting on Monday. Using Advanced Discounts you are able to configure a discount to do just this.
+
+Start by creating a new discount and give it a name. For the purposes of this demonstration we shall call it "Shear Bar Week"
+
+You want the discount to run from August 1 to August 8 so set the Global Cart Conditions appropriately.
+
+![alt text](images/demo-global-date-range.png "Setting the date range")
+
+In the discount group, add a name, "5% off all Shear Bars"
+
+Set up the Cart Conditions. In this case we want to define some products that will qualify for the discount. So select "Line Items", then click "OR" to show the options available and choose "Has Purchasable".
+
+![alt text](images/demo-selecting-products.png "Choose which products qualify for the discount")
+
+Now we can choose which products will get the discount. Click "Choose" and select a product you want to include.
+You have the option to also specify a quantity, so if you only wanted to apply the discount if someone purchased 2 or more of that item you can set it here.
+
+If you want to include more than one product, click "OR" and select another product.
+
+*Scope for improvement here, allow the user to select more than 1 product in the same "has purchasable" condition*
+
+Keep going until you have added all the products included in the discount.
+
+![alt text](images/demo-has-purchasable-condition.png "Has purchasable conditions")
+
+
+Moving on to the Cart Actions, select "Line Items", "Same line items as cart conditions", "Discount a percentage" and set it to 5.
+
+To let the customer know they are getting the discount, add a Message.
+
+![alt text](images/demo-basic-message.png "Basic message set up")
+
+
 
 ## Buy One, Get One Free
 
