@@ -11,7 +11,11 @@ We only want the discount to be applied if the customer enters a coupon code. We
 
 Click "Add a coupon" and enter the code we want to use in the Code field. Let's say it's going to be BIG10 and it has unlimited uses.
 
+![alt text](images/demo-coupon-big10.png "Setting up the coupon code")
+
 We don't want to allow any other discounts to be applied if the customer has entered this coupon code. So let's turn on "Stop Processing Further Discounts".  You can find this on the top right of the screen.
+
+![alt text](images/demo-stop-processing-coupon.png "Stop processing switch")
 
 We don't need to apply any restrictions to the sale so we can also ignore the Global Cart Conditions.
 
@@ -27,6 +31,8 @@ We want to provide a 10% discount to all items in the customer's cart. So in Car
 We then have the option to choose which items get the discount. In our case it is all of them, so leave that set to "All line items".
 
 We want to apply a discount of 10% of the item's price, so select "Discount a percentage" and enter 10. Then leave the last setting to "Per line item".
+
+![alt text](images/demo-coupon-big10-actions.png "Setting the Cart Actions")
 
 There is no need to show any other message in the cart and checkout. The customer will see that they have the coupon applied. We can skip the Messages section.
 
