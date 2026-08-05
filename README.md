@@ -1,30 +1,37 @@
-# coupons
+# Advanced Discounts
 
-Craft coupons
+Bring more power to your discounts and sales.
+Build complex, multi-tier discounts with flexible rules and promotional messages.
 
 ## Requirements
 
-This plugin requires Craft CMS 4.6.0 or later, and PHP 8.1 or later.
+This plugin requires;
+- Craft CMS 5.0 or later
+- Commerce 5.0 or later
 
-## Installation
+## Setup
 
-You can install this plugin from the Plugin Store or with Composer.
+### Installation
 
-#### From the Plugin Store
+To install the plugin, search for “Advanced Discounts” in the Craft Plugin Store follow these instructions.
 
-Go to the Plugin Store in your project’s Control Panel and search for “coupons”. Then press “Install”.
+Or install via your terminal.
 
-#### With Composer
+1. Open your terminal and go to your Craft project:
 
-Open your terminal and run the following commands:
+        cd /path/to/project
 
-```bash
-# go to the project directory
-cd /path/to/my-project.test
+2. Then tell Composer to require the plugin, and Craft to install it:
 
-# tell Composer to load the plugin
-composer require fostercommerce/advanced-discounts
+        composer require fostercommerce/advanced-discounts && php craft install/plugin bestsellers
 
-# tell Craft to install the plugin
-./craft plugin/install advanced-discounts
-```
+
+
+## Getting Started
+Access the Advanced Discounts setting page by clicking "Advanced Discounts" in the Control Panel sidebar.
+
+## Documentation
+[Read the full documenation](docs/index.md)
+
+## Get Support
+Support info here
