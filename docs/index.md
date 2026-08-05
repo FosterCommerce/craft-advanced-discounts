@@ -2,7 +2,7 @@
 
 ## Installation
 
-To install the plugin, search for “Advanced Discounts” in the Craft Plugin Store follow these instructions.
+To install the plugin, search for “Advanced Discounts” in the Craft Plugin Store and follow these instructions.
 
 Or install via your terminal.
 
@@ -18,7 +18,7 @@ Once installed you can access the Advanced Discounts setting page by clicking "A
 
 
 ## Plugin Settings
-Access the plugin settings from the Control Panel->Settings and clicking on Advanced Discounts
+Access the plugin settings by going to Control Panel -> Settings and clicking on Advanced Discounts.
 
 From here you can adjust how tax is applied to an order.
 "After discounts" - tax will be applied to the total after the discounts have been calculated.
