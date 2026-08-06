@@ -1,37 +1,28 @@
-# Getting Started
+# Advanced Discounts documentation
 
-## Installation
+Build multi-tier Craft Commerce discounts with flexible rules and promotional messages.
 
-To install the plugin, search for “Advanced Discounts” in the Craft Plugin Store and follow these instructions.
+## Where to go
 
-Or install via your terminal.
+**First time here?** Start with [Installation](./installation.md), then follow a [recipe](./recipes/site-wide-coupon.md) end to end.
 
-1. Open your terminal and go to your Craft project:
+**Running promotions day-to-day?** See the [user guide](./user-guide/):
 
-        cd /path/to/project
+- [Discounts](./user-guide/discounts.md), creating a discount, coupon codes, discount types, and Discount Panels.
+- [Cart Conditions](./user-guide/cart-conditions.md), the rules that decide when a discount applies.
+- [Cart Actions](./user-guide/cart-actions.md), what happens once those rules match.
+- [Messages](./user-guide/messages.md), promotional copy shown to the customer, with dynamic tokens.
+- [Excluded Products](./user-guide/excluded-products.md), keeping products out of a discount.
 
-2. Then tell Composer to require the plugin, and Craft to install it:
+**Building on top of the plugin?** See the [developer guide](./dev-guide/):
 
-        composer require fostercommerce/advanced-discounts && php craft install/plugin bestsellers
+- [Displaying promotional messages](./dev-guide/displaying-messages.md), the Twig API for rendering discount messages in your storefront.
 
-Once installed you can access the Advanced Discounts setting page by clicking "Advanced Discounts" in the Control Panel sidebar.
+**Want a worked example?** See the [recipes](./recipes/):
 
+- [Site-wide coupon](./recipes/site-wide-coupon.md), 10% off everything behind a coupon code.
+- [Timed product discount](./recipes/timed-product-discount.md), 5% off a group of products for one week.
+- [Buy one, get one free](./recipes/buy-one-get-one-free.md), a Buy X, Get Y promotion.
+- [Tiered sale](./recipes/tiered-sale.md), spend more, save more, with dynamic messaging.
 
-## Plugin Settings
-Access the plugin settings by going to Control Panel -> Settings and clicking on Advanced Discounts.
-
-From here you can adjust how tax is applied to an order.
-"After discounts" - tax will be applied to the total after the discounts have been calculated.
-"Before discounts" - tax will be applied first and then discounts applied to the total including tax.
-
-It is also possible to override the Tax Basis setting on a per-discount basis.
-
-## Next Steps
-
-- [Discounts](discounts.md)
-- [Cart Conditions](cart-conditions.md)
-- [Cart Actions](cart-actions.md)
-- [Messages](messages.md)
-- [Excluding Products](excluded-products.md)
-- [Examples](examples.md)
-
+**Setup details:** [Installation](./installation.md).
