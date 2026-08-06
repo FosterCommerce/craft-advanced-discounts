@@ -135,7 +135,7 @@ Our first group will be for the 12% discount. Set a title for the group to refle
 
 Set the Cart Conditions that will match this tier and trigger its Actions. If the customer's cart value is $15000 or more, then they match this group.
 
-![alt text](images/demo-multi-tier-group-cart-conditions "Set up the cart conditions for the group")
+![alt text](images/demo-multi-tier-group-cart-conditions.png "Set up the cart conditions for the group")
 
 When they match, give the customer 12% off their cart value.
 

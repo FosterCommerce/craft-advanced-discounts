@@ -2,7 +2,7 @@
 
 This is the place for creating and managing all of your discounts. The list is searchable and sortable.
 
-![alt text](docs/images/discounts-index.png "The Discounts index")
+![alt text](images/discounts-index.png "The Discounts index")
 
 You can configure different types of discounts and build out rules for when they will be applied and what happens when those rules are met.
 
