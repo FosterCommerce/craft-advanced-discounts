@@ -1,6 +1,6 @@
 # Advanced Discounts documentation
 
-Build multi-tier Craft Commerce discounts with flexible rules and promotional messages.
+Build multi-tier Craft Commerce discounts with flexible rules and promotional messages, alongside Commerce's own discounts rather than in place of them.
 
 ## Where to go
 
@@ -17,6 +17,7 @@ Build multi-tier Craft Commerce discounts with flexible rules and promotional me
 **Building on top of the plugin?** See the [developer guide](./dev-guide/):
 
 - [Displaying promotional messages](./dev-guide/displaying-messages.md), the Twig API for rendering discount messages in your storefront.
+- [Reading discounts on the order](./dev-guide/reading-discounts-on-the-order.md), breaking a total discount down into the rules that produced it.
 
 **Want a worked example?** See the [recipes](./recipes/):
 

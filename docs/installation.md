@@ -31,9 +31,15 @@ Once installed you can access the Advanced Discounts settings page by clicking "
 
 Access the plugin settings by going to **Settings -> Plugins -> Advanced Discounts**.
 
-From here you can adjust how tax is applied to an order.
+**Tax Basis** controls when tax is calculated relative to the discount. Default: **After discounts**.
 
-- **After discounts**: tax is applied to the total after the discounts have been calculated. This is the default.
-- **Before discounts**: tax is applied first and then discounts are applied to the total including tax.
+- **After discounts**: the discount comes off first, and tax is calculated on the reduced figure. The customer pays less tax on a discounted order.
+- **Before discounts**: tax is calculated on the original prices, and the discount is applied afterwards. The cart keeps its original shipping cost and tax lines, with the discount shown against them.
 
-It is also possible to override the Tax Basis setting on a per-discount basis.
+Pick **Before discounts** when the cart or invoice has to show what an item and its tax would have cost, then the saving. Pick **After discounts** when the customer should only ever be taxed on what they actually pay.
+
+### Overriding it per discount
+
+Each discount has its own **Tax Basis** field on its edit page, set to **Use plugin default** until you change it.
+
+The setting resolves per order, not per discount. If any enabled discount resolves to **Before discounts**, the whole order uses **Before discounts**, including the tax on discounts that came from elsewhere. A discount only has to be enabled and pass its coupon requirement to count; its conditions are not evaluated. Setting one discount to **Before discounts** therefore changes the tax basis on orders where that discount never applies.

@@ -1,6 +1,6 @@
 # Discounts
 
-This is the place for creating and managing all of your discounts. The list is searchable and sortable. Audience: store admins running promotions day-to-day.
+This is the place for creating and managing all of your discounts. The list is searchable and sortable.
 
 ![The Discounts index](../../resources/img/discounts-index.png)
 

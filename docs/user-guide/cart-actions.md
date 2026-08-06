@@ -1,6 +1,6 @@
 # Cart Actions
 
-Actions define what happens when the [Cart Conditions](cart-conditions.md) in a Discount Panel are matched. Audience: store admins setting up discounts in the control panel.
+Actions define what happens when the [Cart Conditions](cart-conditions.md) in a Discount Panel are matched.
 
 **Item Subtotal** Adjust the total value of the items in the cart either by a flat amount or percentage of their value.
 

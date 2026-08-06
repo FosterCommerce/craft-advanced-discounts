@@ -1,6 +1,6 @@
 # Displaying promotional messages
 
-Render the messages a store admin has configured on a discount in your storefront templates. Audience: developers building the cart and checkout. See [Messages](../user-guide/messages.md) for how the messages themselves are authored.
+Render the messages a store admin has configured on a discount in your storefront templates. See [Messages](../user-guide/messages.md) for how the messages themselves are authored.
 
 Messages are not output anywhere by the plugin. Nothing appears on the storefront until you add one of the calls below to a template.
 

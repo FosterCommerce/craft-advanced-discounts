@@ -1,6 +1,6 @@
 # Cart Conditions
 
-Cart Conditions determine when a discount is applied to the customer's cart. Audience: store admins setting up discounts in the control panel.
+Cart Conditions determine when a discount is applied to the customer's cart.
 
 The same condition sets are available for Global Conditions and for the Cart Conditions inside a [Discount Panel](discounts.md#discount-panels).
 

@@ -1,6 +1,6 @@
 # Messages
 
-Messages are your opportunity to tell the customer if they are close to or if they have reached the threshold to get the discount. Audience: store admins setting up discounts in the control panel.
+Messages are your opportunity to tell the customer if they are close to or if they have reached the threshold to get the discount.
 
 Use Messages to display notifications to the customer. Each Message has its own set of Conditions that will control when the message is displayed.
 

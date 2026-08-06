@@ -2,6 +2,8 @@
 
 A Craft CMS plugin that builds multi-tier Craft Commerce **discounts** from flexible cart rules.
 
+It runs alongside Commerce's own discounts rather than replacing them. Both systems evaluate every order, and both can apply to the same cart.
+
 ## Overview
 
 - Applies a discount when the customer's cart matches rules you set on date, line items, order totals, or the logged-in user.
