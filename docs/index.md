@@ -9,10 +9,11 @@ Build multi-tier Craft Commerce discounts with flexible rules and promotional me
 **Running promotions day-to-day?** See the [user guide](./user-guide/):
 
 - [Discounts](./user-guide/discounts.md), creating a discount, coupon codes, discount types, and Discount Panels.
+- [Coupon Codes](./user-guide/coupons.md), gating a discount behind a code, in bulk or one at a time.
 - [Cart Conditions](./user-guide/cart-conditions.md), the rules that decide when a discount applies.
 - [Cart Actions](./user-guide/cart-actions.md), what happens once those rules match.
 - [Messages](./user-guide/messages.md), promotional copy shown to the customer, with dynamic tokens.
-- [Excluded Products](./user-guide/excluded-products.md), keeping products out of a discount.
+- [Excluded Variants](./user-guide/excluded-variants.md), which variants no discount can touch, and why.
 
 **Building on top of the plugin?** See the [developer guide](./dev-guide/):
 

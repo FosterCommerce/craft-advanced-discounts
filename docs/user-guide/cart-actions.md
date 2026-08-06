@@ -4,7 +4,7 @@ Actions define what happens when the [Cart Conditions](cart-conditions.md) in a 
 
 An **Advanced** discount offers three actions. A **Buy X, Get Y** discount offers one, covered at the bottom of this page.
 
-Every action skips line items whose variants are not promotable. See [Excluded Products](excluded-products.md).
+Every action skips line items whose variants are not promotable. See [Excluded Variants](excluded-variants.md).
 
 ## Item Subtotal
 

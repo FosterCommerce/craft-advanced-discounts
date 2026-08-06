@@ -1,3 +1,5 @@
+![Advanced Discounts](resources/img/header.png)
+
 # Advanced Discounts
 
 A Craft CMS plugin that builds multi-tier Craft Commerce **discounts** from flexible cart rules.

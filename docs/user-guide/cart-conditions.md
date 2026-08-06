@@ -20,7 +20,7 @@ You may set this condition up to look for one of multiple different products by 
 
 ### Related To
 
-Trigger this discount if any of the Line Items in the cart are related to either the specified Entry or Category.
+Trigger this discount if any of the Line Items in the cart are related to the specified Entry.
 
 ## Order
 

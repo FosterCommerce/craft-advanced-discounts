@@ -65,7 +65,7 @@ Non-promotable line items are subtracted from the order's totals before steps 3,
 
 To change which single message wins, reorder the discounts on the index page or the panels inside the discount. Give messages non-overlapping show-when rules when more than one could qualify at once.
 
-Two behaviours are worth knowing before you debug an unexpected message:
+Two behaviors are worth knowing before you debug an unexpected message:
 
 - **Stop Processing Further Discounts** suppresses the messages of later discounts only when the discount holding the switch actually produced an adjustment. A discount that matches its conditions but discounts nothing does not stop the ones below it.
 - **Stop Processing Further Groups** does not apply to messages at all. It stops a lower tier's *adjustment*, but that tier's messages are still collected. A tiered sale can therefore return the qualifying message for a tier whose discount was skipped. Use show-when rules on those messages if that is not what you want.

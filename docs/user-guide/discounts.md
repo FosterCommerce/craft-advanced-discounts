@@ -24,19 +24,7 @@ Give your discount a name. This will be shown in the cart when the customer has 
 
 ### Coupon Codes
 
-If you want to only apply the discount when the customer enters a coupon code, switch that on and add the code or codes that you wish to use.
-
-![Coupon code creation](../../resources/img/coupon-code-creation.png)
-
-If you need to create a number of random codes for the same discount, then click the "Generate" button.
-
-![Generating coupon codes](../../resources/img/generate-coupon-codes.png)
-
-Enter the number of coupons you would like and the format for the codes. Any "#" characters will be replaced by random letters and numbers. When you are ready, click "Generate" and the codes will be created.
-
-![List of generated coupon codes](../../resources/img/generated-coupon-codes.png)
-
-Next to each code you are able to see the number of times that the code has been used. Whenever a code is used, this number is incremented. You can set a maximum number of times that each code can be used too. If set, the code will no longer work once the maximum number of uses is reached.
+If you want to only apply the discount when the customer enters a coupon code, switch that on and add the code or codes that you wish to use. See [Coupon Codes](coupons.md).
 
 ### Discount Type
 
