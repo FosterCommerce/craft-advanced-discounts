@@ -8,6 +8,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\base\DiscountTypeInterface;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\Plugin;
 
@@ -202,6 +203,21 @@ class Discount extends Model
 		return false;
 	}
 
+	public function validatePanels(): void
+	{
+		foreach ($this->panels as $panel) {
+			foreach ($panel->getMessageCondition()->getConditionRules() as $rule) {
+				if (! $rule instanceof MessageActionRule || $rule->validate(['message'])) {
+					continue;
+				}
+
+				foreach ($rule->getErrors('message') as $error) {
+					$this->addError('panels', $error);
+				}
+			}
+		}
+	}
+
 	/**
 	 * @return array<int, mixed>
 	 */
@@ -215,6 +231,7 @@ class Discount extends Model
 			[['taxBasis'],
 				'in',
 				'range' => [TaxBasis::AfterDiscount, TaxBasis::BeforeDiscount]],
+			[['panels'], 'validatePanels'],
 		]);
 	}
 

@@ -87,6 +87,34 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 		]);
 	}
 
+	/**
+	 * @return string[] Placeholder tokens used in `message` that don't apply to this discount type.
+	 */
+	public function getInapplicablePlaceholders(): array
+	{
+		if ($this->message === '') {
+			return [];
+		}
+
+		$condition = $this->getCondition();
+		$bundle = $condition instanceof MessageCondition && $condition->bundle;
+		$inapplicable = array_diff_key(DiscountType::MESSAGE_PLACEHOLDERS, DiscountType::filterMessagePlaceholders($bundle));
+
+		return array_values(array_filter(
+			array_keys($inapplicable),
+			fn (string $token): bool => str_contains($this->message, $token)
+		));
+	}
+
+	public function validateMessagePlaceholders(string $attribute): void
+	{
+		foreach ($this->getInapplicablePlaceholders() as $token) {
+			$this->addError($attribute, Craft::t('advanced-discounts', '{token} isn’t available for this discount type.', [
+				'token' => $token,
+			]));
+		}
+	}
+
 	protected function inputHtml(): string
 	{
 		$condition = $this->getCondition();
@@ -218,6 +246,7 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 	{
 		return array_merge(parent::defineRules(), [
 			[['message', 'messageCondition'], 'safe'],
+			[['message'], 'validateMessagePlaceholders'],
 		]);
 	}
 }
