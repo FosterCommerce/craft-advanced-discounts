@@ -36,6 +36,34 @@ abstract class DiscountType implements DiscountTypeInterface
 		'{discountedQuantity}' => 'Units currently discounted for Buy X, Get Y.',
 	];
 
+	/**
+	 * Tokens in `MESSAGE_PLACEHOLDERS` that only resolve for Buy X, Get Y discounts,
+	 * since they come from `BogoCartActionRule`, which only bundle discounts can add.
+	 *
+	 * @var string[]
+	 */
+	private const BUNDLE_ONLY_MESSAGE_PLACEHOLDERS = ['{buyQuantityRemaining}', '{discountedQuantity}'];
+
+	/**
+	 * @return array<string, string>
+	 */
+	public static function messagePlaceholders(): array
+	{
+		return self::filterMessagePlaceholders(static::actionConditionClass() === BundleCondition::class);
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public static function filterMessagePlaceholders(bool $bundle): array
+	{
+		if ($bundle) {
+			return self::MESSAGE_PLACEHOLDERS;
+		}
+
+		return array_diff_key(self::MESSAGE_PLACEHOLDERS, array_flip(self::BUNDLE_ONLY_MESSAGE_PLACEHOLDERS));
+	}
+
 	public function getSettingsHtml(Discount $discount): string
 	{
 		return Craft::$app->getView()->renderTemplate('advanced-discounts/_groups', [
@@ -404,7 +432,14 @@ abstract class DiscountType implements DiscountTypeInterface
 			$placeholders['{discountedQuantity}'] = $bogoRule->earnedQuantity($order);
 		}
 
-		return strtr($message, $placeholders);
+		$message = strtr($message, $placeholders);
+
+		$unresolved = array_diff_key(self::MESSAGE_PLACEHOLDERS, $placeholders);
+		if ($unresolved !== []) {
+			$message = str_replace(array_keys($unresolved), '', $message);
+		}
+
+		return $message;
 	}
 
 	private function firstBogoRule(DiscountPanel $panel): ?BogoCartActionRule

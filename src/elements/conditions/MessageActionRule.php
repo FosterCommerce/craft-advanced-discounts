@@ -87,8 +87,39 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 		]);
 	}
 
+	/**
+	 * @return string[] Placeholder tokens used in `message` that don't apply to this discount type.
+	 */
+	public function getInapplicablePlaceholders(): array
+	{
+		if ($this->message === '') {
+			return [];
+		}
+
+		$condition = $this->getCondition();
+		$bundle = $condition instanceof MessageCondition && $condition->bundle;
+		$inapplicable = array_diff_key(DiscountType::MESSAGE_PLACEHOLDERS, DiscountType::filterMessagePlaceholders($bundle));
+
+		return array_values(array_filter(
+			array_keys($inapplicable),
+			fn (string $token): bool => str_contains($this->message, $token)
+		));
+	}
+
+	public function validateMessagePlaceholders(string $attribute): void
+	{
+		foreach ($this->getInapplicablePlaceholders() as $token) {
+			$this->addError($attribute, Craft::t('advanced-discounts', '{token} isn’t available for this discount type.', [
+				'token' => $token,
+			]));
+		}
+	}
+
 	protected function inputHtml(): string
 	{
+		$condition = $this->getCondition();
+		$placeholders = DiscountType::filterMessagePlaceholders($condition instanceof MessageCondition && $condition->bundle);
+
 		Craft::$app->getView()->registerJs(<<<'JS'
 			(function() {
 				var insertToken = function(textarea, token) {
@@ -154,6 +185,10 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 				background: var(--gray-150);
 				border-color: var(--gray-300);
 			}
+			.advanced-discount-message.has-errors {
+				border-radius: var(--medium-border-radius);
+				padding: 8px;
+			}
 			CSS) .
 		Html::tag(
 			'div',
@@ -172,6 +207,11 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 					'class' => ['flex', 'flex-start', 'flex-grow'],
 				]
 			) .
+			($this->hasErrors('message')
+				? Craft::$app->getView()->renderTemplate('_includes/forms/errorList.twig', [
+					'errors' => $this->getErrors('message'),
+				])
+				: '') .
 			Html::tag(
 				'div',
 				implode('', array_map(
@@ -185,8 +225,8 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 						'tabindex' => '0',
 						'role' => 'button',
 					]),
-					array_keys(DiscountType::MESSAGE_PLACEHOLDERS),
-					DiscountType::MESSAGE_PLACEHOLDERS
+					array_keys($placeholders),
+					$placeholders
 				)),
 				[
 					'class' => ['flex', 'flex-wrap', 'advanced-discount-token-chips'],
@@ -200,7 +240,13 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 			]) .
 			$this->getMessageCondition()->getBuilderHtml(),
 			[
-				'class' => ['flex', 'flex-start', 'flex-grow', 'advanced-discount-message'],
+				'class' => array_filter([
+					'flex',
+					'flex-start',
+					'flex-grow',
+					'advanced-discount-message',
+					$this->hasErrors('message') ? 'has-errors' : null,
+				]),
 				'style' => [
 					'flex-direction' => 'column',
 				],
@@ -215,6 +261,7 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 	{
 		return array_merge(parent::defineRules(), [
 			[['message', 'messageCondition'], 'safe'],
+			[['message'], 'validateMessagePlaceholders'],
 		]);
 	}
 }

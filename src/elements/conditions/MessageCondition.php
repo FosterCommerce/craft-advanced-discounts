@@ -7,6 +7,12 @@ use craft\elements\conditions\ElementCondition;
 
 class MessageCondition extends ElementCondition
 {
+	/**
+	 * Whether this condition belongs to a Buy X, Get Y discount panel, which determines
+	 * which message placeholders are applicable in {@see MessageActionRule}.
+	 */
+	public bool $bundle = false;
+
 	public function init(): void
 	{
 		$this->addRuleLabel = Craft::t('advanced-discounts', 'Add a message');

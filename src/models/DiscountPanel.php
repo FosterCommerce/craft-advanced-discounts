@@ -15,6 +15,7 @@ use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\RelatedToConditionRule;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
@@ -92,6 +93,9 @@ class DiscountPanel extends Model
 		$condition = $this->_messageCondition ?? new MessageCondition();
 		$condition->mainTag = 'div';
 		$condition->name = "panels[{$this->key}][messageCondition]";
+		if ($condition instanceof MessageCondition) {
+			$condition->bundle = $this->actionConditionClass === BundleCondition::class;
+		}
 
 		return $condition;
 	}
@@ -102,6 +106,17 @@ class DiscountPanel extends Model
 	public function setMessageCondition(ElementConditionInterface|string|array|null $condition): void
 	{
 		$this->_messageCondition = $this->normalizeCondition($condition, MessageCondition::class);
+	}
+
+	public function hasMessageErrors(): bool
+	{
+		foreach ($this->getMessageCondition()->getConditionRules() as $rule) {
+			if ($rule instanceof MessageActionRule && $rule->hasErrors('message')) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

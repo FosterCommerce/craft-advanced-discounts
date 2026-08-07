@@ -1,0 +1,7 @@
+<table class="data fullwidth">
+    <tbody>
+        {% for token, description in placeholders %}
+            <tr><th><code>{{ token }}</code></th><td>{{ description|t('advanced-discounts') }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
