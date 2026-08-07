@@ -21,6 +21,11 @@ interface DiscountTypeInterface
 
 	public static function actionInstructions(): string;
 
+	/**
+	 * @return array<string, string>
+	 */
+	public static function messagePlaceholders(): array;
+
 	public function getSettingsHtml(Discount $discount): string;
 
 	/**

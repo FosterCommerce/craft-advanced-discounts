@@ -89,6 +89,9 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 
 	protected function inputHtml(): string
 	{
+		$condition = $this->getCondition();
+		$placeholders = DiscountType::filterMessagePlaceholders($condition instanceof MessageCondition && $condition->bundle);
+
 		Craft::$app->getView()->registerJs(<<<'JS'
 			(function() {
 				var insertToken = function(textarea, token) {
@@ -185,8 +188,8 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 						'tabindex' => '0',
 						'role' => 'button',
 					]),
-					array_keys(DiscountType::MESSAGE_PLACEHOLDERS),
-					DiscountType::MESSAGE_PLACEHOLDERS
+					array_keys($placeholders),
+					$placeholders
 				)),
 				[
 					'class' => ['flex', 'flex-wrap', 'advanced-discount-token-chips'],

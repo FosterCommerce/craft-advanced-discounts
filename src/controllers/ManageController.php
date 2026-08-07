@@ -157,9 +157,13 @@ class ManageController extends Controller
 
 		$view = Craft::$app->getView();
 		$html = $discount->getType()->getSettingsHtml($discount);
+		$placeholdersHtml = $view->renderTemplate('advanced-discounts/_message-placeholders-table', [
+			'placeholders' => $discount->getType()::messagePlaceholders(),
+		]);
 
 		return $this->asJson([
 			'html' => $html,
+			'placeholdersHtml' => $placeholdersHtml,
 			'headHtml' => $view->getHeadHtml(),
 			'bodyHtml' => $view->getBodyHtml(),
 		]);

@@ -92,6 +92,9 @@ class DiscountPanel extends Model
 		$condition = $this->_messageCondition ?? new MessageCondition();
 		$condition->mainTag = 'div';
 		$condition->name = "panels[{$this->key}][messageCondition]";
+		if ($condition instanceof MessageCondition) {
+			$condition->bundle = $this->actionConditionClass === BundleCondition::class;
+		}
 
 		return $condition;
 	}

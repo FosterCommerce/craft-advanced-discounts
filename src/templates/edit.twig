@@ -207,6 +207,7 @@
                     data: { type: select.value },
                 });
                 container.innerHTML = data.html;
+                document.getElementById('message-placeholders-table').innerHTML = data.placeholdersHtml;
                 Craft.appendHeadHtml(data.headHtml);
                 Craft.appendBodyHtml(data.bodyHtml);
                 Craft.initUiElements(container);
@@ -240,13 +241,9 @@
 
     <div class="pane advanced-discount-placeholders">
         <h2>{{ 'Message placeholders'|t('advanced-discounts') }}</h2>
-        <table class="data fullwidth">
-            <tbody>
-                {% for token, description in constant('fostercommerce\\advanceddiscounts\\base\\DiscountType::MESSAGE_PLACEHOLDERS') %}
-                    <tr><th><code>{{ token }}</code></th><td>{{ description|t('advanced-discounts') }}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div id="message-placeholders-table">
+            {% include 'advanced-discounts/_message-placeholders-table' with { placeholders: discount.getType().messagePlaceholders() } only %}
+        </div>
     </div>
 {% endblock %}
 
