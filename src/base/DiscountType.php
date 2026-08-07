@@ -432,7 +432,14 @@ abstract class DiscountType implements DiscountTypeInterface
 			$placeholders['{discountedQuantity}'] = $bogoRule->earnedQuantity($order);
 		}
 
-		return strtr($message, $placeholders);
+		$message = strtr($message, $placeholders);
+
+		$unresolved = array_diff_key(self::MESSAGE_PLACEHOLDERS, $placeholders);
+		if ($unresolved !== []) {
+			$message = str_replace(array_keys($unresolved), '', $message);
+		}
+
+		return $message;
 	}
 
 	private function firstBogoRule(DiscountPanel $panel): ?BogoCartActionRule
