@@ -207,12 +207,8 @@ class Discount extends Model
 	{
 		foreach ($this->panels as $panel) {
 			foreach ($panel->getMessageCondition()->getConditionRules() as $rule) {
-				if (! $rule instanceof MessageActionRule || $rule->validate(['message'])) {
-					continue;
-				}
-
-				foreach ($rule->getErrors('message') as $error) {
-					$this->addError('panels', $error);
+				if ($rule instanceof MessageActionRule && ! $rule->validate(['message'])) {
+					$this->addError('messagePlaceholders', Craft::t('advanced-discounts', 'One or more messages use a placeholder that isn’t available for this discount type.'));
 				}
 			}
 		}

@@ -1,6 +1,6 @@
 {% import '_includes/forms.twig' as forms %}
 
-<div class="advanced-discount-panel{{ not panel.enabled ? ' is-disabled is-collapsed' }}" data-panel>
+<div class="advanced-discount-panel{{ not panel.enabled ? ' is-disabled is-collapsed' }}{{ panel.hasMessageErrors() ? ' has-errors' }}" data-panel>
     <div class="advanced-discount-panel-header">
         <a class="move icon" title="{{ 'Reorder'|t('app') }}"></a>
         <span class="advanced-discount-panel-title">{{ panel.name }}</span>

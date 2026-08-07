@@ -185,6 +185,10 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 				background: var(--gray-150);
 				border-color: var(--gray-300);
 			}
+			.advanced-discount-message.has-errors {
+				border-radius: var(--medium-border-radius);
+				padding: 8px;
+			}
 			CSS) .
 		Html::tag(
 			'div',
@@ -203,6 +207,11 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 					'class' => ['flex', 'flex-start', 'flex-grow'],
 				]
 			) .
+			($this->hasErrors('message')
+				? Craft::$app->getView()->renderTemplate('_includes/forms/errorList.twig', [
+					'errors' => $this->getErrors('message'),
+				])
+				: '') .
 			Html::tag(
 				'div',
 				implode('', array_map(
@@ -231,7 +240,13 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 			]) .
 			$this->getMessageCondition()->getBuilderHtml(),
 			[
-				'class' => ['flex', 'flex-start', 'flex-grow', 'advanced-discount-message'],
+				'class' => array_filter([
+					'flex',
+					'flex-start',
+					'flex-grow',
+					'advanced-discount-message',
+					$this->hasErrors('message') ? 'has-errors' : null,
+				]),
 				'style' => [
 					'flex-direction' => 'column',
 				],
