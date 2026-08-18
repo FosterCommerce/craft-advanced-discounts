@@ -1,16 +1,13 @@
 {% extends '_layouts/cp' %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do view.registerAssetBundle('fostercommerce\\advanceddiscounts\\web\\assets\\discounts\\DiscountsAsset') -%}
 
-{% set title = "Excluded Variants"|t('advanced-discounts') %}
+{% set title = 'nav.excludedVariants'|t('advanced-discounts') %}
 {% set selectedSubnavItem = 'excluded-variants' %}
 
-{% css %}
-	{% include 'advanced-discounts/_includes/plugin-footer-css' %}
-{% endcss %}
 
 {% set content %}
-	<p>{{ 'These variants are not promotable, so no discount applies to them. Disabled products and variants are not listed.'|t('advanced-discounts') }}</p>
+	<p>{{ 'excludedVariants.intro'|t('advanced-discounts') }}</p>
 	<div id="excluded-variants-list"></div>
 	{% include 'advanced-discounts/_includes/plugin-footer' %}
 {% endset %}
@@ -18,12 +15,12 @@
 {% js %}
 	new Craft.VueAdminTable({
 		columns: [
-			{ name: '__slot:title', title: Craft.t('advanced-discounts', 'Variant') },
-			{ name: 'sku', title: Craft.t('advanced-discounts', 'SKU') },
-			{ name: 'product', title: Craft.t('advanced-discounts', 'Product') },
+			{ name: '__slot:title', title: Craft.t('advanced-discounts', 'excludedVariants.column.variant') },
+			{ name: 'sku', title: Craft.t('advanced-discounts', 'excludedVariants.column.sku') },
+			{ name: 'product', title: Craft.t('advanced-discounts', 'excludedVariants.column.product') },
 		],
 		container: '#excluded-variants-list',
-		emptyMessage: Craft.t('advanced-discounts', 'No excluded variants.'),
+		emptyMessage: Craft.t('advanced-discounts', 'excludedVariants.empty'),
 		search: true,
 		padded: true,
 		perPage: 100,

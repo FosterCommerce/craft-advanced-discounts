@@ -1,14 +1,14 @@
 # Messages
 
-Messages are your opportunity to tell the customer if they are close to or if they have reached the threshold to get the discount.
+How to tell a customer they are close to, or have reached, a discount threshold.
 
-Use Messages to display notifications to the customer. Each Message has its own set of Conditions that will control when the message is displayed.
+Each message has its own show-when rules that decide when it appears. Leave them empty and the message follows its group instead, appearing whenever the group's [Cart Conditions](cart-conditions.md) match.
 
-If configured within a Group, the Group [Cart Conditions](cart-conditions.md) must be matched before any Message Conditions are matched.
+Show-when rules replace that fallback rather than narrowing it, so a message can appear for a tier the customer has not reached yet. The discount still has to be enabled, have its coupon requirement met, and pass its Global Conditions.
 
 ## Tokens
 
-Messages can contain a number of special tokens that will display dynamic values. Build your message by adding these tokens in the message text. They will be replaced with appropriate values when the message is displayed.
+Tokens in the message text are replaced with live cart figures when the message is shown. Drag a token chip into the message, or click it to insert it at the cursor.
 
 | Token | Value |
 |---|---|

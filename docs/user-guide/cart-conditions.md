@@ -1,8 +1,8 @@
 # Cart Conditions
 
-Cart Conditions determine when a discount is applied to the customer's cart.
+Cart Conditions decide when a discount applies to the cart. The same sets are offered for a discount's Global Conditions and for the Cart Conditions inside each [discount group](discounts.md#discount-groups).
 
-The same condition sets are available for Global Conditions and for the Cart Conditions inside a [Discount Panel](discounts.md#discount-panels).
+Every condition you add has to match. The exception is criteria joined with **+ OR** inside one Line Items or Order condition, where any one of them matching is enough.
 
 ## Date Range
 
@@ -12,15 +12,15 @@ Set a date range when this discount can be applied.
 
 ### Has Purchasable
 
-Configure which items, and how many of each, must be in the customer's cart in order to meet the Condition.
+Which items, and how many of each, must be in the cart.
 
-You may set this condition up to look for one of multiple different products by clicking "+ OR" and adding another criterion.
+Leave **Quantity** blank to match any number of them, so long as the item is there. Click **+ OR** to accept another product instead.
 
-*Hint: if you require a particular combination of products to trigger the discount, then use the "Buy X, Get Y" type*
+To require a particular combination of products rather than any one of them, use the **Buy X, Get Y** discount type.
 
 ### Related To
 
-Trigger this discount if any of the Line Items in the cart are related to the specified Entry.
+Trigger this discount if any of the Line Items in the cart are related to the specified Entry or Category. A relation on the product counts, as well as one on the variant.
 
 ## Order
 
@@ -28,14 +28,12 @@ A condition based on the totals of the Order. Choose from the following:
 
 - **Item subtotal**. The total value of line items before any adjustments are made.
 - **Item total**. The total value of line items after any adjustments have been made.
-- **Total**. The grand total (item subtotal + shipping + any discounts + tax). Could theoretically be a negative value.
-- **Total price**. The grand total (item subtotal + shipping + any discounts + tax) based on the Store's minimum total price strategy (i.e., never below \$0 or never below shipping cost).
+- **Total**. Item subtotal plus shipping, discounts, and tax. Can be negative.
+- **Total price**. The same figure, floored by the store's minimum total price strategy, such as never below \$0 or never below shipping cost.
 - **Total quantity**. The total number of items in the cart.
 
 ## User
 
-Conditions based on the current User. Customers need to have an account and be logged in for these to apply.
-
-If multiple conditions are set within a single Group, then all must match for the Discount Actions to be applied.
+Conditions based on the customer on the order. They need an account and have to be logged in for these to apply.
 
 See [Cart Actions](cart-actions.md) for what happens when these conditions match.

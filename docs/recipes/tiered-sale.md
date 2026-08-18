@@ -1,61 +1,59 @@
 # Recipe: tiered sale
 
-Imagine you want to run a Sale through July and August that gives varying tiers of discount depending on how much the customer has in their cart. For example,
+Goal: a sale running through July and August where the discount grows with the cart value.
 
-- If they spend $2500 they get 5% discount
-- If they spend $7000 they get 7% discount
-- If they spend $10000 they get a 10% discount
-- If they spend $15000 they get a 12% discount
+- Spend \$2,500, get 5% off
+- Spend \$7,000, get 7% off
+- Spend \$10,000, get 10% off
+- Spend \$15,000, get 12% off
 
-This is possible by setting up multiple groups within your discount. Each group can have its own conditions, actions, and messaging.
+Each tier is one group inside a single discount, with its own conditions, actions, and messages.
 
-Start by creating a new discount and calling it "Summer Sale".
+Create a new discount and name it "Summer Sale".
 
-We want the sale to run through July and August, so set the Global Cart Condition accordingly.
+Set a Global Cart Condition covering July and August.
 
 ![Setting the date range](../../resources/img/demo-multi-tier-global-cart-conditions.png)
 
-Next, set the Type to Advanced.
+Set Type to **Advanced**.
 
-Set up the Groups. Note that groups are processed first to last, so in order to create this multi-tier sale, we want to start with the top tier and work down to the minimum discount. If any of the group conditions match then we stop processing the remaining groups.
+Groups are processed top to bottom, and each tier stops the ones below it, so build the highest tier first and work down.
 
-Our first group will be for the 12% discount. Set a title for the group to reflect the level of discount.
+Start with the 12% tier. Give the group a Discount Name that names the tier.
 
 ![Setting the first group title](../../resources/img/demo-multi-tier-first-group-title.png)
 
-Set the Cart Conditions that will match this tier and trigger its Actions. If the customer's cart value is $15000 or more, then they match this group.
+Set the Cart Conditions for the tier: an item subtotal of \$15,000 or more.
 
 ![Set up the cart conditions for the group](../../resources/img/demo-multi-tier-group-cart-conditions.png)
 
-When they match, give the customer 12% off their cart value.
+Add a Cart Action giving 12% off.
 
 ![Set up the cart actions for this group](../../resources/img/demo-multi-tier-group-actions.png)
 
-We want to let the customer know that they have qualified for the 12% discount, so set up some messaging in the group.
+Add a message telling the customer they have qualified for 12% off.
 
 ![Show the customer a message indicating their discount](../../resources/img/demo-multi-tier-group-qualifying-message.png)
 
-The qualifying message is straightforward enough, but what if we also want to show the customer a message showing how far they are from attaining the discount? No problem, let's create a second message in the same group.
-
-This time, we will make use of the placeholder tokens to dynamically insert information into the message. See [Messages](../user-guide/messages.md#tokens) for the full token list.
+Add a second message in the same group to show how far the customer is from the tier. Use the placeholder tokens to fill in the live figures. See [Messages](../user-guide/messages.md#tokens) for the full list.
 
 ![Using tokens for dynamic message content](../../resources/img/demo-multi-tier-dynamic-message.png)
 
-Note that the message is showing that the customer has reached the 10% discount and how far they are from reaching 12%.
-Let's set some rules for this message that will trigger its display. We want to show it if the customer has $10000 or more in their cart.
+Give that second message its own show-when rule so it only appears below the threshold: an item subtotal of \$10,000 or more.
 
 ![Setting the rules for the dynamic message](../../resources/img/demo-multi-tier-dynamic-message-rules.png)
 
-You can add as many messages as you like in the group.
+A group takes as many messages as you need.
 
-We want to stop processing groups in this discount if this group is applied, so turn on "Stop processing further groups".
-
-The entire group should now look like this.
+Turn on **Stop Processing Further Groups** so a cart that reaches this tier does not also pick up the lower ones.
 
 ![The completed first group](../../resources/img/demo-multi-tier-first-group.png)
 
-We can now set up additional groups within this discount to apply the conditions, actions, and messages for the remaining tiers.
-
-When done, the whole thing looks like this.
+Add a group per remaining tier, in descending order.
 
 ![Sale with multiple tiers of discount](../../resources/img/multi-tier-sale.png)
+
+## Where to go next
+
+- [Messages](../user-guide/messages.md), the full token list and how show-when rules work.
+- [Displaying promotional messages](../dev-guide/displaying-messages.md), rendering the messages on the storefront.

@@ -1,37 +1,87 @@
 {% import '_includes/forms.twig' as forms %}
 
-<div class="advanced-discount-panel{{ not panel.enabled ? ' is-disabled is-collapsed' }}{{ panel.hasMessageErrors() ? ' has-errors' }}" data-panel>
+{% set isCollapsed = not panel.enabled %}
+
+{% set actionMenuItems = [
+    {
+        icon: 'down-left-and-up-right-to-center',
+        label: 'group.collapse'|t('advanced-discounts'),
+        attributes: { data: { 'panel-action': 'collapse', 'panel-key': panel.key } },
+        liAttributes: { class: isCollapsed ? ['hidden'] : [] },
+    },
+    {
+        icon: 'up-right-and-down-left-from-center',
+        label: 'group.open'|t('advanced-discounts'),
+        attributes: { data: { 'panel-action': 'expand', 'panel-key': panel.key } },
+        liAttributes: { class: isCollapsed ? [] : ['hidden'] },
+    },
+    {
+        icon: 'circle-dashed',
+        label: 'group.disable'|t('advanced-discounts'),
+        attributes: { data: { 'panel-action': 'disable', 'panel-key': panel.key } },
+        liAttributes: { class: panel.enabled ? [] : ['hidden'] },
+    },
+    {
+        icon: 'circle',
+        label: 'group.enable'|t('advanced-discounts'),
+        attributes: { data: { 'panel-action': 'enable', 'panel-key': panel.key } },
+        liAttributes: { class: panel.enabled ? ['hidden'] : [] },
+    },
+    {
+        icon: 'arrow-up',
+        label: 'group.moveUp'|t('advanced-discounts'),
+        attributes: { data: { 'panel-action': 'moveUp', 'panel-key': panel.key } },
+    },
+    {
+        icon: 'arrow-down',
+        label: 'group.moveDown'|t('advanced-discounts'),
+        attributes: { data: { 'panel-action': 'moveDown', 'panel-key': panel.key } },
+    },
+    {
+        icon: 'trash',
+        label: 'Delete'|t('app'),
+        destructive: true,
+        attributes: { data: { 'panel-action': 'delete', 'panel-key': panel.key } },
+    },
+] %}
+
+<div class="advanced-discount-panel{{ isCollapsed ? ' is-collapsed' }}{{ not panel.enabled ? ' is-disabled' }}{{ panel.hasMessageErrors() ? ' has-errors' }}" data-panel data-panel-key="{{ panel.key }}" role="listitem">
+    <input type="hidden" name="panels[{{ panel.key }}][enabled]" value="{{ panel.enabled ? '1' : '' }}" data-panel-enabled>
+
     <div class="advanced-discount-panel-header">
-        <a class="move icon" title="{{ 'Reorder'|t('app') }}"></a>
         <span class="advanced-discount-panel-title">{{ panel.name }}</span>
         <div class="advanced-discount-panel-actions">
-            {{ forms.lightswitch({
-                name: 'panels[' ~ panel.key ~ '][enabled]',
-                on: panel.enabled,
-                small: true,
+            <div class="status off" title="{{ 'group.disabled'|t('advanced-discounts') }}">
+                <span class="visually-hidden">{{ 'group.disabled'|t('advanced-discounts') }}</span>
+            </div>
+            {{ disclosureMenu(actionMenuItems, {
+                hiddenLabel: 'group.actions'|t('advanced-discounts'),
+                buttonAttributes: {
+                    class: ['action-btn', 'small'],
+                    title: 'group.actions'|t('advanced-discounts'),
+                },
             }) }}
-            <button type="button" class="btn small advanced-discount-panel-collapse" data-panel-collapse>{{ 'Collapse'|t('app') }}</button>
-            <button type="button" class="delete icon" data-panel-delete title="{{ 'Delete'|t('app') }}"></button>
+            <a class="move icon" title="{{ 'Reorder'|t('app') }}"></a>
         </div>
     </div>
 
     <div class="advanced-discount-panel-body">
         {{ forms.textField({
-            label: 'Discount Name'|t('advanced-discounts'),
-            instructions: 'Overrides the discount name shown on the order for this group.'|t('advanced-discounts'),
+            label: 'group.name'|t('advanced-discounts'),
+            instructions: 'group.name.instructions'|t('advanced-discounts'),
             name: 'panels[' ~ panel.key ~ '][name]',
             value: panel.name,
         }) }}
 
         {% set cartCondition %}
-					<div class="advanced-discount-cart-condition">
-            {{ panel.cartCondition.getBuilderHtml()|raw }}
-					</div>
+            <div class="advanced-discount-cart-condition">
+                {{ panel.cartCondition.getBuilderHtml()|raw }}
+            </div>
         {% endset %}
 
         {{ forms.field({
-            label: 'Cart Conditions'|t('advanced-discounts'),
-            instructions: 'Rules that decide when this group applies.'|t('advanced-discounts'),
+            label: 'group.cartConditions'|t('advanced-discounts'),
+            instructions: 'group.cartConditions.instructions'|t('advanced-discounts'),
         }, cartCondition) }}
 
         {% set cartActionCondition %}
@@ -41,12 +91,12 @@
                 {% if nonPromotableVariants|length %}
                     <button type="button" class="btn small advanced-discount-excluded-trigger" data-icon="alert">
                         {{ nonPromotableVariants|length == 1
-                            ? '1 variant not promotable'|t('advanced-discounts')
-                            : '{count} variants not promotable'|t('advanced-discounts', { count: nonPromotableVariants|length }) }}
+                            ? 'group.nonPromotable.one'|t('advanced-discounts')
+                            : 'group.nonPromotable.many'|t('advanced-discounts', { count: nonPromotableVariants|length }) }}
                     </button>
                     <div class="advanced-discount-excluded-list hidden">
-                        <h2>{{ 'Not promotable'|t('advanced-discounts') }}</h2>
-                        <p class="light">{{ 'These selected variants will not be discounted.'|t('advanced-discounts') }}</p>
+                        <h2>{{ 'group.nonPromotable.title'|t('advanced-discounts') }}</h2>
+                        <p class="light">{{ 'group.nonPromotable.intro'|t('advanced-discounts') }}</p>
                         <ul>
                             {% for variant in nonPromotableVariants %}
                                 <li><a href="{{ variant.product.cpEditUrl }}" target="_blank">{{ variant.sku }} {{ variant.title }}</a></li>
@@ -67,13 +117,13 @@
         {% endset %}
 
         {{ forms.field({
-            label: 'Messages'|t('advanced-discounts'),
-            instructions: 'Shown to customers when they match certain conditions.'|t('advanced-discounts'),
+            label: 'group.messages'|t('advanced-discounts'),
+            instructions: 'group.messages.instructions'|t('advanced-discounts'),
         }, messageCondition) }}
 
         {{ forms.lightswitchField({
-            label: 'Stop Processing Further Groups'|t('advanced-discounts'),
-            instructions: 'When this group applies, skip the groups below it.'|t('advanced-discounts'),
+            label: 'group.stopProcessing'|t('advanced-discounts'),
+            instructions: 'group.stopProcessing.instructions'|t('advanced-discounts'),
             name: 'panels[' ~ panel.key ~ '][stopProcessing]',
             on: panel.stopProcessing,
         }) }}

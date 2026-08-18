@@ -1,6 +1,6 @@
 # Cart Actions
 
-Actions define what happens when the [Cart Conditions](cart-conditions.md) in a Discount Panel are matched.
+Actions define what happens when the [Cart Conditions](cart-conditions.md) in a discount group are matched.
 
 An **Advanced** discount offers three actions. A **Buy X, Get Y** discount offers one, covered at the bottom of this page.
 
@@ -10,9 +10,9 @@ Every action skips line items whose variants are not promotable. See [Excluded V
 
 Discounts the cart as a whole, by a flat amount or a percentage.
 
-The figure it works from is the promotable item subtotal, which is the sum of the line items that can be discounted. It ignores shipping and tax. A cart with nothing promotable in it produces no discount at all.
+It works from the item subtotal, ignoring shipping and tax. A cart with nothing promotable in it produces no discount at all.
 
-This produces one adjustment against the order rather than against any particular line, so a per-line breakdown in your templates will not show it.
+This produces one adjustment against the order rather than any particular line, so a per-line breakdown in your templates does not show it.
 
 ## Line Items
 
@@ -22,13 +22,13 @@ Discounts individual lines, by a flat amount or a percentage. Each matching line
 
 - **All line items**. Every promotable line in the cart.
 - **Selected line items**. Only the products or variants you pick here.
-- **Same line items as cart conditions**. The products already named in this panel's Cart Conditions.
+- **Same line items as cart conditions**. The products already named in this group's Cart Conditions.
 
-The third option exists so you do not have to name the same products twice. Set up a condition on "Has Purchasable" or "Related To", and the action follows whatever that condition matched. Changing the condition later changes the action with it.
+The third option exists so you do not have to name the same products twice. Set up a condition on **Has Purchasable** or "Related To", and the action follows whatever that condition matched. Changing the condition later changes the action with it.
 
 ### Apply per
 
-Only affects flat amounts. A percentage is always a percentage of the line's value, however this is set.
+Only affects flat amounts. A percentage always works off the line's value.
 
 - **Per line item**. Takes the amount off the line once, no matter the quantity.
 - **Per purchasable**. Takes the amount off each unit, so \$5 off a line of 3 removes \$15.
@@ -43,7 +43,7 @@ Choose which shipping methods qualify: **Any**, or a specific set with **is one 
 
 ## Using more than one action
 
-A panel can hold several actions, and each one produces its own adjustment. When there is more than one, each adjustment is named after the panel and the action that made it, so a panel called "Summer Sale" produces `Summer Sale: Item Subtotal` and `Summer Sale: Shipping` on the order.
+A group can hold several actions, and each one produces its own adjustment. When there is more than one, each adjustment is named after the group and the action that made it, so a group called "Summer Sale" produces `Summer Sale: Item Subtotal` and `Summer Sale: Shipping` on the order.
 
 Combining **Item Subtotal** with **Line Items** discounts the same products twice, once as part of the cart total and again individually.
 

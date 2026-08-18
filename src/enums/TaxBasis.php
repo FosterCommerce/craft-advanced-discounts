@@ -1,29 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\enums;
 
 use Craft;
 
-abstract class TaxBasis
+enum TaxBasis: string
 {
-	public const AfterDiscount = 'afterDiscount';
+	case AfterDiscount = 'afterDiscount';
 
-	public const BeforeDiscount = 'beforeDiscount';
+	case BeforeDiscount = 'beforeDiscount';
 
 	/**
 	 * @return array<int, array{label: string, value: string}>
 	 */
 	public static function options(): array
 	{
-		return [
-			[
-				'label' => Craft::t('advanced-discounts', 'After discounts'),
-				'value' => self::AfterDiscount,
-			],
-			[
-				'label' => Craft::t('advanced-discounts', 'Before discounts'),
-				'value' => self::BeforeDiscount,
-			],
-		];
+		return array_map(static fn (self $taxBasis): array => [
+			'label' => $taxBasis->label(),
+			'value' => $taxBasis->value,
+		], self::cases());
+	}
+
+	public function label(): string
+	{
+		return match ($this) {
+			self::AfterDiscount => Craft::t('advanced-discounts', 'settings.taxBasis.afterDiscount'),
+			self::BeforeDiscount => Craft::t('advanced-discounts', 'settings.taxBasis.beforeDiscount'),
+		};
 	}
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\services;
 
 use craft\events\RegisterComponentTypesEvent;
@@ -42,12 +44,22 @@ class DiscountTypes extends Component
 
 	public function getDiscountTypeByHandle(string $handle): DiscountTypeInterface
 	{
+		$discountType = $this->findDiscountTypeByHandle($handle);
+		if ($discountType === null) {
+			throw new InvalidArgumentException("No discount type exists with handle \"{$handle}\".");
+		}
+
+		return $discountType;
+	}
+
+	public function findDiscountTypeByHandle(string $handle): ?DiscountTypeInterface
+	{
 		foreach ($this->getAllDiscountTypes() as $type) {
 			if ($type::handle() === $handle) {
 				return new $type();
 			}
 		}
 
-		throw new InvalidArgumentException("No discount type exists with handle \"{$handle}\".");
+		return null;
 	}
 }

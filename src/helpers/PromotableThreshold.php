@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\helpers;
 
+use craft\base\conditions\ConditionRuleInterface;
 use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
 use craft\commerce\elements\conditions\orders\ItemTotalConditionRule;
 use craft\commerce\elements\conditions\orders\TotalConditionRule;
@@ -11,16 +14,21 @@ use craft\commerce\elements\Order;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\fields\conditions\MoneyFieldConditionRule;
+use craft\helpers\Json;
+use craft\helpers\MoneyHelper;
 use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\RelatedToConditionRule;
 
 /**
  * Evaluates discount conditions against the promotable portion of an order.
  *
- * Commerce order rules read whole-order totals, which include non-promotable line items.
- * A condition must only count as met when the promotable items alone satisfy it, so a
- * fully non-promotable cart behaves like an empty one (promotable subtotal 0, qty 0).
+ * Commerce order rules read whole-order totals, so a fully non-promotable cart would
+ * otherwise satisfy a threshold no discountable item contributed to.
+ *
+ * Top-level cart conditions AND together. The rules nested inside a Line Items or Order
+ * condition OR together, matching the “OR” the condition builder puts on its add button.
  */
 final class PromotableThreshold
 {
@@ -69,7 +77,11 @@ final class PromotableThreshold
 						&& $orderRule->value !== null
 						&& in_array($orderRule->operator, ['>=', '>'], true)
 					) {
-						return max(0.0, (float) $orderRule->value - self::promotableValue($order, $orderField, $lineItemField));
+						$currency = (string) $order->currency;
+						$remaining = Amounts::toMoney((float) $orderRule->value, $currency)
+							->subtract(Amounts::toMoney(self::promotableValue($order, $orderField, $lineItemField), $currency));
+
+						return max(0.0, (float) MoneyHelper::toDecimal($remaining));
 					}
 				}
 			}
@@ -111,61 +123,99 @@ final class PromotableThreshold
 
 	private static function orderConditionMatches(OrderConditionRule $triggerRule, Order $order): bool
 	{
-		foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
-			if ($orderRule instanceof MoneyFieldConditionRule && isset(self::VALUE_RULE_FIELDS[$orderRule::class])) {
-				[$orderField, $lineItemField] = self::VALUE_RULE_FIELDS[$orderRule::class];
-				if (! self::compare(self::promotableValue($order, $orderField, $lineItemField), $orderRule->operator, $orderRule->value, $orderRule->maxValue)) {
-					return false;
-				}
+		$orderRules = $triggerRule->getOrderCondition()->getConditionRules();
+		if ($orderRules === []) {
+			return true;
+		}
 
-				continue;
-			}
-
-			if ($orderRule instanceof TotalQtyConditionRule) {
-				if (! self::compare((float) self::promotableQty($order), $orderRule->operator, $orderRule->value, $orderRule->maxValue)) {
-					return false;
-				}
-
-				continue;
-			}
-
-			if ($orderRule instanceof ElementConditionRuleInterface && ! $orderRule->matchElement($order)) {
-				return false;
+		foreach ($orderRules as $orderRule) {
+			if (self::orderRuleMatches($orderRule, $order)) {
+				return true;
 			}
 		}
 
-		return true;
+		return false;
+	}
+
+	private static function orderRuleMatches(ConditionRuleInterface $orderRule, Order $order): bool
+	{
+		if ($orderRule instanceof MoneyFieldConditionRule && isset(self::VALUE_RULE_FIELDS[$orderRule::class])) {
+			[$orderField, $lineItemField] = self::VALUE_RULE_FIELDS[$orderRule::class];
+
+			return self::compare(self::promotableValue($order, $orderField, $lineItemField), $orderRule->operator, $orderRule->value, $orderRule->maxValue);
+		}
+
+		if ($orderRule instanceof TotalQtyConditionRule) {
+			return self::compare((float) self::promotableQty($order), $orderRule->operator, $orderRule->value, $orderRule->maxValue);
+		}
+
+		return $orderRule instanceof ElementConditionRuleInterface && $orderRule->matchElement($order);
 	}
 
 	private static function lineItemConditionMatches(LineItemConditionRule $triggerRule, Order $order): bool
 	{
-		foreach ($triggerRule->getLineItemCondition()->getConditionRules() as $rule) {
-			if ($rule instanceof HasPurchasableConditionRule) {
-				if (! self::compare((float) self::promotableMatchingQty($rule, $order), $rule->operator, (string) $rule->quantity, null)) {
-					return false;
-				}
+		$lineItemRules = $triggerRule->getLineItemCondition()->getConditionRules();
+		if ($lineItemRules === []) {
+			return true;
+		}
 
-				continue;
-			}
-
-			if ($rule instanceof ElementConditionRuleInterface && ! $rule->matchElement($order)) {
-				return false;
+		foreach ($lineItemRules as $lineItemRule) {
+			if (self::lineItemRuleMatches($lineItemRule, $order)) {
+				return true;
 			}
 		}
 
-		return true;
+		return false;
+	}
+
+	private static function lineItemRuleMatches(ConditionRuleInterface $lineItemRule, Order $order): bool
+	{
+		if ($lineItemRule instanceof HasPurchasableConditionRule) {
+			$matchingQty = self::promotableMatchingQty($lineItemRule, $order);
+			if ($lineItemRule->quantity === null) {
+				return $matchingQty > 0;
+			}
+
+			return self::compare((float) $matchingQty, $lineItemRule->operator, (string) $lineItemRule->quantity, null);
+		}
+
+		if ($lineItemRule instanceof RelatedToConditionRule) {
+			return self::hasPromotableRelated($lineItemRule, $order);
+		}
+
+		return $lineItemRule instanceof ElementConditionRuleInterface && $lineItemRule->matchElement($order);
+	}
+
+	private static function hasPromotableRelated(RelatedToConditionRule $rule, Order $order): bool
+	{
+		$elementId = (int) $rule->getElementId();
+		if ($elementId === 0) {
+			return false;
+		}
+
+		$variantIds = Purchasables::relatedVariantIds($elementId);
+
+		foreach ($order->getLineItems() as $lineItem) {
+			if ($lineItem->getIsPromotable() && in_array((int) $lineItem->purchasableId, $variantIds, true)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static function promotableValue(Order $order, string $orderField, string $lineItemField): float
 	{
-		$value = (float) $order->{$orderField};
+		$currency = (string) $order->currency;
+		$value = Amounts::toMoney((float) $order->{$orderField}, $currency);
+
 		foreach ($order->getLineItems() as $lineItem) {
 			if (! $lineItem->getIsPromotable()) {
-				$value -= (float) $lineItem->{$lineItemField};
+				$value = $value->subtract(Amounts::toMoney((float) $lineItem->{$lineItemField}, $currency));
 			}
 		}
 
-		return $value;
+		return (float) MoneyHelper::toDecimal($value);
 	}
 
 	private static function promotableQty(Order $order): int
@@ -195,19 +245,38 @@ final class PromotableThreshold
 	}
 
 	/**
-	 * Mirrors craft\base\conditions\BaseNumberConditionRule::matchValue — between is inclusive, empty bounds are skipped.
+	 * Mirrors the operator handling in `craft\base\conditions\BaseNumberConditionRule::matchValue`,
+	 * against the promotable total rather than the rule's own attribute.
+	 *
+	 * Every operator the CP offers has to be handled here. An unhandled one is a rule the
+	 * store admin can build and that silently never matches.
 	 */
 	private static function compare(float $value, string $operator, ?string $min, ?string $max): bool
 	{
+		$min ??= '';
+		$max ??= '';
+
+		if ($operator === 'empty') {
+			return ! $value;
+		}
+
+		if ($operator === 'notempty') {
+			return (bool) $value;
+		}
+
 		if ($operator === 'between') {
-			if (($min !== null && $min !== '') && $value < (float) $min) {
+			if (empty($min) && empty($max)) {
+				return true;
+			}
+
+			if (! empty($min) && $value < (float) $min) {
 				return false;
 			}
 
-			return ! (($max !== null && $max !== '') && $value > (float) $max);
+			return ! (! empty($max) && $value > (float) $max);
 		}
 
-		if ($min === null || $min === '') {
+		if ($min === '') {
 			return true;
 		}
 
@@ -220,7 +289,16 @@ final class PromotableThreshold
 			'<=' => $value <= $threshold,
 			'>' => $value > $threshold,
 			'>=' => $value >= $threshold,
+			'in' => self::inList($value, $min),
+			'ni' => ! self::inList($value, $min),
 			default => false,
 		};
+	}
+
+	private static function inList(float $value, string $list): bool
+	{
+		$decoded = Json::decodeIfJson($list);
+
+		return is_array($decoded) && in_array($value, array_map('floatval', $decoded), true);
 	}
 }

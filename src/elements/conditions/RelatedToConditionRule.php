@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
+use craft\elements\Category;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
@@ -21,7 +24,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Related To');
+		return Craft::t('advanced-discounts', 'conditions.relatedTo');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -109,13 +112,15 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 	 */
 	private function _elementTypeOptions(): array
 	{
-		$options = [
+		return [
 			[
 				'value' => Entry::class,
 				'label' => Entry::displayName(),
 			],
+			[
+				'value' => Category::class,
+				'label' => Category::displayName(),
+			],
 		];
-
-		return $options;
 	}
 }

@@ -33,7 +33,7 @@ If the filtered adjustments do not add up to the order's total discount, a Comme
 Two more fields come from the adjustment itself rather than the snapshot:
 
 - `amount` is negative. It is a reduction, so add it to a running total rather than subtracting it.
-- `name` is the Discount Name from the panel, falling back to the discount's own name. When a panel holds more than one cart action, each adjustment is suffixed with its rule label, giving `Summer Sale: Item Subtotal` and `Summer Sale: Shipping`.
+- `name` is the Discount Name from the group, falling back to the discount's own name. When a group holds more than one cart action, each adjustment is suffixed with its rule label, giving `Summer Sale: Item Subtotal` and `Summer Sale: Shipping`.
 
 ## Where each rule attaches
 

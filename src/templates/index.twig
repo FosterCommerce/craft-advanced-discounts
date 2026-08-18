@@ -1,17 +1,14 @@
 {% extends '_layouts/cp' %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do view.registerAssetBundle('fostercommerce\\advanceddiscounts\\web\\assets\\discounts\\DiscountsAsset') -%}
 
-{% set title = "Advanced Discounts"|t('advanced-discounts') %}
+{% set title = 'nav.title'|t('advanced-discounts') %}
 {% set selectedSubnavItem = 'discounts' %}
 
 {% set additionalButtons %}
-	<a class="btn submit add icon" href="{{ url('advanced-discounts/new') }}">{{ "New discount"|t('advanced-discounts') }}</a>
+	<a class="btn submit add icon" href="{{ url('advanced-discounts/new') }}">{{ 'index.newDiscount'|t('advanced-discounts') }}</a>
 {% endset %}
 
-{% css %}
-	{% include 'advanced-discounts/_includes/plugin-footer-css' %}
-{% endcss %}
 
 {% set content %}
 	<div id="advanced-discounts-list"></div>
@@ -23,31 +20,31 @@
 		{ name: '__slot:title', title: Craft.t('app', 'Name') },
 		{
 			name: 'type',
-			title: Craft.t('advanced-discounts', 'Type'),
+			title: Craft.t('advanced-discounts', 'index.column.type'),
 		},
 		{
 			name: 'requireCouponCode',
-			title: Craft.t('advanced-discounts', 'Require Coupon Code'),
+			title: Craft.t('advanced-discounts', 'index.column.requireCouponCode'),
 			callback: (value) => value ? '<span data-icon="check"></span>' : '',
 		},
 		{
 			name: 'coupons',
-			title: Craft.t('advanced-discounts', 'Coupons'),
+			title: Craft.t('advanced-discounts', 'index.column.coupons'),
 			callback: (value) => value ? value : '',
 		},
 		{
 			name: 'timesUsed',
-			title: Craft.t('advanced-discounts', 'Times Used'),
+			title: Craft.t('advanced-discounts', 'index.column.timesUsed'),
 			callback: (value) => value ? value : '',
 		},
 		{
 			name: 'stopProcessing',
-			title: Craft.t('advanced-discounts', 'Stops Processing?'),
+			title: Craft.t('advanced-discounts', 'index.column.stopsProcessing'),
 			callback: (value) => value ? '<span data-icon="check"></span>' : '',
 		},
 		{
 			name: 'dateCreated',
-			title: Craft.t('advanced-discounts', 'Date Created'),
+			title: Craft.t('advanced-discounts', 'index.column.dateCreated'),
 		},
 	];
 
@@ -55,13 +52,13 @@
 		columns,
 		padded: true,
 		container: '#advanced-discounts-list',
-		emptyMessage: Craft.t('advanced-discounts', 'No discounts yet.'),
+		emptyMessage: Craft.t('advanced-discounts', 'index.empty'),
 		search: true,
 		checkboxes: true,
 		tableData: {{ tableData|json_encode|raw }},
 		deleteAction: 'advanced-discounts/manage/delete',
 		reorderAction: 'advanced-discounts/manage/reorder',
-		reorderSuccessMessage: Craft.t('advanced-discounts', 'Discounts reordered.'),
-		reorderFailMessage: Craft.t('advanced-discounts', "Couldn't reorder discounts."),
+		reorderSuccessMessage: Craft.t('advanced-discounts', 'index.flash.reordered'),
+		reorderFailMessage: Craft.t('advanced-discounts', 'index.flash.reorderFailed'),
 	});
 {% endjs %}

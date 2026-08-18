@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\models;
 
 use craft\base\Model;
@@ -45,7 +47,8 @@ class Coupon extends Model
 				'max' => 255],
 			[['code'],
 				UniqueValidator::class,
-				'targetClass' => CouponRecord::class],
+				'targetClass' => CouponRecord::class,
+				'caseInsensitive' => true],
 			[['uses', 'maxUses'], 'integer'],
 		]);
 	}

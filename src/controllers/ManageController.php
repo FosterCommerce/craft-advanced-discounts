@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\controllers;
 
 use Craft;
@@ -16,6 +18,7 @@ use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class ManageController extends Controller
@@ -24,18 +27,29 @@ class ManageController extends Controller
 
 	protected array|int|bool $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
+	public function beforeAction($action): bool
+	{
+		if (! parent::beforeAction($action)) {
+			return false;
+		}
+
+		$this->requirePermission('commerce-managePromotions');
+
+		return true;
+	}
+
 	public function actionIndex(): Response
 	{
 		Craft::$app->getView()->registerTranslations('advanced-discounts', [
-			'Type',
-			'Require Coupon Code',
-			'Coupons',
-			'Times Used',
-			'Stops Processing?',
-			'Date Created',
-			'No discounts yet.',
-			'Discounts reordered.',
-			"Couldn't reorder discounts.",
+			'index.column.type',
+			'index.column.requireCouponCode',
+			'index.column.coupons',
+			'index.column.timesUsed',
+			'index.column.stopsProcessing',
+			'index.column.dateCreated',
+			'index.empty',
+			'index.flash.reordered',
+			'index.flash.reorderFailed',
 		]);
 
 		$formatter = Craft::$app->getFormatter();
@@ -62,10 +76,10 @@ class ManageController extends Controller
 	public function actionExcludedVariants(): Response
 	{
 		Craft::$app->getView()->registerTranslations('advanced-discounts', [
-			'Variant',
-			'SKU',
-			'Product',
-			'No excluded variants.',
+			'excludedVariants.column.variant',
+			'excludedVariants.column.sku',
+			'excludedVariants.column.product',
+			'excludedVariants.empty',
 		]);
 
 		return $this->renderTemplate('advanced-discounts/excluded-variants');
@@ -75,8 +89,8 @@ class ManageController extends Controller
 	{
 		$this->requireAcceptsJson();
 
-		$page = (int) $this->request->getParam('page', 1);
-		$perPage = (int) $this->request->getParam('per_page', 100);
+		$page = $this->intParam('page', 1);
+		$perPage = $this->intParam('per_page', 100);
 		$search = $this->request->getParam('search');
 
 		/** @var CommercePlugin $commerce */
@@ -121,14 +135,18 @@ class ManageController extends Controller
 	public function actionEdit(?int $id = null): Response
 	{
 		Craft::$app->getView()->registerTranslations('advanced-discounts', [
-			'Number of Coupons',
-			'Format',
-			'Each # becomes a random character.',
-			'Generate',
+			'edit.coupons.generateCount',
+			'edit.coupons.generateFormat',
+			'edit.coupons.generateFormatInstructions',
+			'edit.coupons.generate',
 		]);
 
 		$discount = Craft::$app->getUrlManager()->getRouteParams()['discount']
 			?? ($id !== null ? Plugin::getInstance()->discounts->getDiscountById($id) : new Discount());
+
+		if ($discount === null) {
+			throw new NotFoundHttpException(Craft::t('advanced-discounts', 'edit.error.notFound'));
+		}
 
 		$typeOptions = [];
 		foreach (Plugin::getInstance()->discountTypes->getAllDiscountTypeInstances() as $type) {
@@ -152,7 +170,7 @@ class ManageController extends Controller
 		$this->requirePostRequest();
 
 		$discount = new Discount([
-			'type' => $this->request->getBodyParam('type') ?: 'advanced',
+			'type' => $this->stringParam('type', 'advanced'),
 		]);
 
 		$view = Craft::$app->getView();
@@ -174,14 +192,14 @@ class ManageController extends Controller
 		$this->requirePostRequest();
 		$this->requireAcceptsJson();
 
-		$count = (int) $this->request->getBodyParam('count', 0);
-		$format = $this->request->getBodyParam('format') ?: CommerceCoupons::DEFAULT_COUPON_FORMAT;
+		$count = $this->intParam('count', 0);
+		$format = $this->stringParam('format', CommerceCoupons::DEFAULT_COUPON_FORMAT);
 
-		$existingCodes = $this->request->getBodyParam('existingCodes') ?: [];
-		if (! is_array($existingCodes)) {
-			$existingCodes = [];
-		}
-		$existingCodes = array_merge($existingCodes, Plugin::getInstance()->coupons->getAllCodes());
+		$existingCodes = $this->request->getBodyParam('existingCodes');
+		$existingCodes = array_merge(
+			is_array($existingCodes) ? array_map('strval', $existingCodes) : [],
+			Plugin::getInstance()->coupons->getAllCodes()
+		);
 
 		/** @var CommercePlugin $commerce */
 		$commerce = CommercePlugin::getInstance();
@@ -196,9 +214,7 @@ class ManageController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$type = Plugin::getInstance()->discountTypes->getDiscountTypeByHandle(
-			$this->request->getBodyParam('type') ?: 'advanced'
-		);
+		$type = Plugin::getInstance()->discountTypes->getDiscountTypeByHandle($this->stringParam('type', 'advanced'));
 		$discount = new Discount([
 			'type' => $type::handle(),
 		]);
@@ -223,13 +239,13 @@ class ManageController extends Controller
 		$this->requirePostRequest();
 		$this->requireAcceptsJson();
 
-		$ids = Json::decode($this->request->getRequiredBodyParam('ids'));
+		$ids = Json::decode($this->stringParam('ids', '[]'));
 
-		if (! Plugin::getInstance()->discounts->reorderDiscounts($ids)) {
-			return $this->asFailure(Craft::t('advanced-discounts', "Couldn't reorder discounts."));
+		if (! is_array($ids) || ! Plugin::getInstance()->discounts->reorderDiscounts(array_map('intval', $ids))) {
+			return $this->asFailure(Craft::t('advanced-discounts', 'index.flash.reorderFailed'));
 		}
 
-		return $this->asSuccess(Craft::t('advanced-discounts', 'Discounts reordered.'));
+		return $this->asSuccess(Craft::t('advanced-discounts', 'index.flash.reordered'));
 	}
 
 	public function actionDelete(): ?Response
@@ -237,41 +253,62 @@ class ManageController extends Controller
 		$this->requirePostRequest();
 		$this->requireAcceptsJson();
 
-		$id = (int) $this->request->getRequiredBodyParam('id');
+		$id = $this->intParam('id', 0);
 
 		if (! Plugin::getInstance()->discounts->deleteDiscount($id)) {
-			return $this->asFailure(Craft::t('advanced-discounts', 'Discount not found.'));
+			return $this->asFailure(Craft::t('advanced-discounts', 'index.flash.notFound'));
 		}
 
-		return $this->asSuccess(Craft::t('advanced-discounts', 'Discount deleted.'));
+		return $this->asSuccess(Craft::t('advanced-discounts', 'index.flash.deleted'));
 	}
 
-	public function actionSave(): void
+	public function actionSave(): ?Response
 	{
 		$this->requirePostRequest();
 
-		$discount = new Discount();
+		$id = $this->request->getBodyParam('id');
+		$coupons = $this->request->getBodyParam('coupons');
+		$globalCartCondition = $this->request->getBodyParam('globalCartCondition');
+		$panels = $this->request->getBodyParam('panels');
+		$taxBasis = $this->request->getBodyParam('taxBasis');
 
-		$discount->id = $this->request->getBodyParam('id');
-		$discount->name = $this->request->getBodyParam('name');
+		$discount = new Discount();
+		$discount->id = is_numeric($id) ? (int) $id : null;
+		$discount->name = $this->stringParam('name', '');
 		$discount->requireCouponCode = (bool) $this->request->getBodyParam('requireCouponCode');
-		$coupons = $this->request->getBodyParam('coupons') ?: [];
 		$discount->setCoupons(is_array($coupons) ? $coupons : []);
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');
 		$discount->stopProcessing = (bool) $this->request->getBodyParam('stopProcessing');
-		$discount->type = $this->request->getBodyParam('type') ?: 'advanced';
-		$discount->taxBasis = $this->request->getBodyParam('taxBasis') ?: null;
-		$discount->setGlobalCartCondition($this->request->getBodyParam('globalCartCondition'));
-		$discount->setPanels($this->request->getBodyParam('panels') ?? []);
+		$discount->type = $this->stringParam('type', 'advanced');
+		$discount->taxBasis = is_string($taxBasis) ? TaxBasis::tryFrom($taxBasis) : null;
+		$discount->setGlobalCartCondition(is_array($globalCartCondition) || is_string($globalCartCondition) ? $globalCartCondition : null);
+		$discount->setPanels(is_array($panels) ? $panels : []);
 
-		if (Plugin::getInstance()->discounts->saveDiscount($discount)) {
-			$this->setSuccessFlash(Craft::t('advanced-discounts', 'Discount saved.'));
-			$this->redirectToPostedUrl($discount);
-		} else {
-			$this->setFailFlash(Craft::t('advanced-discounts', "Couldn't save discount."));
+		if (! Plugin::getInstance()->discounts->saveDiscount($discount)) {
+			$this->setFailFlash(Craft::t('advanced-discounts', 'edit.flash.saveFailed'));
 			Craft::$app->getUrlManager()->setRouteParams([
 				'discount' => $discount,
 			]);
+
+			return null;
 		}
+
+		$this->setSuccessFlash(Craft::t('advanced-discounts', 'edit.flash.saved'));
+
+		return $this->redirectToPostedUrl($discount);
+	}
+
+	private function intParam(string $name, int $default): int
+	{
+		$value = $this->request->getParam($name);
+
+		return is_numeric($value) ? (int) $value : $default;
+	}
+
+	private function stringParam(string $name, string $default): string
+	{
+		$value = $this->request->getParam($name);
+
+		return is_string($value) && $value !== '' ? $value : $default;
 	}
 }

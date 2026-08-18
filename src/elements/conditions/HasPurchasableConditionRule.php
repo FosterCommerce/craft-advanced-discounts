@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -8,7 +10,6 @@ use craft\base\ElementInterface;
 use craft\commerce\elements\db\OrderQuery;
 use craft\commerce\elements\Order;
 use craft\commerce\elements\Variant;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
@@ -32,7 +33,7 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 
 	public function getLabel(): string
 	{
-		return Craft::t('commerce', 'Has Purchasable');
+		return Craft::t('advanced-discounts', 'conditions.hasPurchasable');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -169,13 +170,13 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 					'label' => $this->operatorLabel($operator),
 				], $this->operators()),
 			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Quantity'), 'quantity') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'conditions.hasPurchasable.quantity'), 'quantity') .
 			Cp::textHtml([
 				'type' => 'number',
 				'id' => 'quantity',
 				'name' => 'quantity',
 				'value' => $this->quantity,
-				'placeholder' => Craft::t('advanced-discounts', 'Any qty'),
+				'placeholder' => Craft::t('advanced-discounts', 'conditions.hasPurchasable.anyQty'),
 				'autocomplete' => false,
 			]),
 			[
@@ -188,18 +189,8 @@ class HasPurchasableConditionRule extends BaseElementSelectConditionRule impleme
 				'div',
 				$elementRow . $quantityRow,
 				[
-					'class' => ['flex', 'flex-start'],
-					'style' => [
-						'flex-direction' => 'column',
-					],
+					'class' => ['flex', 'flex-start', 'advanced-discount-has-purchasable'],
 				]
 			);
-	}
-
-	protected function selectionCondition(): ?ElementConditionInterface
-	{
-		return Craft::$app->getConditions()->createCondition([
-			'class' => OrderCondition::class,
-		]);
 	}
 }

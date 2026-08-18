@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -8,14 +10,15 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
+use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 
 class OrderConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
 {
-	public ?ElementConditionInterface $_orderCondition = null;
+	private ?ElementConditionInterface $_orderCondition = null;
 
 	public function __construct($config = [])
 	{
-		$config['orderCondition'] = isset($config['orderCondition']) ? $config['orderCondition'] : ($config['attributes']['orderCondition'] ?? []);
+		$config['orderCondition'] = NestedConditionConfig::extract($config, 'orderCondition');
 		parent::__construct($config);
 	}
 
@@ -38,23 +41,16 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 	 */
 	public function setOrderCondition(ElementConditionInterface|array $condition): void
 	{
-		if (is_array($condition)) {
-			if (empty($condition)) {
-				return;
-			}
-			$condition['class'] = OrderCondition::class;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
+		if ($condition === []) {
+			return;
 		}
-		$condition->forProjectConfig = false;
 
-		$this->_orderCondition = $condition;
+		$this->_orderCondition = NestedConditionConfig::build($condition, OrderCondition::class);
 	}
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Order');
+		return Craft::t('advanced-discounts', 'conditions.order');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -64,11 +60,6 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 
 	public function modifyQuery(ElementQueryInterface $query): void
 	{
-		// TODO
-		/*        $elementId = $this->getElementId();
-				if ($elementId !== null) {
-					$query->andRelatedTo($elementId);
-				}*/
 	}
 
 	/**
@@ -89,14 +80,5 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 	protected function inputHtml(): string
 	{
 		return Html::tag('div', $this->getOrderCondition()->getBuilderHtml());
-	}
-
-	/**
-	 * @return array<int, mixed>
-	 */
-	protected function defineRules(): array
-	{
-		return array_merge(parent::defineRules(), [
-		]);
 	}
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\services;
 
 use Craft;
@@ -7,6 +9,7 @@ use craft\db\Query;
 use fostercommerce\advanceddiscounts\models\Coupon;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\records\Coupon as CouponRecord;
+use RuntimeException;
 use yii\base\Component;
 use yii\db\Expression;
 
@@ -16,7 +19,7 @@ class Coupons extends Component
 	{
 		$result = $this->_createCouponQuery()
 			->where([
-				'code' => $code,
+				'lower([[code]])' => mb_strtolower($code),
 			])
 			->one();
 
@@ -94,7 +97,7 @@ class Coupons extends Component
 		if ($coupon->id !== null) {
 			$record = CouponRecord::findOne($coupon->id);
 			if ($record === null) {
-				throw new \RuntimeException("No coupon exists with ID {$coupon->id}");
+				throw new RuntimeException("No coupon exists with ID {$coupon->id}");
 			}
 		} else {
 			$record = new CouponRecord();
@@ -144,8 +147,11 @@ class Coupons extends Component
 	 */
 	private function _createCouponQuery(): Query
 	{
-		return (new Query())
+		/** @var Query<int, array<string, mixed>> $query */
+		$query = (new Query())
 			->select(['id', 'discountId', 'code', 'uses', 'maxUses'])
 			->from([CouponRecord::TABLE_NAME]);
+
+		return $query;
 	}
 }

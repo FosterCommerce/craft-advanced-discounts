@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -8,14 +10,15 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
+use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 
 class LineItemConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
 {
-	public ?ElementConditionInterface $_lineItemCondition = null;
+	private ?ElementConditionInterface $_lineItemCondition = null;
 
 	public function __construct($config = [])
 	{
-		$config['lineItemCondition'] = isset($config['lineItemCondition']) ? $config['lineItemCondition'] : ($config['attributes']['lineItemCondition'] ?? []);
+		$config['lineItemCondition'] = NestedConditionConfig::extract($config, 'lineItemCondition');
 		parent::__construct($config);
 	}
 
@@ -38,23 +41,16 @@ class LineItemConditionRule extends BaseConditionRule implements NestedCondition
 	 */
 	public function setLineItemCondition(ElementConditionInterface|array $condition): void
 	{
-		if (is_array($condition)) {
-			if (empty($condition)) {
-				return;
-			}
-			$condition['class'] = LineItemCondition::class;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
+		if ($condition === []) {
+			return;
 		}
-		$condition->forProjectConfig = false;
 
-		$this->_lineItemCondition = $condition;
+		$this->_lineItemCondition = NestedConditionConfig::build($condition, LineItemCondition::class);
 	}
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Line Items');
+		return Craft::t('advanced-discounts', 'rules.lineItems');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -64,11 +60,6 @@ class LineItemConditionRule extends BaseConditionRule implements NestedCondition
 
 	public function modifyQuery(ElementQueryInterface $query): void
 	{
-		// TODO
-		/*        $elementId = $this->getElementId();
-				if ($elementId !== null) {
-					$query->andRelatedTo($elementId);
-				}*/
 	}
 
 	/**
@@ -89,14 +80,5 @@ class LineItemConditionRule extends BaseConditionRule implements NestedCondition
 	protected function inputHtml(): string
 	{
 		return Html::tag('div', $this->getLineItemCondition()->getBuilderHtml());
-	}
-
-	/**
-	 * @return array<int, mixed>
-	 */
-	protected function defineRules(): array
-	{
-		return array_merge(parent::defineRules(), [
-		]);
 	}
 }

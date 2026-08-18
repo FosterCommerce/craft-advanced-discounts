@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\migrations;
 
 use craft\db\Migration;
@@ -22,8 +24,9 @@ class Install extends Migration
 			'settings' => $this->json()->null(),
 			'dateCreated' => $this->dateTime()->notNull(),
 			'dateUpdated' => $this->dateTime()->notNull(),
+			'uid' => $this->uid(),
 		]);
-		$this->createIndex(null, Discount::TABLE_NAME, ['dateUpdated'], false);
+		$this->createIndex(null, Discount::TABLE_NAME, ['sortOrder'], false);
 
 		$this->createTable(Coupon::TABLE_NAME, [
 			'id' => $this->primaryKey(),
@@ -48,7 +51,6 @@ class Install extends Migration
 		}
 
 		if ($this->db->tableExists(Discount::TABLE_NAME)) {
-			$this->dropIndexIfExists(Discount::TABLE_NAME, ['dateUpdated'], false);
 			$this->dropTable(Discount::TABLE_NAME);
 		}
 

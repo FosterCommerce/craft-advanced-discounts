@@ -1,42 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\models;
 
 use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\helpers\Json;
+use DateTime;
 use fostercommerce\advanceddiscounts\base\DiscountTypeInterface;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
+use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 use fostercommerce\advanceddiscounts\Plugin;
 
 class Discount extends Model
 {
-	/**
-	 * @var int|null ID
-	 */
 	public ?int $id = null;
 
-	/**
-	 * @var string Name of the discount
-	 */
 	public string $name = '';
 
-	/**
-	 * @var bool Whether a coupon code must be entered at checkout for this discount to apply
-	 */
 	public bool $requireCouponCode = false;
 
-	/**
-	 * @var bool Whether the discount is enabled
-	 */
 	public bool $enabled = true;
 
-	/**
-	 * @var bool Whether to stop processing further discounts once this discount matches and is applied
-	 */
 	public bool $stopProcessing = false;
 
 	/**
@@ -45,27 +33,24 @@ class Discount extends Model
 	public int $uses = 0;
 
 	/**
-	 * @var int|null Position of this discount relative to other discounts; lower values are evaluated first
+	 * @var int|null Lower values are evaluated first
 	 */
 	public ?int $sortOrder = null;
 
-	/**
-	 * @var string Handle of the discount type
-	 */
 	public string $type = 'advanced';
 
-	public ?string $taxBasis = null;
-
-	public null|ElementConditionInterface $_globalCartCondition = null;
+	public ?TaxBasis $taxBasis = null;
 
 	/**
 	 * @var DiscountPanel[]
 	 */
 	public array $panels = [];
 
-	public ?\DateTime $dateCreated = null;
+	public ?DateTime $dateCreated = null;
 
-	public ?\DateTime $dateUpdated = null;
+	public ?DateTime $dateUpdated = null;
+
+	private ?ElementConditionInterface $_globalCartCondition = null;
 
 	/**
 	 * @var Coupon[]|null
@@ -100,23 +85,7 @@ class Discount extends Model
 	 */
 	public function setGlobalCartCondition(ElementConditionInterface|string|array|null $condition): void
 	{
-		if ($condition === null) {
-			$condition = [];
-		}
-
-		if (is_string($condition)) {
-			$condition = Json::decodeIfJson($condition);
-		}
-
-		if (! $condition instanceof ElementConditionInterface) {
-			$condition['class'] = CartCondition::class;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
-		}
-		$condition->forProjectConfig = false;
-
-		$this->_globalCartCondition = $condition;
+		$this->_globalCartCondition = NestedConditionConfig::build($condition, CartCondition::class);
 	}
 
 	/**
@@ -131,12 +100,12 @@ class Discount extends Model
 
 		$this->panels = array_map(function (array $config): DiscountPanel {
 			$panel = $this->newPanel();
-			$panel->name = $config['name'] ?? '';
+			$panel->name = is_string($config['name'] ?? null) ? $config['name'] : '';
 			$panel->enabled = (bool) ($config['enabled'] ?? true);
 			$panel->stopProcessing = (bool) ($config['stopProcessing'] ?? false);
-			$panel->setCartCondition($config['cartCondition'] ?? []);
-			$panel->setCartActionCondition($config['cartActionCondition'] ?? []);
-			$panel->setMessageCondition($config['messageCondition'] ?? []);
+			$panel->setCartCondition(NestedConditionConfig::extract($config, 'cartCondition'));
+			$panel->setCartActionCondition(NestedConditionConfig::extract($config, 'cartActionCondition'));
+			$panel->setMessageCondition(NestedConditionConfig::extract($config, 'messageCondition'));
 
 			return $panel;
 		}, array_values($panels));
@@ -166,17 +135,18 @@ class Discount extends Model
 				return $config;
 			}
 
-			$code = trim((string) ($config['code'] ?? ''));
+			$code = trim(self::scalarString($config['code'] ?? null));
 			if ($code === '') {
 				return null;
 			}
 
-			$maxUses = trim((string) ($config['maxUses'] ?? ''));
+			$maxUses = trim(self::scalarString($config['maxUses'] ?? null));
+			$id = $config['id'] ?? null;
 
 			$coupon = new Coupon();
-			$coupon->id = ($config['id'] ?? null) ?: null;
+			$coupon->id = is_numeric($id) ? (int) $id : null;
 			$coupon->code = $code;
-			$coupon->uses = (int) ($config['uses'] ?? 0);
+			$coupon->uses = is_numeric($config['uses'] ?? null) ? (int) $config['uses'] : 0;
 			$coupon->maxUses = $maxUses !== '' ? (int) $maxUses : null;
 
 			return $coupon;
@@ -208,7 +178,7 @@ class Discount extends Model
 		foreach ($this->panels as $panel) {
 			foreach ($panel->getMessageCondition()->getConditionRules() as $rule) {
 				if ($rule instanceof MessageActionRule && ! $rule->validate(['message'])) {
-					$this->addError('messagePlaceholders', Craft::t('advanced-discounts', 'One or more messages use a placeholder that isn’t available for this discount type.'));
+					$this->addError('panels', Craft::t('advanced-discounts', 'edit.error.messagePlaceholderUnavailable'));
 				}
 			}
 		}
@@ -224,11 +194,13 @@ class Discount extends Model
 			[['name'],
 				'string',
 				'max' => 255],
-			[['taxBasis'],
-				'in',
-				'range' => [TaxBasis::AfterDiscount, TaxBasis::BeforeDiscount]],
 			[['panels'], 'validatePanels'],
 		]);
+	}
+
+	private static function scalarString(mixed $value): string
+	{
+		return is_scalar($value) ? (string) $value : '';
 	}
 
 	private function newPanel(): DiscountPanel
