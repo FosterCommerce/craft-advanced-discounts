@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\discounttypes;
 
 use Craft;
@@ -15,7 +17,7 @@ class BuyXGetYDiscountType extends DiscountType
 
 	public static function displayName(): string
 	{
-		return Craft::t('advanced-discounts', 'Buy X, Get Y');
+		return Craft::t('advanced-discounts', 'discountType.buyXGetY');
 	}
 
 	public static function actionConditionClass(): string
@@ -25,11 +27,11 @@ class BuyXGetYDiscountType extends DiscountType
 
 	public static function actionLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Buy X, Get Y');
+		return Craft::t('advanced-discounts', 'discountType.buyXGetY.actionLabel');
 	}
 
 	public static function actionInstructions(): string
 	{
-		return Craft::t('advanced-discounts', 'Choose the items the customer buys and the items they get.');
+		return Craft::t('advanced-discounts', 'discountType.buyXGetY.actionInstructions');
 	}
 }

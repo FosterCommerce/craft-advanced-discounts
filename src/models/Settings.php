@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\models;
 
 use craft\base\Model;
@@ -7,7 +9,15 @@ use fostercommerce\advanceddiscounts\enums\TaxBasis;
 
 class Settings extends Model
 {
-	public string $taxBasis = TaxBasis::AfterDiscount;
+	/**
+	 * @var string Not typed as the enum: Craft assigns plugin settings straight from project config.
+	 */
+	public string $taxBasis = 'afterDiscount';
+
+	public function getTaxBasis(): TaxBasis
+	{
+		return TaxBasis::tryFrom($this->taxBasis) ?? TaxBasis::AfterDiscount;
+	}
 
 	/**
 	 * @return array<int, mixed>
@@ -17,7 +27,7 @@ class Settings extends Model
 		return array_merge(parent::defineRules(), [
 			[['taxBasis'],
 				'in',
-				'range' => [TaxBasis::AfterDiscount, TaxBasis::BeforeDiscount]],
+				'range' => array_column(TaxBasis::cases(), 'value')],
 		]);
 	}
 }

@@ -8,17 +8,19 @@ Build multi-tier Craft Commerce discounts with flexible rules and promotional me
 
 **Running promotions day-to-day?** See the [user guide](./user-guide/):
 
-- [Discounts](./user-guide/discounts.md), creating a discount, coupon codes, discount types, and Discount Panels.
-- [Coupon Codes](./user-guide/coupons.md), gating a discount behind a code, in bulk or one at a time.
+- [Discounts](./user-guide/discounts.md), creating a discount and structuring it into groups.
 - [Cart Conditions](./user-guide/cart-conditions.md), the rules that decide when a discount applies.
 - [Cart Actions](./user-guide/cart-actions.md), what happens once those rules match.
+- [Coupon Codes](./user-guide/coupons.md), gating a discount behind a code, in bulk or one at a time.
 - [Messages](./user-guide/messages.md), promotional copy shown to the customer, with dynamic tokens.
-- [Excluded Variants](./user-guide/excluded-variants.md), which variants no discount can touch, and why.
+- [Troubleshooting](./user-guide/troubleshooting.md), why a discount isn't applying, and how the plugin sits alongside Commerce's own discounts.
 
-**Building on top of the plugin?** See the [developer guide](./dev-guide/):
+**Building on top of the plugin?** See the [developer guide](./dev-guide/) and [reference](./reference/):
 
 - [Displaying promotional messages](./dev-guide/displaying-messages.md), the Twig API for rendering discount messages in your storefront.
 - [Reading discounts on the order](./dev-guide/reading-discounts-on-the-order.md), breaking a total discount down into the rules that produced it.
+- [Adding a discount type](./dev-guide/custom-discount-types.md), extending the plugin with a type of your own.
+- [Events](./reference/events.md) and [Permissions](./reference/permissions.md), for looking things up.
 
 **Want a worked example?** See the [recipes](./recipes/):
 
@@ -27,4 +29,4 @@ Build multi-tier Craft Commerce discounts with flexible rules and promotional me
 - [Buy one, get one free](./recipes/buy-one-get-one-free.md), a Buy X, Get Y promotion.
 - [Tiered sale](./recipes/tiered-sale.md), spend more, save more, with dynamic messaging.
 
-**Setup details:** [Installation](./installation.md).
+**Also useful:** [Excluded Variants](./user-guide/excluded-variants.md), the products no discount can touch.

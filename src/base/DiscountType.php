@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\base;
 
 use Craft;
@@ -14,6 +16,7 @@ use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\ShippingMethodCartActionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType as DiscountValueType;
+use fostercommerce\advanceddiscounts\helpers\Amounts;
 use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
@@ -23,24 +26,18 @@ use Money\Money;
 abstract class DiscountType implements DiscountTypeInterface
 {
 	/**
-	 * Message placeholders available in `MessageActionRule::message`, keyed by
-	 * token with a human-readable description for UI display (chips, docs table).
-	 *
-	 * @var array<string, string>
+	 * @var array<string, string> Token => translation key describing the value it resolves to
 	 */
 	public const MESSAGE_PLACEHOLDERS = [
-		'{discountAmount}' => 'The discount value (percentage or amount).',
-		'{amountRemaining}' => 'Amount left to reach the group\'s threshold.',
-		'{quantityRemaining}' => 'Items left to reach a quantity condition.',
-		'{buyQuantityRemaining}' => 'Buy items left for the next Buy X, Get Y reward.',
-		'{discountedQuantity}' => 'Units currently discounted for Buy X, Get Y.',
+		'{discountAmount}' => 'messagePlaceholders.discountAmount',
+		'{amountRemaining}' => 'messagePlaceholders.amountRemaining',
+		'{quantityRemaining}' => 'messagePlaceholders.quantityRemaining',
+		'{buyQuantityRemaining}' => 'messagePlaceholders.buyQuantityRemaining',
+		'{discountedQuantity}' => 'messagePlaceholders.discountedQuantity',
 	];
 
 	/**
-	 * Tokens in `MESSAGE_PLACEHOLDERS` that only resolve for Buy X, Get Y discounts,
-	 * since they come from `BogoCartActionRule`, which only bundle discounts can add.
-	 *
-	 * @var string[]
+	 * @var string[] Tokens that only resolve for Buy X, Get Y discounts
 	 */
 	private const BUNDLE_ONLY_MESSAGE_PLACEHOLDERS = ['{buyQuantityRemaining}', '{discountedQuantity}'];
 
@@ -277,8 +274,8 @@ abstract class DiscountType implements DiscountTypeInterface
 
 			$base = $this->toMoney($lineItem->subtotal, $order);
 
-			if ($rule->discountType === DiscountValueType::Percentage) {
-				$discount = $base->multiply((string) $rule->discountValue)->divide('100');
+			if ($rule->discountType === DiscountValueType::Percentage->value) {
+				$discount = $this->discountMoney($base, $rule->discountType, $rule->discountValue);
 			} else {
 				$quantityFactor = $rule->applyPer === LineItemCartActionRule::APPLY_PER_PURCHASABLE ? $lineItem->qty : 1;
 				$flat = $this->toMoney($rule->discountValue, $order)->multiply((string) $quantityFactor);
@@ -368,32 +365,16 @@ abstract class DiscountType implements DiscountTypeInterface
 
 	private function toMoney(float $value, Order $order): Money
 	{
-		$money = MoneyHelper::toMoney([
-			'value' => (string) $value,
-			'currency' => (string) $order->currency,
-		]);
-
-		if ($money === false) {
-			throw new \RuntimeException("Could not build a money value for “{$value} {$order->currency}”.");
-		}
-
-		return $money;
+		return Amounts::toMoney($value, (string) $order->currency);
 	}
 
 	private function discountMoney(Money $base, string $discountType, float $discountValue): Money
 	{
-		if ($discountType === DiscountValueType::Percentage) {
+		if ($discountType === DiscountValueType::Percentage->value) {
 			return $base->multiply((string) $discountValue)->divide('100');
 		}
 
-		$flat = MoneyHelper::toMoney([
-			'value' => (string) $discountValue,
-			'currency' => $base->getCurrency(),
-		]);
-
-		if ($flat === false) {
-			throw new \RuntimeException("Could not build a money value for the discount amount “{$discountValue}”.");
-		}
+		$flat = Amounts::toMoney($discountValue, $base->getCurrency()->getCode());
 
 		return $flat->greaterThan($base) ? $base : $flat;
 	}
@@ -409,7 +390,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 		foreach ($panel->getCartActionCondition()->getConditionRules() as $rule) {
 			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule || $rule instanceof BogoCartActionRule) && $rule->discountValue !== null) {
-				$placeholders['{discountAmount}'] = $rule->discountType === DiscountValueType::Percentage
+				$placeholders['{discountAmount}'] = $rule->discountType === DiscountValueType::Percentage->value
 					? $rule->discountValue . '%'
 					: Craft::$app->getFormatter()->asCurrency($rule->discountValue, $order->paymentCurrency);
 				break;

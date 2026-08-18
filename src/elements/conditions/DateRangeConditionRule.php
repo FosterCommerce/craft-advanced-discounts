@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -47,7 +49,7 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Date Range');
+		return Craft::t('advanced-discounts', 'conditions.dateRange');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -99,7 +101,7 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 	{
 		$startHtml = Html::tag(
 			'div',
-			Html::label(Craft::t('advanced-discounts', 'From'), 'start-date-date') .
+			Html::label(Craft::t('advanced-discounts', 'conditions.dateRange.from'), 'start-date-date') .
 			Html::tag('div', Cp::dateHtml([
 				'id' => 'start-date',
 				'name' => 'startDate',
@@ -112,7 +114,7 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 
 		$endHtml = Html::tag(
 			'div',
-			Html::label(Craft::t('advanced-discounts', 'To'), 'end-date-date') .
+			Html::label(Craft::t('advanced-discounts', 'conditions.dateRange.to'), 'end-date-date') .
 			Html::tag('div', Cp::dateHtml([
 				'id' => 'end-date',
 				'name' => 'endDate',

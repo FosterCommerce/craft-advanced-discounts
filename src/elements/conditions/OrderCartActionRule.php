@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -14,13 +16,13 @@ use fostercommerce\advanceddiscounts\enums\DiscountType;
 
 class OrderCartActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
-	public string $discountType = DiscountType::FlatAmount;
+	public string $discountType = 'flatAmount';
 
 	public ?float $discountValue = null;
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Item Subtotal');
+		return Craft::t('advanced-discounts', 'rules.itemSubtotal');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -50,21 +52,15 @@ class OrderCartActionRule extends BaseConditionRule implements ElementConditionR
 
 	protected function inputHtml(): string
 	{
-		$discountTypeLabel = match ($this->discountType) {
-			DiscountType::Percentage => Craft::t('advanced-discounts', 'Percentage'),
-			default => Craft::t('advanced-discounts', 'Flat Amount'),
-		};
+		$discountTypeLabel = (DiscountType::tryFrom($this->discountType) ?? DiscountType::FlatAmount)->label();
 
 		return Html::tag(
 			'div',
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount Type'), 'discountType') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountTypeLabel'), 'discountType') .
 			Cp::selectHtml([
 				'id' => 'discountType',
 				'name' => 'discountType',
-				'options' => [
-					DiscountType::FlatAmount => Craft::t('advanced-discounts', 'Discount a flat amount'),
-					DiscountType::Percentage => Craft::t('advanced-discounts', 'Discount a percentage'),
-				],
+				'options' => DiscountType::actionOptions(),
 				'value' => $this->discountType,
 				'inputAttributes' => [
 					'hx' => [
@@ -72,7 +68,7 @@ class OrderCartActionRule extends BaseConditionRule implements ElementConditionR
 					],
 				],
 			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount value'), 'discountValue') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountValue'), 'discountValue') .
 			Cp::textHtml([
 				'type' => 'number',
 				'id' => 'discountValue',

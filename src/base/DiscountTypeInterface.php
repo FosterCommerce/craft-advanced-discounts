@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\base;
 
 use craft\commerce\elements\Order;
 use craft\commerce\models\OrderAdjustment;
+use craft\elements\conditions\ElementConditionInterface;
 use fostercommerce\advanceddiscounts\models\Discount;
 
 interface DiscountTypeInterface
@@ -13,7 +16,7 @@ interface DiscountTypeInterface
 	public static function displayName(): string;
 
 	/**
-	 * @return class-string<\craft\elements\conditions\ElementConditionInterface>
+	 * @return class-string<ElementConditionInterface>
 	 */
 	public static function actionConditionClass(): string;
 

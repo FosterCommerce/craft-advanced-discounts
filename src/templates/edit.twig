@@ -2,25 +2,27 @@
 
 {% set fullPageForm = true %}
 {% set crumbs = [
-    { label: "Advanced Discounts"|t('advanced-discounts'), url: url('advanced-discounts') },
+    { label: 'nav.title'|t('advanced-discounts'), url: url('advanced-discounts') },
 ] %}
-{% set title = discount.id ? discount.name : "Create discount"|t('advanced-discounts') %}
+{% set title = discount.id ? discount.name : 'edit.createTitle'|t('advanced-discounts') %}
 {% import '_includes/forms.twig' as forms %}
 
+{% do view.registerAssetBundle('fostercommerce\\advanceddiscounts\\web\\assets\\discounts\\DiscountsAsset') %}
+
 {% block actionButton %}
-    <button type="submit" class="btn submit">{{ 'Save discount'|t('advanced-discounts') }}</button>
+    <button type="submit" class="btn submit">{{ 'edit.save'|t('advanced-discounts') }}</button>
 {% endblock %}
 
 {% block content %}
     {{ actionInput('advanced-discounts/manage/save') }}
-    {{ redirectInput('advanced-discounts') }}
+    {{ redirectInput('advanced-discounts/{id}') }}
 
     {% if discount.id %}
         <input type="hidden" name="id" value="{{ discount.id }}">
     {% endif %}
 
     {{ forms.textField({
-        label: "Name"|t('advanced-discounts'),
+        label: 'edit.name'|t('advanced-discounts'),
         id: 'name',
         name: 'name',
         value: discount.name,
@@ -33,11 +35,11 @@
     }) }}
 
     {{ forms.lightswitchField({
-        label: "Require Coupon Code"|t('advanced-discounts'),
+        label: 'index.column.requireCouponCode'|t('advanced-discounts'),
         id: 'requireCouponCode',
         name: 'requireCouponCode',
         on: discount.requireCouponCode,
-        instructions: "Off applies to every applicable order (like a sale). On requires one of the coupon codes below to be entered at checkout."|t('advanced-discounts'),
+        instructions: 'edit.requireCouponCode.instructions'|t('advanced-discounts'),
     }) }}
 
     <div id="coupons-container"{% if not discount.requireCouponCode %} class="hidden"{% endif %}>
@@ -58,25 +60,25 @@
                 cols: {
                     id: {
                         type: 'singleline',
-                        heading: 'id'|t('advanced-discounts'),
+                        heading: 'ID',
                         class: 'hidden',
                     },
                     code: {
                         type: 'singleline',
-                        heading: 'Code'|t('advanced-discounts'),
+                        heading: 'edit.coupons.code'|t('advanced-discounts'),
                     },
                     uses: {
                         type: 'singleline',
-                        heading: 'Uses'|t('advanced-discounts'),
+                        heading: 'edit.coupons.uses'|t('advanced-discounts'),
                     },
                     maxUses: {
                         type: 'singleline',
-                        heading: 'Max Uses'|t('advanced-discounts'),
-                        info: 'Leave blank for unlimited uses.'|t('advanced-discounts'),
+                        heading: 'edit.coupons.maxUses'|t('advanced-discounts'),
+                        info: 'edit.coupons.maxUsesInstructions'|t('advanced-discounts'),
                     },
                 },
                 rows: couponRows,
-                addRowLabel: 'Add a coupon'|t('advanced-discounts'),
+                addRowLabel: 'edit.coupons.add'|t('advanced-discounts'),
                 allowAdd: true,
                 allowDelete: true,
                 defaultValues: {
@@ -86,107 +88,29 @@
         {% endset %}
 
         {{ forms.field({
-            label: 'Coupons'|t('advanced-discounts'),
+            label: 'index.column.coupons'|t('advanced-discounts'),
             errors: discount.getErrors('coupons'),
             headingSuffix: tag('button', {
                 id: 'generate-coupons',
                 type: 'button',
                 class: ['btn', 'small'],
-                text: 'Generate'|t('advanced-discounts'),
+                text: 'edit.coupons.generate'|t('advanced-discounts'),
             }),
         }, couponsField) }}
     </div>
 
-    {% js %}
-        (() => {
-            $(document).on('click keyup', '#requireCouponCode', () => {
-                const on = $('#requireCouponCode').hasClass('on');
-                $('#coupons-container').toggleClass('hidden', ! on);
-
-                if (on) {
-                    $('#coupons-table').data('editable-table').initialize();
-                }
-            });
-        })();
-
-        (() => {
-            const generateButton = document.getElementById('generate-coupons');
-            const couponsTable = $('#coupons-table');
-            const editableTable = couponsTable.data('editable-table');
-            let hud;
-
-            const existingCodes = () => couponsTable
-                .find('[name$="[code]"]')
-                .map((index, input) => input.value)
-                .get()
-                .filter(Boolean);
-
-            generateButton.addEventListener('click', () => {
-                if (hud) {
-                    hud.show();
-                    return;
-                }
-
-                const body = $('<div/>');
-                const countField = Craft.ui.createTextField({
-                    label: Craft.t('advanced-discounts', 'Number of Coupons'),
-                    type: 'number',
-                    value: 1,
-                }).appendTo(body);
-                const formatField = Craft.ui.createTextField({
-                    label: Craft.t('advanced-discounts', 'Format'),
-                    instructions: Craft.t('advanced-discounts', 'Each # becomes a random character.'),
-                    value: 'DISCOUNT_####',
-                }).appendTo(body);
-                const submitButton = $('<button/>', {
-                    type: 'button',
-                    class: 'btn submit',
-                    text: Craft.t('advanced-discounts', 'Generate'),
-                }).appendTo($('<div class="buttons"/>').appendTo(body));
-
-                hud = new Garnish.HUD(generateButton, body);
-
-                submitButton.on('click', async () => {
-                    const count = parseInt(countField.find('input').val(), 10) || 0;
-                    if (count < 1) {
-                        return;
-                    }
-
-                    submitButton.addClass('loading');
-                    try {
-                        const { data } = await Craft.sendActionRequest('POST', 'advanced-discounts/manage/generate-coupons', {
-                            data: {
-                                count,
-                                format: formatField.find('input').val(),
-                                existingCodes: existingCodes(),
-                            },
-                        });
-                        (data.coupons || []).forEach((code) => {
-                            editableTable.addRow();
-                            couponsTable.find('tbody tr').last().find('[name$="[code]"]').val(code);
-                        });
-                        hud.hide();
-                    } catch (error) {
-                        Craft.cp.displayError(error?.response?.data?.message);
-                    } finally {
-                        submitButton.removeClass('loading');
-                    }
-                });
-            });
-        })();
-    {% endjs %}
 
     {% set globalCartCondition %}
         {{ discount.globalCartCondition.getBuilderHtml()|raw }}
     {% endset %}
 
     {{ forms.field({
-        label: 'Global Cart Conditions'|t('advanced-discounts'),
-        instructions: 'Conditions that gate the entire discount.'|t('advanced-discounts'),
+        label: 'edit.globalCartConditions'|t('advanced-discounts'),
+        instructions: 'edit.globalCartConditions.instructions'|t('advanced-discounts'),
     }, globalCartCondition) }}
 
     {{ forms.selectField({
-        label: "Type"|t('advanced-discounts'),
+        label: 'index.column.type'|t('advanced-discounts'),
         id: 'type',
         name: 'type',
         options: typeOptions,
@@ -197,50 +121,23 @@
         {{ typeSettingsHtml|raw }}
     </div>
 
-    {% js %}
-        (() => {
-            const select = document.getElementById('type');
-            const container = document.getElementById('type-settings');
-
-            select.addEventListener('change', async () => {
-                const { data } = await Craft.sendActionRequest('POST', 'advanced-discounts/manage/type-settings', {
-                    data: { type: select.value },
-                });
-                container.innerHTML = data.html;
-                document.getElementById('message-placeholders-table').innerHTML = data.placeholdersHtml;
-                Craft.appendHeadHtml(data.headHtml);
-                Craft.appendBodyHtml(data.bodyHtml);
-                Craft.initUiElements(container);
-                htmx.process(container);
-            });
-        })();
-    {% endjs %}
 
     <div class="pane tip">
-        <h2>{{ 'Helpful notes'|t('advanced-discounts') }}</h2>
+        <h2>{{ 'edit.notes.title'|t('advanced-discounts') }}</h2>
         <ul class="bullets">
-            <li>{{ 'Groups apply top to bottom. Turn on “Stop processing further groups” to make tiers, so only the first matching group applies.'|t('advanced-discounts') }}</li>
-            <li>{{ 'For tiers, order groups from the highest threshold to the lowest.'|t('advanced-discounts') }}</li>
-            <li>{{ 'Global Cart Conditions gate the whole discount, like a date range.'|t('advanced-discounts') }}</li>
-            <li>{{ 'A message with no “show when” rule appears whenever its group applies.'|t('advanced-discounts') }}</li>
-            <li>{{ 'When several messages qualify, the storefront shows the first one. That means the topmost group, then the topmost message. Reorder groups or use non-overlapping “show when” rules to control it.'|t('advanced-discounts') }}</li>
-            <li><code>{amountRemaining}</code> {{ 'counts down to its group’s threshold. Give it a “show when” rule that stays below the threshold, or it shows $0.00.'|t('advanced-discounts') }}</li>
-            <li>{{ 'Variants set to not promotable are excluded from every action. Their value is removed from order and line totals.'|t('advanced-discounts') }}</li>
+            <li>{{ 'edit.notes.ordering'|t('advanced-discounts') }}</li>
+            <li>{{ 'edit.notes.tiers'|t('advanced-discounts') }}</li>
+            <li>{{ 'edit.notes.globalConditions'|t('advanced-discounts') }}</li>
+            <li>{{ 'edit.notes.messageFallback'|t('advanced-discounts') }}</li>
+            <li>{{ 'edit.notes.messageOrdering'|t('advanced-discounts') }}</li>
+            <li><code>{amountRemaining}</code> {{ 'edit.notes.amountRemaining'|t('advanced-discounts') }}</li>
+            <li>{{ 'edit.notes.nonPromotable'|t('advanced-discounts') }}</li>
         </ul>
     </div>
 
-    {% css %}
-        .advanced-discount-placeholders { background-color: var(--green-050) !important; border-color: var(--green-600) !important; color: var(--green-800); padding-inline-start: 50px; position: relative; }
-        .advanced-discount-placeholders:before { font-family: Craft; content: 'draft'; position: absolute; inset-inline-start: 16px; top: 15px; font-size: 24px; color: var(--green-600); }
-        .advanced-discount-placeholders h2 { color: var(--green-800); }
-        .advanced-discount-placeholders table.data th,
-        .advanced-discount-placeholders table.data td { background: transparent; border-color: var(--green-200); color: var(--green-800); }
-        .advanced-discount-placeholders table.data tr:hover th,
-        .advanced-discount-placeholders table.data tr:hover td { background: var(--green-100); }
-    {% endcss %}
 
     <div class="pane advanced-discount-placeholders">
-        <h2>{{ 'Message placeholders'|t('advanced-discounts') }}</h2>
+        <h2>{{ 'edit.messagePlaceholders.title'|t('advanced-discounts') }}</h2>
         <div id="message-placeholders-table">
             {% include 'advanced-discounts/_message-placeholders-table' with { placeholders: discount.getType().messagePlaceholders() } only %}
         </div>
@@ -257,19 +154,19 @@
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Stop Processing Further Discounts'|t('advanced-discounts'),
-            instructions: 'If this discount matches and is applied, no other discounts will be evaluated.'|t('advanced-discounts'),
+            label: 'edit.stopProcessing'|t('advanced-discounts'),
+            instructions: 'edit.stopProcessing.instructions'|t('advanced-discounts'),
             id: 'stopProcessing',
             name: 'stopProcessing',
             on: discount.stopProcessing,
         }) }}
 
         {{ forms.selectField({
-            label: 'Tax Basis'|t('advanced-discounts'),
-            instructions: 'Overrides the plugin setting. After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.'|t('advanced-discounts'),
+            label: 'settings.taxBasis'|t('advanced-discounts'),
+            instructions: 'edit.taxBasis.instructions'|t('advanced-discounts'),
             id: 'taxBasis',
             name: 'taxBasis',
-            options: [{ label: 'Use plugin default'|t('advanced-discounts'), value: '' }]|merge(taxBasisOptions),
+            options: [{ label: 'settings.taxBasis.usePluginDefault'|t('advanced-discounts'), value: '' }]|merge(taxBasisOptions),
             value: discount.taxBasis,
         }) }}
     </div>

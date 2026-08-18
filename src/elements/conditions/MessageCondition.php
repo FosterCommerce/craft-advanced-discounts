@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -15,7 +17,7 @@ class MessageCondition extends ElementCondition
 
 	public function init(): void
 	{
-		$this->addRuleLabel = Craft::t('advanced-discounts', 'Add a message');
+		$this->addRuleLabel = Craft::t('advanced-discounts', 'conditions.addMessage');
 		parent::init();
 	}
 
@@ -24,8 +26,8 @@ class MessageCondition extends ElementCondition
 	 */
 	protected function selectableConditionRules(): array
 	{
-		return array_merge([
+		return [
 			MessageActionRule::class,
-		]);
+		];
 	}
 }

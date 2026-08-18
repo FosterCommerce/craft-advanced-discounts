@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\adjusters;
 
 use craft\commerce\base\AdjusterInterface;
@@ -9,16 +11,13 @@ use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 use fostercommerce\advanceddiscounts\Plugin;
 
 /**
- * Applies advanced-discount sales as order adjustments at cart recalc time.
+ * Applies advanced discounts as order adjustments.
  *
- * Scope: cart-based only. Discounts are evaluated against order state (totals,
- * quantities, shipping method) and exist as adjustments on the order, never as
- * a catalog price. A purchasable outside a cart has no sale price here; catalog
- * sales require Commerce catalog pricing, a separate mechanism.
+ * A discount only ever exists as an adjustment, so a purchasable outside a cart has no sale price from it.
  */
 class DiscountAdjuster implements AdjusterInterface
 {
-	protected string $servesTaxBasis = TaxBasis::AfterDiscount;
+	protected TaxBasis $servesTaxBasis = TaxBasis::AfterDiscount;
 
 	public function adjust(Order $order): array
 	{

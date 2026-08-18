@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\helpers;
 
 use craft\base\ElementInterface;
@@ -12,17 +14,25 @@ use craft\db\Query;
 final class Purchasables
 {
 	/**
+	 * @var array<int, int[]>
+	 */
+	private static array $relatedVariantIds = [];
+
+	/**
 	 * @return array<int, array{value: string, label: string}>
 	 */
 	public static function typeOptions(): array
 	{
+		/** @var CommercePlugin $commerce */
+		$commerce = CommercePlugin::getInstance();
+
 		$options = [];
 
-		foreach ((CommercePlugin::getInstance()?->getPurchasables()->getAllPurchasableElementTypes() ?? []) as $type) {
-			/** @var string|ElementInterface $type */
+		foreach ($commerce->getPurchasables()->getAllPurchasableElementTypes() as $purchasableType) {
+			/** @var class-string<ElementInterface> $purchasableType */
 			$options[] = [
-				'value' => $type,
-				'label' => $type::displayName(),
+				'value' => $purchasableType,
+				'label' => $purchasableType::displayName(),
 			];
 		}
 
@@ -60,6 +70,26 @@ final class Purchasables
 		}
 
 		return array_map('intval', $purchasableIds);
+	}
+
+	/**
+	 * Variants a "Related To" rule covers. Stores relate an entry to the product, not to each
+	 * of its variants, so a product relation has to count for every variant under it.
+	 *
+	 * @return int[]
+	 */
+	public static function relatedVariantIds(int $elementId): array
+	{
+		if (! isset(self::$relatedVariantIds[$elementId])) {
+			$productIds = Product::find()->relatedTo($elementId)->status(null)->ids();
+
+			self::$relatedVariantIds[$elementId] = array_values(array_unique(array_map('intval', [
+				...Variant::find()->relatedTo($elementId)->status(null)->ids(),
+				...($productIds === [] ? [] : Variant::find()->productId($productIds)->status(null)->ids()),
+			])));
+		}
+
+		return self::$relatedVariantIds[$elementId];
 	}
 
 	/**

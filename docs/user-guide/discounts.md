@@ -1,88 +1,85 @@
 # Discounts
 
-This is the place for creating and managing all of your discounts. The list is searchable and sortable.
+How discounts are created, ordered, and structured. **Advanced Discounts -> Discounts** lists every discount, searchable and sortable.
 
 ![The Discounts index](../../resources/img/discounts-index.png)
 
-You can configure different types of discounts and build out rules for when they will be applied and what happens when those rules are met.
-
-Each Discount has its own sets of Conditions and you can create multiple sets of Conditions with each set triggering different Actions. For example, you may wish to create a multi-tiered Sale where the customer gets a different amount off their order depending on how much they spend, 10% off if they spend \$100, 15% off if they spend \$200, and 20% off when they spend \$500. You can create all of these within the same Discount.
-
-Each tier can also have its own Messages that will be displayed to the customer when the matching criteria are met. Each Message has its very own conditions, allowing you to define multiple Messages per tier. For example, you could show the customer that they have qualified for 10% off and another message to show how far they are from reaching the 15% discount.
+A discount holds one optional set of Global Conditions and any number of groups. Each group pairs its own cart rules with the actions and messages they trigger, so one discount can carry a whole tiered sale: 10% off at \$100, 15% at \$200, 20% at \$500.
 
 ![Example of a multi-tiered sale discount](../../resources/img/multi-tier-sale.png)
 
-## Creating a Discount
+## Creating a discount
 
-To create a new discount, click the "New Discount" button on the top right of the Discounts list page.
+Click **New discount** at the top right of the index.
 
-The order in which the Discounts are arranged matters. Conditions are processed from the top down and you have the opportunity to stop processing once a Discount is matched, or indeed to continue and apply further discounts should you wish.
+Order matters. Discounts run top down. Drag to reorder on the index.
 
 ### Discount Name
 
-Give your discount a name. This will be shown in the cart when the customer has the discount applied.
+Shown in the cart when the discount applies.
 
 ### Coupon Codes
 
-If you want to only apply the discount when the customer enters a coupon code, switch that on and add the code or codes that you wish to use. See [Coupon Codes](coupons.md).
+Turn on **Require Coupon Code** to gate the discount behind a code. See [Coupon Codes](coupons.md).
 
 ### Discount Type
 
-#### Advanced
+**Advanced** covers standard sales and promotions.
 
-This is the core for most Discounts and the one you will use for most standard sales and promotions.
+**Buy X, Get Y** covers "buy one, get one free" style offers. Set which product or combination of products triggers the promotion, then which products get discounted.
 
-#### Buy X, Get Y
+### Tax Basis
 
-Should you need to create a "Buy One Get One Free" type promotion, then this is what you need.
+Whether tax is calculated before or after the discount comes off. Defaults to **Use plugin default**. See [Installation](../installation.md#configure).
 
-Set which product or combination of products will trigger the promotion, then set which products get discounted when they are added to the cart.
+### Stop Processing Further Discounts
+
+When this discount matches and applies, no discount below it is evaluated.
 
 ## Conditions
 
-Conditions determine when your discount will be applied to the customer's cart.
-
-There are two types of conditions, Global Conditions and [Cart Conditions](cart-conditions.md). A discount can have multiple sets of Cart Conditions, which can each trigger different [Cart Actions](cart-actions.md), but only one set of Global Conditions.
+Conditions decide when a discount applies to the cart. There are two kinds: Global Conditions, and the [Cart Conditions](cart-conditions.md) inside each group.
 
 ### Global Conditions
 
-Global Conditions allow you to set rules that will apply over and above any individual cart rules. For example, you may wish to only have the discount active during the first week of August.
+Global Conditions gate the whole discount, whatever its groups say. A date range covering the first week of August is the typical case.
 
-Choose from the following Condition Sets:
+Choose from:
 
 - **Date Range**. Criteria based on the date.
-- **Line Items**. Criteria based on the Order Line Items.
-- **Order**. Criteria based on the Order totals.
-- **User**. Criteria based on the User.
+- **Line Items**. Criteria based on the order's line items.
+- **Order**. Criteria based on the order totals.
+- **User**. Criteria based on the order's customer.
 
-Global Conditions are optional and multiple Sets can be defined if you wish. So you can be sure that your discount will only ever be applied when you want it to be.
-
-Each set works the same way as its [Cart Conditions](cart-conditions.md) equivalent.
+They are optional, and you can define more than one.
 
 ### Cart Conditions
 
-Cart Conditions are applied only if the Global Conditions for the discount have been met.
+Cart Conditions are evaluated only once the Global Conditions have been met. See [Cart Conditions](cart-conditions.md) for the rules on offer and how they combine.
 
-You can create multiple groups of Cart Conditions with each group having its own Cart Actions. These are displayed in Discount Panels.
+## Discount groups
 
-You can set up multiple Cart Conditions within a single Group. Each Condition in the Group must be matched to obtain the Discount.
+Click **+ Add group** below the last group to add another.
 
-## Discount Panels
+![An empty discount group](../../resources/img/discount-panel-empty.png)
 
-Each group of Conditions, Actions, and Messages is shown together in a Discount Panel.
+**Discount Name** on the group overrides the discount's own name on the order when this group applies.
 
-![Discount Panel](../../resources/img/discount-panel-empty.png)
+[Cart Conditions](cart-conditions.md) set the rules.
 
-Set the Discount Name field to display it in the cart when the customer's cart matches the conditions for this panel.
+[Cart Actions](cart-actions.md) define what happens when those rules match.
 
-[Cart Conditions](cart-conditions.md) allow you to set the rules that apply the discount defined in this panel. Available options are the same as with the Global Conditions.
+[Messages](messages.md) tell the customer they are close to, or have reached, the threshold.
 
-[Cart Actions](cart-actions.md) define what happens when the Conditions in this panel are matched.
+**Stop Processing Further Groups** skips every group below this one once this group applies.
 
-[Messages](messages.md) are your opportunity to tell the customer if they are close to or if they have reached the threshold to get the discount.
+### Group controls
 
-If you want to prevent any further groups within the same discount from being processed, then switch on "Stop Processing Further Groups".
+Every group has a bar across the top holding its controls: the actions menu on the right, and a handle for dragging the group to a new position.
 
-The panels are collapsible to reduce visual clutter should you need to build out a particularly complex discount.
+- **Collapse** and **Expand** hide and show the group's body, which keeps a discount with several tiers readable. Double-clicking the bar does the same.
+- **Disable** takes the group out of the discount: it produces no discount and no messages, whatever its conditions say. Disabling collapses the group and marks it with a gray dot. **Enable** brings it back.
+- **Move up** and **Move down** reorder groups without dragging. Order decides which group wins when **Stop Processing Further Groups** is on.
+- **Delete** removes the group from the screen. It leaves the discount when you save.
 
-![Collapsed Discount Panel](../../resources/img/discount-panel-collapsed.png)
+![A collapsed discount group](../../resources/img/discount-panel-collapsed.png)

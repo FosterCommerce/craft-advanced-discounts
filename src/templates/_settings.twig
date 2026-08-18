@@ -1,15 +1,12 @@
-{# @var plugin \fostercommerce\advanceddiscounts\Plugin #}
 {# @var settings \fostercommerce\advanceddiscounts\models\Settings #}
 
 {% import '_includes/forms.twig' as forms %}
 
-{% css %}
-    {% include 'advanced-discounts/_includes/plugin-footer-css' %}
-{% endcss %}
+{% do view.registerAssetBundle('fostercommerce\\advanceddiscounts\\web\\assets\\discounts\\DiscountsAsset') %}
 
 {{ forms.selectField({
-    label: 'Tax Basis'|t('advanced-discounts'),
-    instructions: 'After discounts means tax is calculated after the discounts have been applied. Before discounts means tax is calculated before discounts have been applied.'|t('advanced-discounts'),
+    label: 'settings.taxBasis'|t('advanced-discounts'),
+    instructions: 'settings.taxBasis.instructions'|t('advanced-discounts'),
     id: 'taxBasis',
     name: 'taxBasis',
     options: taxBasisOptions,

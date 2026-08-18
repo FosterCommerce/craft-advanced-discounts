@@ -1,22 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
+use craft\commerce\elements\Order;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
+use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 
 class UserConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
 {
-	public ?ElementConditionInterface $_userCondition = null;
+	private ?ElementConditionInterface $_userCondition = null;
 
 	public function __construct($config = [])
 	{
-		$config['userCondition'] = $config['attributes']['userCondition'] ?? [];
+		$config['userCondition'] = NestedConditionConfig::extract($config, 'userCondition');
 		parent::__construct($config);
 	}
 
@@ -39,23 +43,16 @@ class UserConditionRule extends BaseConditionRule implements NestedConditionRule
 	 */
 	public function setUserCondition(ElementConditionInterface|array $condition): void
 	{
-		if (is_array($condition)) {
-			if (empty($condition)) {
-				return;
-			}
-			$condition['class'] = UserCondition::class;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
+		if ($condition === []) {
+			return;
 		}
-		$condition->forProjectConfig = false;
 
-		$this->_userCondition = $condition;
+		$this->_userCondition = NestedConditionConfig::build($condition, UserCondition::class);
 	}
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'User');
+		return Craft::t('advanced-discounts', 'rules.user');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -79,24 +76,19 @@ class UserConditionRule extends BaseConditionRule implements NestedConditionRule
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		$user = Craft::$app->getUser()->getIdentity();
-		if ($user === null) {
+		// A cart also recalculates from the CP, a queue job and console, where the session
+		// identity is not the shopper.
+		if (! $element instanceof Order) {
 			return false;
 		}
-		return $this->getUserCondition()->matchElement($user);
+
+		$customer = $element->getCustomer();
+
+		return $customer !== null && $this->getUserCondition()->matchElement($customer);
 	}
 
 	protected function inputHtml(): string
 	{
 		return Html::tag('div', $this->getUserCondition()->getBuilderHtml());
-	}
-
-	/**
-	 * @return array<int, mixed>
-	 */
-	protected function defineRules(): array
-	{
-		return array_merge(parent::defineRules(), [
-		]);
 	}
 }

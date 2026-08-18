@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\variables;
 
 use craft\commerce\elements\Order;
@@ -28,9 +30,10 @@ class AdvancedDiscountsVariable
 				continue;
 			}
 
-			array_push($messages, ...$discount->getType()->getMessages($order, $discount));
+			$discountType = $discount->getType();
+			array_push($messages, ...$discountType->getMessages($order, $discount));
 
-			if ($discount->stopProcessing && $discount->getType()->getAdjustments($order, $discount) !== []) {
+			if ($discount->stopProcessing && $discountType->getAdjustments($order, $discount) !== []) {
 				break;
 			}
 		}

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -9,6 +11,7 @@ use craft\commerce\elements\db\OrderQuery;
 use craft\commerce\elements\Order;
 use craft\commerce\Plugin;
 use craft\elements\conditions\ElementConditionRuleInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -22,7 +25,7 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 
 	public string $operator = self::OPERATOR_EQ;
 
-	public string $discountType = DiscountType::FlatAmount;
+	public string $discountType = 'flatAmount';
 
 	public ?float $discountValue = null;
 
@@ -30,7 +33,7 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Shipping');
+		return Craft::t('advanced-discounts', 'rules.shipping');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -58,7 +61,7 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 		]);
 	}
 
-	public function modifyQuery(\craft\elements\db\ElementQueryInterface $query): void
+	public function modifyQuery(ElementQueryInterface $query): void
 	{
 		/** @var OrderQuery $query */
 		if ($this->operator === self::OPERATOR_EQ) {
@@ -113,23 +116,14 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 			$selectHtml = parent::inputHtml();
 		}
 
-		if ($this->discountType === DiscountType::FlatAmount) {
-			$discountTypeLabel = Craft::t('advanced-discounts', 'Flat Amount');
-		} elseif ($this->discountType === DiscountType::Percentage) {
-			$discountTypeLabel = Craft::t('advanced-discounts', 'Percentage');
-		} else {
-			$discountTypeLabel = '';
-		}
+		$discountTypeLabel = DiscountType::tryFrom($this->discountType)?->label() ?? '';
 
 		return $selectHtml .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount Type'), 'discountType') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountTypeLabel'), 'discountType') .
 			Cp::selectHtml([
 				'id' => 'discountType',
 				'name' => 'discountType',
-				'options' => [
-					DiscountType::FlatAmount => Craft::t('advanced-discounts', 'Discount a flat amount'),
-					DiscountType::Percentage => Craft::t('advanced-discounts', 'Discount a percentage'),
-				],
+				'options' => DiscountType::actionOptions(),
 				'value' => $this->discountType,
 				'inputAttributes' => [
 					'hx' => [
@@ -137,7 +131,7 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 					],
 				],
 			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount value'), 'discountValue') .
+			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountValue'), 'discountValue') .
 			Cp::textHtml([
 				'type' => 'number',
 				'id' => 'discountValue',
@@ -184,14 +178,17 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 	 */
 	private function shippingMethodOptions(bool $includeAny = false): array
 	{
-		$shippingMethods = ArrayHelper::map(Plugin::getInstance()?->getShippingMethods()->getAllShippingMethods()->toArray() ?? [], 'handle', 'name');
+		/** @var Plugin $commerce */
+		$commerce = Plugin::getInstance();
+		$shippingMethods = ArrayHelper::map($commerce->getShippingMethods()->getAllShippingMethods()->toArray(), 'handle', 'name');
 
 		if ($includeAny) {
 			return [
-				self::ANY_VALUE => 'Any',
+				self::ANY_VALUE => Craft::t('advanced-discounts', 'rules.shipping.anyMethod'),
 				...$shippingMethods,
 			];
 		}
+
 		return $shippingMethods;
 	}
 }

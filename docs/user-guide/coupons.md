@@ -28,6 +28,6 @@ A code that has hit its limit, or that belongs to a disabled discount, is remove
 
 An order holds one coupon code at a time. Entering a second replaces the first.
 
-Commerce's own coupon codes are checked first, so a Commerce discount sharing a code wins.
+Advanced Discounts codes and Commerce's own coupon codes are separate sets. A code this plugin does not recognize is left entirely to Commerce, including Commerce's own "Coupon not valid" handling. Avoid using the same code in both systems: each one would apply its discount to the order.
 
 Deleting a discount deletes its codes.

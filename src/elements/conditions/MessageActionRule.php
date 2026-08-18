@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -10,18 +12,18 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\base\DiscountType;
+use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 
 class MessageActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
 	public string $message = '';
 
-	public ?ElementConditionInterface $_messageCondition = null;
+	private ?ElementConditionInterface $_messageCondition = null;
 
 	public function __construct($config = [])
 	{
-		$config['messageCondition'] = isset($config['messageCondition']) ? $config['messageCondition'] : ($config['attributes']['messageCondition'] ?? []);
+		$config['messageCondition'] = NestedConditionConfig::extract($config, 'messageCondition');
 		parent::__construct($config);
 	}
 
@@ -39,27 +41,16 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 	 */
 	public function setMessageCondition(ElementConditionInterface|string|array $condition): void
 	{
-		if (is_string($condition)) {
-			$condition = Json::decodeIfJson($condition);
+		if ($condition === [] || $condition === '') {
+			return;
 		}
 
-		if (! $condition instanceof ElementConditionInterface) {
-			if (empty($condition)) {
-				return;
-			}
-			$condition['class'] = CartCondition::class;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
-		}
-		$condition->forProjectConfig = false;
-
-		$this->_messageCondition = $condition;
+		$this->_messageCondition = NestedConditionConfig::build($condition, CartCondition::class);
 	}
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Message');
+		return Craft::t('advanced-discounts', 'rules.message');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -109,7 +100,7 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 	public function validateMessagePlaceholders(string $attribute): void
 	{
 		foreach ($this->getInapplicablePlaceholders() as $token) {
-			$this->addError($attribute, Craft::t('advanced-discounts', '{token} isn’t available for this discount type.', [
+			$this->addError($attribute, Craft::t('advanced-discounts', 'edit.error.tokenUnavailable', [
 				'token' => $token,
 			]));
 		}
@@ -120,86 +111,16 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 		$condition = $this->getCondition();
 		$placeholders = DiscountType::filterMessagePlaceholders($condition instanceof MessageCondition && $condition->bundle);
 
-		Craft::$app->getView()->registerJs(<<<'JS'
-			(function() {
-				var insertToken = function(textarea, token) {
-					var start = textarea.selectionStart ?? textarea.value.length;
-					var end = textarea.selectionEnd ?? textarea.value.length;
-					var value = textarea.value;
-					textarea.value = value.slice(0, start) + token + value.slice(end);
-					var caret = start + token.length;
-					textarea.setSelectionRange(caret, caret);
-					textarea.focus();
-					$(textarea).trigger('input').trigger('change');
-				};
-
-				$(document).off('.advancedDiscountsTokenChip');
-
-				$(document).on('click.advancedDiscountsTokenChip keydown.advancedDiscountsTokenChip', '.advanced-discount-token-chip', function(ev) {
-					if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') {
-						return;
-					}
-					ev.preventDefault();
-					var textarea = $(this).closest('.advanced-discount-message').find('textarea').get(0);
-					if (textarea) {
-						insertToken(textarea, $(this).data('token'));
-					}
-				});
-
-				$(document).on('dragstart.advancedDiscountsTokenChip', '.advanced-discount-token-chip', function(ev) {
-					ev.originalEvent.dataTransfer.setData('text/plain', $(this).data('token'));
-					ev.originalEvent.dataTransfer.effectAllowed = 'copy';
-				});
-
-				$(document).on('dragover.advancedDiscountsTokenChip', '.advanced-discount-message textarea', function(ev) {
-					ev.preventDefault();
-				});
-
-				$(document).on('drop.advancedDiscountsTokenChip', '.advanced-discount-message textarea', function(ev) {
-					ev.preventDefault();
-					var token = ev.originalEvent.dataTransfer.getData('text/plain');
-					if (token) {
-						insertToken(this, token);
-					}
-				});
-			})();
-			JS);
-
-		return Html::tag('style', <<<'CSS'
-			.advanced-discount-token-chips {
-				gap: 6px;
-				margin: 6px 0 0;
-			}
-			.advanced-discount-token-chip {
-				background: var(--gray-100);
-				border: 1px solid var(--gray-200);
-				border-radius: 12px;
-				color: var(--gray-700);
-				cursor: grab;
-				font-size: 12px;
-				padding: 2px 10px;
-				user-select: none;
-			}
-			.advanced-discount-token-chip:hover,
-			.advanced-discount-token-chip:focus-visible {
-				background: var(--gray-150);
-				border-color: var(--gray-300);
-			}
-			.advanced-discount-message.has-errors {
-				border-radius: var(--medium-border-radius);
-				padding: 8px;
-			}
-			CSS) .
-		Html::tag(
+		return Html::tag(
 			'div',
 			Html::tag(
 				'div',
-				Html::hiddenLabel(Craft::t('advanced-discounts', 'Message'), 'message') .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.message'), 'message') .
 				Cp::textareaHtml([
 					'id' => 'message',
 					'name' => 'message',
 					'value' => $this->message,
-					'placeholder' => Craft::t('advanced-discounts', 'e.g. Spend another {amountRemaining} to get {discountAmount} off'),
+					'placeholder' => Craft::t('advanced-discounts', 'rules.message.placeholder'),
 					'class' => 'flex-grow',
 					'rows' => 3,
 				]),
@@ -232,11 +153,8 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 					'class' => ['flex', 'flex-wrap', 'advanced-discount-token-chips'],
 				]
 			) .
-			Html::tag('p', Craft::t('advanced-discounts', 'Create rules to determine when to show this message'), [
-				'class' => 'instructions',
-				'style' => [
-					'margin' => '10px 0 4px',
-				],
+			Html::tag('p', Craft::t('advanced-discounts', 'rules.message.showWhenInstructions'), [
+				'class' => ['instructions', 'advanced-discount-message-instructions'],
 			]) .
 			$this->getMessageCondition()->getBuilderHtml(),
 			[
@@ -247,9 +165,6 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 					'advanced-discount-message',
 					$this->hasErrors('message') ? 'has-errors' : null,
 				]),
-				'style' => [
-					'flex-direction' => 'column',
-				],
 			]
 		);
 	}

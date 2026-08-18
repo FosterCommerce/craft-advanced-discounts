@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts;
 
 use Craft;
@@ -17,7 +19,6 @@ use fostercommerce\advanceddiscounts\adjusters\AfterTaxDiscountAdjuster;
 use fostercommerce\advanceddiscounts\adjusters\DiscountAdjuster;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\models\Settings;
-use fostercommerce\advanceddiscounts\services\AdvancedDiscountsService;
 use fostercommerce\advanceddiscounts\services\Coupons;
 use fostercommerce\advanceddiscounts\services\Discounts;
 use fostercommerce\advanceddiscounts\services\DiscountTypes;
@@ -39,7 +40,7 @@ class Plugin extends BasePlugin
 
 	public bool $hasCpSettings = true;
 
-	public string $schemaVersion = '1.0.6';
+	public string $schemaVersion = '1.0.0';
 
 	/**
 	 * @return array<string, mixed>
@@ -59,13 +60,33 @@ class Plugin extends BasePlugin
 	{
 		parent::init();
 
-		// Defer most setup tasks until Craft is fully initialized
-		Craft::$app->onInit(function () {
-			\craft\commerce\Plugin::getInstance()?->set('discounts', [
-				'class' => AdvancedDiscountsService::class,
-			]);
+		Craft::$app->onInit(function (): void {
 			$this->attachEventHandlers();
 		});
+	}
+
+	public function getDiscounts(): Discounts
+	{
+		/** @var Discounts $discounts */
+		$discounts = $this->get('discounts');
+
+		return $discounts;
+	}
+
+	public function getDiscountTypes(): DiscountTypes
+	{
+		/** @var DiscountTypes $discountTypes */
+		$discountTypes = $this->get('discountTypes');
+
+		return $discountTypes;
+	}
+
+	public function getCoupons(): Coupons
+	{
+		/** @var Coupons $coupons */
+		$coupons = $this->get('coupons');
+
+		return $coupons;
 	}
 
 	/**
@@ -73,6 +94,10 @@ class Plugin extends BasePlugin
 	 */
 	public function getCpNavItem(): ?array
 	{
+		if (! Craft::$app->getUser()->checkPermission('commerce-managePromotions')) {
+			return null;
+		}
+
 		$navItem = parent::getCpNavItem();
 		if ($navItem === null) {
 			return null;
@@ -80,11 +105,11 @@ class Plugin extends BasePlugin
 
 		$navItem['subnav'] = [
 			'discounts' => [
-				'label' => Craft::t('advanced-discounts', 'Discounts'),
+				'label' => Craft::t('advanced-discounts', 'nav.discounts'),
 				'url' => 'advanced-discounts',
 			],
 			'excluded-variants' => [
-				'label' => Craft::t('advanced-discounts', 'Excluded Variants'),
+				'label' => Craft::t('advanced-discounts', 'nav.excludedVariants'),
 				'url' => 'advanced-discounts/excluded-variants',
 			],
 		];
@@ -100,7 +125,6 @@ class Plugin extends BasePlugin
 	protected function settingsHtml(): ?string
 	{
 		return Craft::$app->view->renderTemplate('advanced-discounts/_settings.twig', [
-			'plugin' => $this,
 			'settings' => $this->getSettings(),
 			'taxBasisOptions' => TaxBasis::options(),
 		]);
@@ -108,13 +132,10 @@ class Plugin extends BasePlugin
 
 	private function attachEventHandlers(): void
 	{
-		if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
-			if (Craft::$app->getRequest()->getIsCpRequest()) {
-				$this->registerCpRoutes();
-			}
+		if (! Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsCpRequest()) {
+			$this->registerCpRoutes();
 		}
 
-		// register Twig variable
 		Event::on(
 			CraftVariable::class,
 			CraftVariable::EVENT_DEFINE_BEHAVIORS,
@@ -125,7 +146,6 @@ class Plugin extends BasePlugin
 			}
 		);
 
-		// register adjusters
 		Event::on(
 			OrderAdjustments::class,
 			OrderAdjustments::EVENT_REGISTER_DISCOUNT_ADJUSTERS,
@@ -142,11 +162,9 @@ class Plugin extends BasePlugin
 			}
 		);
 
-		// Prevent Commerce from clearing our custom discount codes during order validation.
-		// Commerce's validateCouponCode() nulls $order->couponCode if not found in its own
-		// discount system, but only when recalculationMode is ALL or ADJUSTMENTS_ONLY.
-		// We temporarily set mode to NONE before validation and restore it after, so the
-		// code survives into recalculate() where our adjuster can read it.
+		// Commerce nulls a coupon code it doesn't own, and only skips that when the
+		// recalculation mode is NONE. Our codes have to survive into recalculate() for
+		// the adjuster to read them.
 		$savedModes = [];
 
 		Event::on(
@@ -155,26 +173,31 @@ class Plugin extends BasePlugin
 			function (Event $event) use (&$savedModes): void {
 				/** @var Order $order */
 				$order = $event->sender;
-				if (! $order->couponCode) {
+
+				// A completed order records the code that was used, so re-checking it rewrites history.
+				if ($order->isCompleted || ! $order->couponCode) {
 					return;
 				}
+
 				$discount = Plugin::getInstance()->discounts->getDiscountByCode($order->couponCode);
 				if ($discount === null) {
 					return;
 				}
 
 				if (! $discount->enabled) {
-					$this->removeCouponCode($order, Craft::t('advanced-discounts', 'This coupon is no longer available.'));
+					$this->removeCouponCode($order, Craft::t('advanced-discounts', 'cart.couponUnavailable'));
 					return;
 				}
 
 				if (! $discount->matchesCouponCode($order->couponCode)) {
-					$this->removeCouponCode($order, Craft::t('advanced-discounts', 'This coupon has reached its usage limit.'));
+					$this->removeCouponCode($order, Craft::t('advanced-discounts', 'cart.couponLimitReached'));
 					return;
 				}
 
+				// Keep the first mode seen: a validation another listener vetoes never reaches the
+				// restore below, and overwriting would then save NONE as the mode to restore.
 				$id = spl_object_id($order);
-				$savedModes[$id] = $order->recalculationMode;
+				$savedModes[$id] ??= $order->recalculationMode;
 				$order->recalculationMode = Order::RECALCULATION_MODE_NONE;
 			}
 		);
@@ -191,7 +214,10 @@ class Plugin extends BasePlugin
 				}
 				$order->recalculationMode = $savedModes[$id];
 				unset($savedModes[$id]);
-				$order->recalculate();
+
+				if ($order->id !== null) {
+					$order->recalculate();
+				}
 			}
 		);
 

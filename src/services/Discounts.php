@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\services;
 
 use Craft;
@@ -10,6 +12,8 @@ use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 use fostercommerce\advanceddiscounts\records\Discount as DiscountRecord;
+use RuntimeException;
+use Throwable;
 use yii\base\Component;
 use yii\db\Expression;
 
@@ -29,7 +33,10 @@ class Discounts extends Component
 			$this->_discounts = [];
 			$query = $this->_createDiscountQuery();
 			foreach ($query->all() as $discountRecord) {
-				$this->_discounts[] = $this->_populateDiscount($discountRecord);
+				$discount = $this->_populateDiscount($discountRecord);
+				if ($discount !== null) {
+					$this->_discounts[] = $discount;
+				}
 			}
 		}
 
@@ -55,11 +62,11 @@ class Discounts extends Component
 		return $this->getDiscountById($coupon->discountId);
 	}
 
-	public function getTaxBasis(Order $order): string
+	public function getTaxBasis(Order $order): TaxBasis
 	{
 		/** @var Plugin $plugin */
 		$plugin = Plugin::getInstance();
-		$defaultTaxBasis = $plugin->getSettings()->taxBasis;
+		$defaultTaxBasis = $plugin->getSettings()->getTaxBasis();
 
 		foreach ($this->getAllDiscounts() as $discount) {
 			if (! $discount->enabled || ! $discount->matchesCouponCode($order->couponCode)) {
@@ -80,14 +87,25 @@ class Discounts extends Component
 	public function reorderDiscounts(array $ids): bool
 	{
 		$db = Craft::$app->db;
-		foreach ($ids as $sortOrder => $id) {
-			$db->createCommand()
-				->update(DiscountRecord::TABLE_NAME, [
-					'sortOrder' => $sortOrder + 1,
-				], [
-					'id' => $id,
-				])
-				->execute();
+		$transaction = $db->beginTransaction();
+
+		try {
+			foreach ($ids as $sortOrder => $id) {
+				$db->createCommand()
+					->update(DiscountRecord::TABLE_NAME, [
+						'sortOrder' => $sortOrder + 1,
+					], [
+						'id' => $id,
+					])
+					->execute();
+			}
+
+			$transaction->commit();
+		} catch (Throwable $throwable) {
+			$transaction->rollBack();
+			Craft::error("Couldn't reorder discounts: {$throwable->getMessage()}", __METHOD__);
+
+			return false;
 		}
 
 		$this->_discounts = null;
@@ -133,7 +151,7 @@ class Discounts extends Component
 		} else {
 			$record = DiscountRecord::findOne($discount->id);
 			if ($record === null) {
-				throw new \RuntimeException("No discount exists with ID {$discount->id}");
+				throw new RuntimeException("No discount exists with ID {$discount->id}");
 			}
 		}
 
@@ -148,12 +166,11 @@ class Discounts extends Component
 		$record->stopProcessing = $discount->stopProcessing;
 		$record->type = $discount->type;
 		$record->settings = [
-			'taxBasis' => $discount->taxBasis,
+			'taxBasis' => $discount->taxBasis?->value,
 			'globalCartCondition' => $discount->getGlobalCartCondition()->getConfig(),
 			'panels' => array_map(static fn ($panel): array => $panel->getConfig(), $discount->panels),
 		];
 
-		// In the future we may have multiple things that would need to be saved here.
 		$db = Craft::$app->db;
 		$transaction = $db->beginTransaction();
 		try {
@@ -168,6 +185,7 @@ class Discounts extends Component
 
 			$record->save();
 			$discount->id = $record->id;
+			$discount->sortOrder = $record->sortOrder;
 
 			if (! Plugin::getInstance()->coupons->saveDiscountCoupons($discount)) {
 				$transaction->rollBack();
@@ -176,9 +194,9 @@ class Discounts extends Component
 
 			$transaction->commit();
 			$this->_discounts = null;
-		} catch (\Exception $e) {
+		} catch (Throwable $throwable) {
 			$transaction->rollBack();
-			throw $e;
+			throw $throwable;
 		}
 
 		return true;
@@ -187,8 +205,19 @@ class Discounts extends Component
 	/**
 	 * @param array<string, mixed> $record
 	 */
-	private function _populateDiscount(array $record): Discount
+	private function _populateDiscount(array $record): ?Discount
 	{
+		$type = is_string($record['type'] ?? null) ? $record['type'] : 'advanced';
+		if (Plugin::getInstance()->discountTypes->findDiscountTypeByHandle($type) === null) {
+			$id = is_scalar($record['id'] ?? null) ? (string) $record['id'] : '';
+			Craft::warning(
+				"Skipping discount {$id}: nothing registers the discount type “{$type}”, so its rules cannot be read and it will not apply to any order.",
+				__METHOD__
+			);
+
+			return null;
+		}
+
 		$discount = new Discount([
 			'id' => $record['id'],
 			'name' => $record['name'],
@@ -197,7 +226,7 @@ class Discounts extends Component
 			'stopProcessing' => $record['stopProcessing'] ?? false,
 			'uses' => $record['uses'] ?? 0,
 			'sortOrder' => $record['sortOrder'] ?? null,
-			'type' => $record['type'] ?? 'advanced',
+			'type' => $type,
 			'dateCreated' => $record['dateCreated'],
 			'dateUpdated' => $record['dateUpdated'],
 		]);
@@ -205,7 +234,9 @@ class Discounts extends Component
 		$settings = Json::decodeIfJson($record['settings'] ?? '');
 		$settings = is_array($settings) ? $settings : [];
 
-		$discount->taxBasis = $settings['taxBasis'] ?? null;
+		$discount->taxBasis = is_string($settings['taxBasis'] ?? null)
+			? TaxBasis::tryFrom($settings['taxBasis'])
+			: null;
 		$discount->setGlobalCartCondition($settings['globalCartCondition'] ?? []);
 		$discount->setPanels($settings['panels'] ?? []);
 
@@ -217,7 +248,8 @@ class Discounts extends Component
 	 */
 	private function _createDiscountQuery(): Query
 	{
-		return (new Query())
+		/** @var Query<int, array<string, mixed>> $query */
+		$query = (new Query())
 			->select([
 				'[[discounts.id]]',
 				'[[discounts.name]]',
@@ -237,5 +269,7 @@ class Discounts extends Component
 			->orderBy([
 				'sortOrder' => SORT_ASC,
 			]);
+
+		return $query;
 	}
 }

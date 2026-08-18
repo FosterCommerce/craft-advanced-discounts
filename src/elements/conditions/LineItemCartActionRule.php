@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -26,7 +28,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 
 	public const APPLY_PER_PURCHASABLE = 'purchasable';
 
-	public string $discountType = DiscountType::FlatAmount;
+	public string $discountType = 'flatAmount';
 
 	public ?float $discountValue = null;
 
@@ -34,6 +36,9 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 
 	public string $applyPer = self::APPLY_PER_LINE_ITEM;
 
+	/**
+	 * @var class-string<ElementInterface>
+	 */
 	public string $purchasableType = Variant::class;
 
 	/**
@@ -43,7 +48,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 
 	public function getLabel(): string
 	{
-		return Craft::t('advanced-discounts', 'Line Items');
+		return Craft::t('advanced-discounts', 'rules.lineItems');
 	}
 
 	public function getExclusiveQueryParams(): array
@@ -85,25 +90,21 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 
 	protected function inputHtml(): string
 	{
-		$discountTypeLabel = match ($this->discountType) {
-			DiscountType::Percentage => Craft::t('advanced-discounts', 'Percentage'),
-			default => Craft::t('advanced-discounts', 'Flat Amount'),
-		};
+		$discountTypeLabel = (DiscountType::tryFrom($this->discountType) ?? DiscountType::FlatAmount)->label();
 
 		$filterOptions = [
-			self::FILTER_ALL => Craft::t('advanced-discounts', 'All line items'),
-			self::FILTER_SELECTED => Craft::t('advanced-discounts', 'Selected line items'),
-			self::FILTER_CART_CONDITION => Craft::t('advanced-discounts', 'Same line items as cart conditions'),
+			self::FILTER_ALL => Craft::t('advanced-discounts', 'rules.lineItemsFilter.all'),
+			self::FILTER_SELECTED => Craft::t('advanced-discounts', 'rules.lineItemsFilter.selected'),
+			self::FILTER_CART_CONDITION => Craft::t('advanced-discounts', 'rules.lineItemsFilter.cartCondition'),
 		];
 
 		$purchasableSelectHtml = '';
 
 		if ($this->lineItemsFilter === self::FILTER_SELECTED) {
 			$selectedElements = [];
-			if (! empty($this->purchasableIds)) {
-				/** @var class-string<ElementInterface> $type */
-				$type = $this->purchasableType;
-				$selectedElements = $type::find()
+			if ($this->purchasableIds !== []) {
+				$purchasableType = $this->purchasableType;
+				$selectedElements = $purchasableType::find()
 					->id($this->purchasableIds)
 					->status(null)
 					->all();
@@ -139,7 +140,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 			'div',
 			Html::tag(
 				'div',
-				Html::hiddenLabel(Craft::t('advanced-discounts', 'Apply to'), 'lineItemsFilter') .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.applyTo'), 'lineItemsFilter') .
 				Cp::selectHtml([
 					'id' => 'lineItemsFilter',
 					'name' => 'lineItemsFilter',
@@ -151,14 +152,11 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 						],
 					],
 				]) .
-				Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount Type'), 'discountType') .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountTypeLabel'), 'discountType') .
 				Cp::selectHtml([
 					'id' => 'discountType',
 					'name' => 'discountType',
-					'options' => [
-						DiscountType::FlatAmount => Craft::t('advanced-discounts', 'Discount a flat amount'),
-						DiscountType::Percentage => Craft::t('advanced-discounts', 'Discount a percentage'),
-					],
+					'options' => DiscountType::actionOptions(),
 					'value' => $this->discountType,
 					'inputAttributes' => [
 						'hx' => [
@@ -166,7 +164,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 						],
 					],
 				]) .
-				Html::hiddenLabel(Craft::t('advanced-discounts', 'Discount value'), 'discountValue') .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountValue'), 'discountValue') .
 				Cp::textHtml([
 					'type' => 'number',
 					'id' => 'discountValue',
@@ -176,13 +174,13 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 					'placeholder' => $discountTypeLabel,
 					'class' => 'flex-grow flex-shrink',
 				]) .
-				Html::hiddenLabel(Craft::t('advanced-discounts', 'Apply per'), 'applyPer') .
+				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.applyPer'), 'applyPer') .
 				Cp::selectHtml([
 					'id' => 'applyPer',
 					'name' => 'applyPer',
 					'options' => [
-						self::APPLY_PER_LINE_ITEM => Craft::t('advanced-discounts', 'Per line item'),
-						self::APPLY_PER_PURCHASABLE => Craft::t('advanced-discounts', 'Per purchasable'),
+						self::APPLY_PER_LINE_ITEM => Craft::t('advanced-discounts', 'rules.applyPer.lineItem'),
+						self::APPLY_PER_PURCHASABLE => Craft::t('advanced-discounts', 'rules.applyPer.purchasable'),
 					],
 					'value' => $this->applyPer,
 				]),
@@ -192,10 +190,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 			) .
 			$purchasableSelectHtml,
 			[
-				'class' => ['flex', 'flex-start', 'flex-grow'],
-				'style' => [
-					'flex-direction' => 'column',
-				],
+				'class' => ['flex', 'flex-start', 'flex-grow', 'advanced-discount-line-item-action'],
 			]
 		);
 	}

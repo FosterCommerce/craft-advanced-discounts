@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\models;
 
-use Craft;
 use craft\base\Model;
 use craft\commerce\elements\Variant;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
@@ -18,6 +18,7 @@ use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\RelatedToConditionRule;
+use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
 class DiscountPanel extends Model
@@ -35,11 +36,11 @@ class DiscountPanel extends Model
 	 */
 	public string $actionConditionClass = CartActionCondition::class;
 
-	public null|ElementConditionInterface $_cartCondition = null;
+	private ?ElementConditionInterface $_cartCondition = null;
 
-	public null|ElementConditionInterface $_cartActionCondition = null;
+	private ?ElementConditionInterface $_cartActionCondition = null;
 
-	public null|ElementConditionInterface $_messageCondition = null;
+	private ?ElementConditionInterface $_messageCondition = null;
 
 	public function init(): void
 	{
@@ -155,7 +156,7 @@ class DiscountPanel extends Model
 				} elseif ($lineItemRule instanceof RelatedToConditionRule) {
 					$relatedToId = (int) $lineItemRule->getElementId();
 					if ($relatedToId !== 0) {
-						$variantIds = array_merge($variantIds, array_map('intval', Variant::find()->relatedTo($relatedToId)->status(null)->ids()));
+						$variantIds = array_merge($variantIds, Purchasables::relatedVariantIds($relatedToId));
 					}
 				}
 			}
@@ -202,22 +203,6 @@ class DiscountPanel extends Model
 	 */
 	private function normalizeCondition(ElementConditionInterface|string|array|null $condition, string $conditionClass): ElementConditionInterface
 	{
-		if ($condition === null) {
-			$condition = [];
-		}
-
-		if (is_string($condition)) {
-			$condition = Json::decodeIfJson($condition);
-		}
-
-		if (! $condition instanceof ElementConditionInterface) {
-			$condition['class'] = $conditionClass;
-			/** @phpstan-ignore-next-line */
-			$condition = Craft::$app->getConditions()->createCondition($condition);
-			/** @var ElementConditionInterface $condition */
-		}
-		$condition->forProjectConfig = false;
-
-		return $condition;
+		return NestedConditionConfig::build($condition, $conditionClass);
 	}
 }

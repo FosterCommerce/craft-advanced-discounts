@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\elements\conditions;
 
 use Craft;
@@ -9,7 +11,7 @@ class CartActionCondition extends ElementCondition
 {
 	public function init(): void
 	{
-		$this->addRuleLabel = Craft::t('advanced-discounts', 'Add a cart action');
+		$this->addRuleLabel = Craft::t('advanced-discounts', 'conditions.addCartAction');
 		parent::init();
 	}
 
@@ -18,10 +20,10 @@ class CartActionCondition extends ElementCondition
 	 */
 	protected function selectableConditionRules(): array
 	{
-		return array_merge([
+		return [
 			OrderCartActionRule::class,
 			LineItemCartActionRule::class,
 			ShippingMethodCartActionRule::class,
-		]);
+		];
 	}
 }

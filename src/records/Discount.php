@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace fostercommerce\advanceddiscounts\records;
 
 use craft\db\ActiveRecord;
@@ -16,9 +18,6 @@ use craft\db\ActiveRecord;
  * @property ?int $sortOrder
  * @property string $type
  * @property ?array $settings
- * @property ?array $cartCondition
- * @property ?array $cartActionCondition
- * @property ?array $messageCondition
  */
 class Discount extends ActiveRecord
 {
