@@ -2,7 +2,7 @@
 
 How to tell a customer they are close to, or have reached, a discount threshold.
 
-Each message has its own show-when rules that decide when it appears. Leave them empty and the message follows its group instead, appearing whenever the group's [Cart Conditions](cart-conditions.md) match.
+Each message carries its own show-when rules, added under **Create rules to determine when to show this message**, that decide when it appears. Leave them empty and the message follows its group instead, appearing whenever the group's [Cart Conditions](cart-conditions.md) match.
 
 Show-when rules replace that fallback rather than narrowing it, so a message can appear for a tier the customer has not reached yet. The discount still has to be enabled, have its coupon requirement met, and pass its Global Conditions.
 
@@ -13,8 +13,8 @@ Tokens in the message text are replaced with live cart figures when the message 
 | Token | Value |
 |---|---|
 | `{discountAmount}` | The first action's discount value in this group, as a percentage or an amount. |
-| `{amountRemaining}` | Amount left to reach this group's money threshold, counting only discountable items. Needs an "at least" or "more than" condition. |
-| `{quantityRemaining}` | Items left to reach this group's quantity condition, counting only discountable items. Needs an "at least" or "more than" condition. |
+| `{amountRemaining}` | Requires an Order cart condition set to "at least" or "more than" a money total. Renders the amount left to reach it, counting only discountable items. |
+| `{quantityRemaining}` | Requires an Order or Line Items cart condition set to "at least" or "more than" a quantity. Renders the items left to reach it, counting only discountable items. |
 | `{buyQuantityRemaining}` | Items left to add before the next Buy X, Get Y reward is earned. |
 | `{discountedQuantity}` | How many items the Buy X, Get Y reward gives each time it is earned. |
 
