@@ -89,7 +89,14 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 		}
 
 		$bundleSize = $this->bundleSize();
-		$remainder = $this->buyCartQuantity($order) % $bundleSize;
+		$buyQuantity = $this->buyCartQuantity($order);
+
+		// Without repeating there is no next reward to count towards once the first is earned.
+		if (! $this->repeat && $buyQuantity >= $bundleSize) {
+			return 0;
+		}
+
+		$remainder = $buyQuantity % $bundleSize;
 
 		return $remainder === 0 ? $bundleSize : $bundleSize - $remainder;
 	}

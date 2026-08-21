@@ -12,11 +12,11 @@ Tokens in the message text are replaced with live cart figures when the message 
 
 | Token | Value |
 |---|---|
-| `{discountAmount}` | The amount of money being discounted. |
-| `{amountRemaining}` | The amount remaining to trigger the discount. |
-| `{quantityRemaining}` | The number of items remaining to trigger the discount. |
-| `{buyQuantityRemaining}` | The number of "buy" items left before the next Buy X, Get Y reward is earned. |
-| `{discountedQuantity}` | The number of units currently discounted for the Buy X, Get Y reward. |
+| `{discountAmount}` | The first action's discount value in this group, as a percentage or an amount. |
+| `{amountRemaining}` | Amount left to reach this group's money threshold, counting only discountable items. Needs an "at least" or "more than" condition. |
+| `{quantityRemaining}` | Items left to reach this group's quantity condition, counting only discountable items. Needs an "at least" or "more than" condition. |
+| `{buyQuantityRemaining}` | Items left to add before the next Buy X, Get Y reward is earned. |
+| `{discountedQuantity}` | How many items the Buy X, Get Y reward gives each time it is earned. |
 
 See the [tiered sale recipe](../recipes/tiered-sale.md) for messages that use these tokens.
 

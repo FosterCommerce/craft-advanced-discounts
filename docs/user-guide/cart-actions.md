@@ -24,7 +24,7 @@ Discounts individual lines, by a flat amount or a percentage. Each matching line
 - **Selected line items**. Only the products or variants you pick here.
 - **Same line items as cart conditions**. The products already named in this group's Cart Conditions.
 
-The third option exists so you do not have to name the same products twice. Set up a condition on **Has Purchasable** or "Related To", and the action follows whatever that condition matched. Changing the condition later changes the action with it.
+The third option exists so you do not have to name the same products twice. Set up a **Quantity** condition, matching either on the product itself or on a relation, and the action follows whatever that condition matched. Changing the condition later changes the action with it.
 
 ### Apply per
 

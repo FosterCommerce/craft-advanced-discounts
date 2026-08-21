@@ -7,6 +7,7 @@ namespace fostercommerce\advanceddiscounts\elements\conditions;
 use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
+use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
@@ -32,6 +33,11 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 		$condition = $this->_orderCondition ?? new OrderCondition();
 		$condition->mainTag = 'div';
 		$condition->name = 'orderCondition';
+
+		// Item Subtotal is the usual threshold, and an empty condition shows nothing to fill in.
+		if ($condition->getConditionRules() === []) {
+			$condition->setConditionRules([new ItemSubtotalConditionRule()]);
+		}
 
 		return $condition;
 	}

@@ -90,7 +90,7 @@
 }
 
 .advanced-discount-line-item-action,
-.advanced-discount-has-purchasable {
+.advanced-discount-line-item-match {
 	flex-direction: column;
 }
 
