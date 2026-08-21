@@ -68,11 +68,11 @@ return [
 	'discountType.buyXGetY.actionLabel' => 'Compra X, lleva Y',
 
 	// Message placeholders
-	'messagePlaceholders.amountRemaining' => 'Amount left to reach this group’s money threshold, counting only discountable items. Needs an “at least” or “more than” condition.',
+	'messagePlaceholders.amountRemaining' => 'Requires an Order cart condition set to “at least” or “more than” a money total. Renders the amount left to reach it, counting only discountable items.',
 	'messagePlaceholders.buyQuantityRemaining' => 'Items left to add before the next Buy X, Get Y reward is earned.',
 	'messagePlaceholders.discountAmount' => 'The first action’s discount value in this group, as a percentage or an amount.',
 	'messagePlaceholders.discountedQuantity' => 'How many items the Buy X, Get Y reward gives each time it is earned.',
-	'messagePlaceholders.quantityRemaining' => 'Items left to reach this group’s quantity condition, counting only discountable items. Needs an “at least” or “more than” condition.',
+	'messagePlaceholders.quantityRemaining' => 'Requires an Order or Line Items cart condition set to “at least” or “more than” a quantity. Renders the items left to reach it, counting only discountable items.',
 
 	// Discounts index
 	'index.column.coupons' => 'Coupons',
@@ -115,12 +115,12 @@ return [
 	'edit.globalCartConditions.instructions' => 'Condiciones que controlan todo el descuento.',
 	'edit.messagePlaceholders.title' => 'Message placeholders',
 	'edit.name' => 'Nombre',
-	'edit.notes.amountRemaining' => 'counts down to its group’s threshold. Give it a “show when” rule that stays below the threshold, or it shows $0.00.',
+	'edit.notes.amountRemaining' => 'shows $0.00 once its group’s threshold is met. Give the message a rule that keeps it below the threshold.',
 	'edit.notes.globalConditions' => 'Global Cart Conditions gate the whole discount, like a date range.',
-	'edit.notes.messageFallback' => 'A message with no “show when” rule appears whenever its group applies.',
-	'edit.notes.messageOrdering' => 'When several messages qualify, the storefront shows the first one. That means the topmost group, then the topmost message. Reorder groups or use non-overlapping “show when” rules to control it.',
+	'edit.notes.messageFallback' => 'A message with no rules of its own appears whenever its group applies.',
+	'edit.notes.messageOrdering' => 'When several messages qualify, they come back in group order, then message order. Reorder groups, or give messages non-overlapping rules, to control which comes first.',
 	'edit.notes.nonPromotable' => 'Variants set to not promotable are excluded from every action. Their value is removed from order and line totals.',
-	'edit.notes.ordering' => 'Groups apply top to bottom. Turn on “Stop processing further groups” to make tiers, so only the first matching group applies.',
+	'edit.notes.ordering' => 'Groups apply top to bottom. Turn on “Stop Processing Further Groups” to make tiers, so only the first matching group applies.',
 	'edit.notes.tiers' => 'For tiers, order groups from the highest threshold to the lowest.',
 	'edit.notes.title' => 'Helpful notes',
 	'edit.requireCouponCode.instructions' => 'Off applies to every applicable order (like a sale). On requires one of the coupon codes below to be entered at checkout.',

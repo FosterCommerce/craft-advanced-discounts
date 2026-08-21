@@ -53,7 +53,7 @@ A message string appears in the array when all of the following hold.
 3. The discount's **Global Cart Conditions** match.
 4. Its group is enabled.
 5. The message text is not empty.
-6. Its own **show when** rules match. A message with no show-when rules falls back to its group's **Cart Conditions**, so it appears whenever the group applies.
+6. Its own show-when rules match. A message with no show-when rules falls back to its group's **Cart Conditions**, so it appears whenever the group applies.
 
 Non-promotable line items are subtracted from the order's totals before steps 3 and 6 are evaluated, the same as they are for the discount itself. A cart whose value is mostly non-promotable stock will not hit a threshold you would expect it to hit from the cart total on screen.
 
