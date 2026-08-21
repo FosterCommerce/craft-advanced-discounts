@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 - 2026-08-21
 
 > {warning} This release rewrites saved cart conditions. Back up your database before updating.
 
