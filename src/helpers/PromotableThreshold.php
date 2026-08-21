@@ -11,15 +11,17 @@ use craft\commerce\elements\conditions\orders\TotalConditionRule;
 use craft\commerce\elements\conditions\orders\TotalPriceConditionRule;
 use craft\commerce\elements\conditions\orders\TotalQtyConditionRule;
 use craft\commerce\elements\Order;
+use craft\commerce\models\LineItem;
+use craft\commerce\models\Store;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\fields\conditions\MoneyFieldConditionRule;
 use craft\helpers\Json;
 use craft\helpers\MoneyHelper;
-use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemMatchConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderConditionRule;
-use fostercommerce\advanceddiscounts\elements\conditions\RelatedToConditionRule;
+use Money\Money;
 
 /**
  * Evaluates discount conditions against the promotable portion of an order.
@@ -33,13 +35,13 @@ use fostercommerce\advanceddiscounts\elements\conditions\RelatedToConditionRule;
 final class PromotableThreshold
 {
 	/**
-	 * @var array<class-string, array{0: string, 1: string}> order attribute => line item field to subtract
+	 * @var array<class-string, array{0: string, 1: string, 2: bool}> order attribute => line item field to subtract, whether the store's minimum total price applies
 	 */
 	private const VALUE_RULE_FIELDS = [
-		ItemSubtotalConditionRule::class => ['itemSubtotal', 'subtotal'],
-		ItemTotalConditionRule::class => ['itemTotal', 'total'],
-		TotalPriceConditionRule::class => ['totalPrice', 'total'],
-		TotalConditionRule::class => ['total', 'total'],
+		ItemSubtotalConditionRule::class => ['itemSubtotal', 'subtotal', false],
+		ItemTotalConditionRule::class => ['itemTotal', 'total', false],
+		TotalPriceConditionRule::class => ['totalPrice', 'total', true],
+		TotalConditionRule::class => ['total', 'total', false],
 	];
 
 	public static function matches(ElementConditionInterface $condition, Order $order): bool
@@ -69,7 +71,7 @@ final class PromotableThreshold
 			}
 
 			foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
-				foreach (self::VALUE_RULE_FIELDS as $ruleClass => [$orderField, $lineItemField]) {
+				foreach (self::VALUE_RULE_FIELDS as $ruleClass => [$orderField, $lineItemField, $appliesMinimumPrice]) {
 					if (
 						$orderRule instanceof $ruleClass
 						&& property_exists($orderRule, 'value')
@@ -79,7 +81,7 @@ final class PromotableThreshold
 					) {
 						$currency = (string) $order->currency;
 						$remaining = Amounts::toMoney((float) $orderRule->value, $currency)
-							->subtract(Amounts::toMoney(self::promotableValue($order, $orderField, $lineItemField), $currency));
+							->subtract(Amounts::toMoney(self::promotableValue($order, $orderField, $lineItemField, $appliesMinimumPrice), $currency));
 
 						return max(0.0, (float) MoneyHelper::toDecimal($remaining));
 					}
@@ -108,11 +110,11 @@ final class PromotableThreshold
 			if ($triggerRule instanceof LineItemConditionRule) {
 				foreach ($triggerRule->getLineItemCondition()->getConditionRules() as $rule) {
 					if (
-						$rule instanceof HasPurchasableConditionRule
+						$rule instanceof LineItemMatchConditionRule
 						&& $rule->quantity !== null
 						&& in_array($rule->operator, ['>=', '>'], true)
 					) {
-						return max(0, $rule->quantity - self::promotableMatchingQty($rule, $order));
+						return max(0, $rule->quantity - $rule->matchedQuantity(self::promotableLineItems($order)));
 					}
 				}
 			}
@@ -140,9 +142,9 @@ final class PromotableThreshold
 	private static function orderRuleMatches(ConditionRuleInterface $orderRule, Order $order): bool
 	{
 		if ($orderRule instanceof MoneyFieldConditionRule && isset(self::VALUE_RULE_FIELDS[$orderRule::class])) {
-			[$orderField, $lineItemField] = self::VALUE_RULE_FIELDS[$orderRule::class];
+			[$orderField, $lineItemField, $appliesMinimumPrice] = self::VALUE_RULE_FIELDS[$orderRule::class];
 
-			return self::compare(self::promotableValue($order, $orderField, $lineItemField), $orderRule->operator, $orderRule->value, $orderRule->maxValue);
+			return self::compare(self::promotableValue($order, $orderField, $lineItemField, $appliesMinimumPrice), $orderRule->operator, $orderRule->value, $orderRule->maxValue);
 		}
 
 		if ($orderRule instanceof TotalQtyConditionRule) {
@@ -170,41 +172,25 @@ final class PromotableThreshold
 
 	private static function lineItemRuleMatches(ConditionRuleInterface $lineItemRule, Order $order): bool
 	{
-		if ($lineItemRule instanceof HasPurchasableConditionRule) {
-			$matchingQty = self::promotableMatchingQty($lineItemRule, $order);
-			if ($lineItemRule->quantity === null) {
-				return $matchingQty > 0;
-			}
-
-			return self::compare((float) $matchingQty, $lineItemRule->operator, (string) $lineItemRule->quantity, null);
-		}
-
-		if ($lineItemRule instanceof RelatedToConditionRule) {
-			return self::hasPromotableRelated($lineItemRule, $order);
+		if ($lineItemRule instanceof LineItemMatchConditionRule) {
+			return $lineItemRule->quantityMatches($lineItemRule->matchedQuantity(self::promotableLineItems($order)));
 		}
 
 		return $lineItemRule instanceof ElementConditionRuleInterface && $lineItemRule->matchElement($order);
 	}
 
-	private static function hasPromotableRelated(RelatedToConditionRule $rule, Order $order): bool
+	/**
+	 * @return LineItem[]
+	 */
+	private static function promotableLineItems(Order $order): array
 	{
-		$elementId = (int) $rule->getElementId();
-		if ($elementId === 0) {
-			return false;
-		}
-
-		$variantIds = Purchasables::relatedVariantIds($elementId);
-
-		foreach ($order->getLineItems() as $lineItem) {
-			if ($lineItem->getIsPromotable() && in_array((int) $lineItem->purchasableId, $variantIds, true)) {
-				return true;
-			}
-		}
-
-		return false;
+		return array_values(array_filter(
+			$order->getLineItems(),
+			static fn (LineItem $lineItem): bool => $lineItem->getIsPromotable()
+		));
 	}
 
-	private static function promotableValue(Order $order, string $orderField, string $lineItemField): float
+	private static function promotableValue(Order $order, string $orderField, string $lineItemField, bool $appliesMinimumPrice): float
 	{
 		$currency = (string) $order->currency;
 		$value = Amounts::toMoney((float) $order->{$orderField}, $currency);
@@ -215,7 +201,30 @@ final class PromotableThreshold
 			}
 		}
 
+		if ($appliesMinimumPrice) {
+			$value = self::applyMinimumTotalPrice($order, $value);
+		}
+
 		return (float) MoneyHelper::toDecimal($value);
+	}
+
+	/**
+	 * Mirrors `craft\commerce\elements\Order::getTotalPrice()`.
+	 */
+	private static function applyMinimumTotalPrice(Order $order, Money $value): Money
+	{
+		$currency = (string) $order->currency;
+		$shipping = Amounts::toMoney($order->getTotalShippingCost(), $currency);
+
+		return match ($order->getStore()->getMinimumTotalPriceStrategy()) {
+			Store::MINIMUM_TOTAL_PRICE_STRATEGY_ZERO => $value->isNegative()
+				? Amounts::toMoney(0, $currency)
+				: $value,
+			Store::MINIMUM_TOTAL_PRICE_STRATEGY_SHIPPING => $value->lessThan($shipping)
+				? $shipping
+				: $value,
+			default => $value,
+		};
 	}
 
 	private static function promotableQty(Order $order): int
@@ -223,20 +232,6 @@ final class PromotableThreshold
 		$qty = 0;
 		foreach ($order->getLineItems() as $lineItem) {
 			if ($lineItem->getIsPromotable()) {
-				$qty += $lineItem->qty;
-			}
-		}
-
-		return $qty;
-	}
-
-	private static function promotableMatchingQty(HasPurchasableConditionRule $rule, Order $order): int
-	{
-		$purchasableId = (int) $rule->getElementId();
-		$qty = 0;
-		foreach ($order->getLineItems() as $lineItem) {
-			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable !== null && $lineItem->getIsPromotable() && Purchasables::matches($purchasable, $rule->purchasableType, [$purchasableId])) {
 				$qty += $lineItem->qty;
 			}
 		}

@@ -40,8 +40,7 @@ class LineItemCondition extends ElementCondition
 	protected function selectableConditionRules(): array
 	{
 		return [
-			HasPurchasableConditionRule::class,
-			RelatedToConditionRule::class,
+			LineItemMatchConditionRule::class,
 		];
 	}
 }

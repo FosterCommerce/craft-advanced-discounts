@@ -12,12 +12,11 @@ use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\CartActionCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
-use fostercommerce\advanceddiscounts\elements\conditions\HasPurchasableConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemConditionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\LineItemMatchConditionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageCondition;
-use fostercommerce\advanceddiscounts\elements\conditions\RelatedToConditionRule;
 use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
@@ -148,16 +147,8 @@ class DiscountPanel extends Model
 			}
 
 			foreach ($cartConditionRule->getLineItemCondition()->getConditionRules() as $lineItemRule) {
-				if ($lineItemRule instanceof HasPurchasableConditionRule) {
-					$purchasableId = (int) $lineItemRule->getElementId();
-					if ($purchasableId !== 0) {
-						$variantIds = array_merge($variantIds, Purchasables::expandToVariantIds($lineItemRule->purchasableType, [$purchasableId]));
-					}
-				} elseif ($lineItemRule instanceof RelatedToConditionRule) {
-					$relatedToId = (int) $lineItemRule->getElementId();
-					if ($relatedToId !== 0) {
-						$variantIds = array_merge($variantIds, Purchasables::relatedVariantIds($relatedToId));
-					}
+				if ($lineItemRule instanceof LineItemMatchConditionRule) {
+					$variantIds = array_merge($variantIds, $lineItemRule->variantIds());
 				}
 			}
 		}

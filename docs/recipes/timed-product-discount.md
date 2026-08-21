@@ -10,7 +10,7 @@ Set the Global Cart Conditions to a **Date Range** covering the week. The end da
 
 Give the group a Discount Name, "5% off all Shear Bars".
 
-In Cart Conditions, add **Line Items**, then click **OR** and choose **Has Purchasable**.
+In Cart Conditions, add **Line Items**, then click **OR** and choose **Quantity**.
 
 ![Choose which products qualify for the discount](../../resources/img/demo-selecting-products.png)
 

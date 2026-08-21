@@ -10,17 +10,17 @@ Set a date range when this discount can be applied.
 
 ## Line Items
 
-### Has Purchasable
+### Quantity
 
-Which items, and how many of each, must be in the cart.
+Which items, and how many of each, must be in the cart. The rule reads as a sentence: "at least 3 of Product Variant Grass Chute Liner", or "at least 1 related to Entry Fall Campaign".
 
-Leave **Quantity** blank to match any number of them, so long as the item is there. Click **+ OR** to accept another product instead.
+Compare the quantity with **at least**, **at most**, **more than**, **fewer than**, **exactly**, or **other than**.
+
+Then choose how the items are identified. **of** counts the line items for a specific product or variant. **related to** counts the line items whose product or variant is related to an Entry or Category. A relation on the product counts for every variant under it.
+
+The quantity starts at 1, so a new rule means "this item is in the cart". Clear it to match any number of them instead, which ignores the comparison. Click **+ OR** to accept another product instead.
 
 To require a particular combination of products rather than any one of them, use the **Buy X, Get Y** discount type.
-
-### Related To
-
-Trigger this discount if any of the Line Items in the cart are related to the specified Entry or Category. A relation on the product counts, as well as one on the variant.
 
 ## Order
 

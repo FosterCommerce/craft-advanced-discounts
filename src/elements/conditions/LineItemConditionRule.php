@@ -33,6 +33,11 @@ class LineItemConditionRule extends BaseConditionRule implements NestedCondition
 		$condition->mainTag = 'div';
 		$condition->name = 'lineItemCondition';
 
+		// Only one rule is selectable, so an empty condition shows nothing to fill in.
+		if ($condition->getConditionRules() === []) {
+			$condition->setConditionRules([new LineItemMatchConditionRule()]);
+		}
+
 		return $condition;
 	}
 

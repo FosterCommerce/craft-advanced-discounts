@@ -13,12 +13,21 @@ return [
 	'conditions.dateRange' => 'Datumsbereich',
 	'conditions.dateRange.from' => 'Von',
 	'conditions.dateRange.to' => 'Bis',
-	'conditions.hasPurchasable' => 'Has Purchasable',
-	'conditions.hasPurchasable.anyQty' => 'Beliebige Menge',
-	'conditions.hasPurchasable.quantity' => 'Menge',
+	'conditions.lineItemMatch' => 'Menge',
+	'conditions.lineItemMatch.anyQty' => '1',
+	'conditions.lineItemMatch.elementType' => 'Typ',
+	'conditions.lineItemMatch.matchType' => 'Übereinstimmung',
+	'conditions.lineItemMatch.matchType.purchasable' => 'von',
+	'conditions.lineItemMatch.matchType.related' => 'verknüpft mit',
+	'conditions.lineItemMatch.operator.eq' => 'genau',
+	'conditions.lineItemMatch.operator.gt' => 'mehr als',
+	'conditions.lineItemMatch.operator.gte' => 'mindestens',
+	'conditions.lineItemMatch.operator.lt' => 'weniger als',
+	'conditions.lineItemMatch.operator.lte' => 'höchstens',
+	'conditions.lineItemMatch.operator.ne' => 'ungleich',
+	'conditions.lineItemMatch.quantity' => 'Menge',
 	'conditions.or' => 'ODER',
 	'conditions.order' => 'Bestellung',
-	'conditions.relatedTo' => 'In Beziehung zu',
 
 	// Cart action rules
 	'rules.applyPer' => 'Anwenden pro',
@@ -59,11 +68,11 @@ return [
 	'discountType.buyXGetY.actionLabel' => 'Kaufe X, erhalte Y',
 
 	// Message placeholders
-	'messagePlaceholders.amountRemaining' => 'Amount left to reach the group’s threshold.',
-	'messagePlaceholders.buyQuantityRemaining' => 'Buy items left for the next Buy X, Get Y reward.',
-	'messagePlaceholders.discountAmount' => 'The discount value (percentage or amount).',
-	'messagePlaceholders.discountedQuantity' => 'Units currently discounted for Buy X, Get Y.',
-	'messagePlaceholders.quantityRemaining' => 'Items left to reach a quantity condition.',
+	'messagePlaceholders.amountRemaining' => 'Amount left to reach this group’s money threshold, counting only discountable items. Needs an “at least” or “more than” condition.',
+	'messagePlaceholders.buyQuantityRemaining' => 'Items left to add before the next Buy X, Get Y reward is earned.',
+	'messagePlaceholders.discountAmount' => 'The first action’s discount value in this group, as a percentage or an amount.',
+	'messagePlaceholders.discountedQuantity' => 'How many items the Buy X, Get Y reward gives each time it is earned.',
+	'messagePlaceholders.quantityRemaining' => 'Items left to reach this group’s quantity condition, counting only discountable items. Needs an “at least” or “more than” condition.',
 
 	// Discounts index
 	'index.column.coupons' => 'Coupons',

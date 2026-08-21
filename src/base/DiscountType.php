@@ -389,7 +389,7 @@ abstract class DiscountType implements DiscountTypeInterface
 		$placeholders = [];
 
 		foreach ($panel->getCartActionCondition()->getConditionRules() as $rule) {
-			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule || $rule instanceof BogoCartActionRule) && $rule->discountValue !== null) {
+			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule || $rule instanceof BogoCartActionRule || $rule instanceof ShippingMethodCartActionRule) && $rule->discountValue !== null) {
 				$placeholders['{discountAmount}'] = $rule->discountType === DiscountValueType::Percentage->value
 					? $rule->discountValue . '%'
 					: Craft::$app->getFormatter()->asCurrency($rule->discountValue, $order->paymentCurrency);
@@ -410,7 +410,8 @@ abstract class DiscountType implements DiscountTypeInterface
 		$bogoRule = $this->firstBogoRule($panel);
 		if ($bogoRule !== null) {
 			$placeholders['{buyQuantityRemaining}'] = $bogoRule->buyQuantityRemaining($order);
-			$placeholders['{discountedQuantity}'] = $bogoRule->earnedQuantity($order);
+			// One message has to read correctly both before and after the customer qualifies.
+			$placeholders['{discountedQuantity}'] = (int) $bogoRule->discountedQuantity;
 		}
 
 		$message = strtr($message, $placeholders);
