@@ -11,6 +11,7 @@ use craft\commerce\elements\Order;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
 use craft\helpers\Html;
 use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 
@@ -32,6 +33,7 @@ class UserConditionRule extends BaseConditionRule implements NestedConditionRule
 	public function getUserCondition(): ElementConditionInterface
 	{
 		$condition = $this->_userCondition ?? new UserCondition();
+		$condition->elementType = User::class;
 		$condition->mainTag = 'div';
 		$condition->name = 'userCondition';
 

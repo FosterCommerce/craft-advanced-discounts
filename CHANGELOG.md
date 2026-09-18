@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2 - 2026-09-18
+
+### Fixed
+- Fixed a bug where custom user fields were unavailable as rules in a User cart condition.
+
 ## 1.1.1 - 2026-09-10
 
 ### Fixed
