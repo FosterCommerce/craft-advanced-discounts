@@ -9,13 +9,15 @@ use craft\commerce\elements\Order;
 use craft\db\Query;
 use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
+use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
+use fostercommerce\advanceddiscounts\models\Coupon;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 use fostercommerce\advanceddiscounts\records\Discount as DiscountRecord;
-use RuntimeException;
 use Throwable;
 use yii\base\Component;
 use yii\db\Expression;
+use yii\web\BadRequestHttpException;
 
 class Discounts extends Component
 {
@@ -34,13 +36,37 @@ class Discounts extends Component
 			$query = $this->_createDiscountQuery();
 			foreach ($query->all() as $discountRecord) {
 				$discount = $this->_populateDiscount($discountRecord);
-				if ($discount !== null) {
+				if ($discount instanceof Discount) {
 					$this->_discounts[] = $discount;
 				}
 			}
 		}
 
 		return $this->_discounts;
+	}
+
+	/**
+	 * Get the enabled discounts whose coupon requirement and Global Cart Conditions an order meets, in priority order.
+	 *
+	 * @return iterable<Discount>
+	 */
+	public function getMatchingDiscounts(Order $order): iterable
+	{
+		foreach ($this->getAllDiscounts() as $discount) {
+			if (! $discount->enabled) {
+				continue;
+			}
+
+			if (! $discount->matchesCouponCode($order->couponCode)) {
+				continue;
+			}
+
+			if (! PromotableThreshold::matches($discount->getGlobalCartCondition(), $order)) {
+				continue;
+			}
+
+			yield $discount;
+		}
 	}
 
 	public function getDiscountById(int $id): ?Discount
@@ -69,7 +95,11 @@ class Discounts extends Component
 		$defaultTaxBasis = $plugin->getSettings()->getTaxBasis();
 
 		foreach ($this->getAllDiscounts() as $discount) {
-			if (! $discount->enabled || ! $discount->matchesCouponCode($order->couponCode)) {
+			if (! $discount->enabled) {
+				continue;
+			}
+
+			if (! $discount->matchesCouponCode($order->couponCode)) {
 				continue;
 			}
 
@@ -142,8 +172,17 @@ class Discounts extends Component
 		return true;
 	}
 
-	public function saveDiscount(Discount $discount, bool $runValidation = true): bool
+	/**
+	 * @throws BadRequestHttpException
+	 * @throws Throwable
+	 */
+	public function saveDiscount(Discount $discount): bool
 	{
+		if (! $discount->validate()) {
+			Craft::debug('Discount not saved due to validation error.', __METHOD__);
+			return false;
+		}
+
 		$isNew = $discount->id === null;
 
 		if ($isNew) {
@@ -151,13 +190,8 @@ class Discounts extends Component
 		} else {
 			$record = DiscountRecord::findOne($discount->id);
 			if ($record === null) {
-				throw new RuntimeException("No discount exists with ID {$discount->id}");
+				throw new BadRequestHttpException("No discount exists with ID {$discount->id}");
 			}
-		}
-
-		if ($runValidation && ! $discount->validate()) {
-			Craft::debug('Discount not saved due to validation error.', __METHOD__);
-			return false;
 		}
 
 		$record->name = $discount->name;
@@ -170,6 +204,10 @@ class Discounts extends Component
 			'globalCartCondition' => $discount->getGlobalCartCondition()->getConfig(),
 			'panels' => array_map(static fn ($panel): array => $panel->getConfig(), $discount->panels),
 		];
+
+		// A failed save re-renders the form, which must not post IDs of rolled-back rows
+		$discountId = $discount->id;
+		$couponIds = array_map(static fn (Coupon $coupon): ?int => $coupon->id, $discount->getCoupons());
 
 		$db = Craft::$app->db;
 		$transaction = $db->beginTransaction();
@@ -189,6 +227,7 @@ class Discounts extends Component
 
 			if (! Plugin::getInstance()->coupons->saveDiscountCoupons($discount)) {
 				$transaction->rollBack();
+				$this->restoreIds($discount, $discountId, $couponIds);
 				return false;
 			}
 
@@ -196,6 +235,7 @@ class Discounts extends Component
 			$this->_discounts = null;
 		} catch (Throwable $throwable) {
 			$transaction->rollBack();
+			$this->restoreIds($discount, $discountId, $couponIds);
 			throw $throwable;
 		}
 
@@ -211,7 +251,7 @@ class Discounts extends Component
 		if (Plugin::getInstance()->discountTypes->findDiscountTypeByHandle($type) === null) {
 			$id = is_scalar($record['id'] ?? null) ? (string) $record['id'] : '';
 			Craft::warning(
-				"Skipping discount {$id}: nothing registers the discount type “{$type}”, so its rules cannot be read and it will not apply to any order.",
+				"Skipping discount {$id}: the discount type “{$type}” is not registered, so the discount does not apply to orders.",
 				__METHOD__
 			);
 
@@ -271,5 +311,17 @@ class Discounts extends Component
 			]);
 
 		return $query;
+	}
+
+	/**
+	 * @param array<int, int|null> $couponIds
+	 */
+	private function restoreIds(Discount $discount, ?int $discountId, array $couponIds): void
+	{
+		$discount->id = $discountId;
+
+		foreach ($discount->getCoupons() as $index => $coupon) {
+			$coupon->id = $couponIds[$index];
+		}
 	}
 }

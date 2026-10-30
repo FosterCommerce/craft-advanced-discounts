@@ -42,10 +42,13 @@ class DiscountTypes extends Component
 		return array_map(static fn (string $type): DiscountTypeInterface => new $type(), $this->getAllDiscountTypes());
 	}
 
+	/**
+	 * @throws InvalidArgumentException
+	 */
 	public function getDiscountTypeByHandle(string $handle): DiscountTypeInterface
 	{
 		$discountType = $this->findDiscountTypeByHandle($handle);
-		if ($discountType === null) {
+		if (! $discountType instanceof DiscountTypeInterface) {
 			throw new InvalidArgumentException("No discount type exists with handle \"{$handle}\".");
 		}
 

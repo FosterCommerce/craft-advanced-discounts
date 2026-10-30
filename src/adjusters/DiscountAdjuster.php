@@ -7,13 +7,13 @@ namespace fostercommerce\advanceddiscounts\adjusters;
 use craft\commerce\base\AdjusterInterface;
 use craft\commerce\elements\Order;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
-use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
+use fostercommerce\advanceddiscounts\helpers\RemainingDiscount;
 use fostercommerce\advanceddiscounts\Plugin;
 
 /**
  * Applies advanced discounts as order adjustments.
  *
- * A discount only ever exists as an adjustment, so a purchasable outside a cart has no sale price from it.
+ * Purchasables outside a cart do not get a sale price from these discounts.
  */
 class DiscountAdjuster implements AdjusterInterface
 {
@@ -26,24 +26,13 @@ class DiscountAdjuster implements AdjusterInterface
 		}
 
 		$adjustments = [];
+		$remainingDiscount = new RemainingDiscount($order);
 
-		foreach (Plugin::getInstance()->discounts->getAllDiscounts() as $discount) {
-			if (! $discount->enabled) {
-				continue;
-			}
-
-			if (! $discount->matchesCouponCode($order->couponCode)) {
-				continue;
-			}
-
-			if (! PromotableThreshold::matches($discount->getGlobalCartCondition(), $order)) {
-				continue;
-			}
-
-			$discountAdjustments = $discount->getType()->getAdjustments($order, $discount);
+		foreach (Plugin::getInstance()->discounts->getMatchingDiscounts($order) as $matchingDiscount) {
+			$discountAdjustments = $remainingDiscount->cap($matchingDiscount->getType()->getAdjustments($order, $matchingDiscount));
 			array_push($adjustments, ...$discountAdjustments);
 
-			if ($discountAdjustments !== [] && $discount->stopProcessing) {
+			if ($discountAdjustments !== [] && $matchingDiscount->stopProcessing) {
 				break;
 			}
 		}

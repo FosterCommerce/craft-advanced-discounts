@@ -148,7 +148,7 @@ class LineItemMatchConditionRule extends BaseElementSelectConditionRule implemen
 
 	public function getHtml(): string
 	{
-		// Craft's own markup puts the operator before every other control, and here it follows the label.
+		// Render our own markup so the rule reads as a sentence, “at least 3 of Product”
 		return $this->inputHtml();
 	}
 
@@ -190,7 +190,7 @@ class LineItemMatchConditionRule extends BaseElementSelectConditionRule implemen
 	{
 		$elementTypes = array_column($this->elementTypeOptions(), 'value');
 
-		// The match type posts before the element type does, so a flipped rule arrives holding the other mode's type.
+		// Use the match type's default when a switched rule still posts the other mode's element type
 		if (! in_array($this->elementType, $elementTypes, true)) {
 			return $this->matchType === self::MATCH_RELATED ? Entry::class : Variant::class;
 		}

@@ -24,6 +24,7 @@ class DateRangeConditionRule extends BaseConditionRule implements ElementConditi
 		if ($this->_startDate === null) {
 			$this->_startDate = DateTimeHelper::toIso8601(DateTimeHelper::now()) ?: null;
 		}
+
 		parent::init();
 	}
 

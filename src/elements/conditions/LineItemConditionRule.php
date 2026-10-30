@@ -7,12 +7,15 @@ namespace fostercommerce\advanceddiscounts\elements\conditions;
 use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
+use craft\commerce\elements\Order;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
+use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 
-class LineItemConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
+class LineItemConditionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
 	private ?ElementConditionInterface $_lineItemCondition = null;
 
@@ -22,18 +25,13 @@ class LineItemConditionRule extends BaseConditionRule implements NestedCondition
 		parent::__construct($config);
 	}
 
-	public function getNestedCondition(): ElementConditionInterface
-	{
-		return $this->getLineItemCondition();
-	}
-
 	public function getLineItemCondition(): ElementConditionInterface
 	{
 		$condition = $this->_lineItemCondition ?? new LineItemCondition();
 		$condition->mainTag = 'div';
 		$condition->name = 'lineItemCondition';
 
-		// Only one rule is selectable, so an empty condition shows nothing to fill in.
+		// Start with the only selectable rule, since an empty condition does not render inputs
 		if ($condition->getConditionRules() === []) {
 			$condition->setConditionRules([new LineItemMatchConditionRule()]);
 		}
@@ -79,7 +77,7 @@ class LineItemConditionRule extends BaseConditionRule implements NestedCondition
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		return $this->getLineItemCondition()->matchElement($element);
+		return $element instanceof Order && PromotableThreshold::lineItemConditionMatches($this, $element);
 	}
 
 	protected function inputHtml(): string

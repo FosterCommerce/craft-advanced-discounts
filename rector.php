@@ -1,15 +1,13 @@
 <?php
-declare(strict_types = 1);
 
+declare(strict_types=1);
+
+use fostercommerce\rector\RectorConfig;
 use fostercommerce\rector\SetList;
-use Rector\Config\RectorConfig;
 
-return static function(RectorConfig $rectorConfig): void {
-    $rectorConfig->paths([
-        __DIR__ . '/src',
-    ]);
-
-    $rectorConfig->sets([
-        SetList::CRAFT_CMS_50
-    ]);
-};
+return RectorConfig::configure()
+	->withPaths([
+		__DIR__ . '/src',
+		__FILE__,
+	])
+	->withSets([SetList::CRAFT_CMS_50]);

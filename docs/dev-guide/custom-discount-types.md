@@ -1,6 +1,6 @@
 # Adding a discount type
 
-Build a discount type of your own, alongside the **Advanced** and **Buy X, Get Y** types the plugin ships. A discount type decides which action rules a group offers and how those rules turn into order adjustments.
+Build a discount type of your own, alongside the **Advanced** and **Buy X, Get Y** types the plugin ships. A discount type determines which action rules a group offers and how those rules become order adjustments.
 
 ## The contract
 
@@ -14,7 +14,7 @@ Extend `fostercommerce\advanceddiscounts\base\DiscountType`, which implements `D
 | `actionLabel()` | Field label above the action condition builder. |
 | `actionInstructions()` | Instructions under that label. |
 
-Override `getAdjustments(Order $order, Discount $discount): array` when your rules need adjustment logic the base class does not already cover. The base implementation walks the discount's groups, skips disabled ones, tests each group's cart condition, and builds adjustments for the `OrderCartActionRule`, `ShippingMethodCartActionRule`, `LineItemCartActionRule` and `BogoCartActionRule` rules it finds.
+Override `getAdjustments(Order $order, Discount $discount): array` when your rules need adjustment logic the base class does not already cover. The base implementation skips disabled groups and tests each group's cart condition. It then builds adjustments for the `OrderCartActionRule`, `ShippingMethodCartActionRule`, `LineItemCartActionRule`, and `BogoCartActionRule` rules it finds.
 
 ## Minimal example
 
@@ -107,10 +107,10 @@ The type appears in the **Type** dropdown on the discount edit screen. See [even
 
 ## Message placeholders
 
-`DiscountType::MESSAGE_PLACEHOLDERS` lists every token a message can use, and `messagePlaceholders()` filters it to the ones your type resolves. The base implementation exposes the Buy X, Get Y tokens only when `actionConditionClass()` is `BundleCondition`. Override `messagePlaceholders()` if your type resolves a different set, or the edit screen will offer tokens that render as empty strings.
+`DiscountType::MESSAGE_PLACEHOLDERS` lists every token a message can use. `messagePlaceholders()` sets the tokens listed in the **Message placeholders** pane. The token chips under each message, and save validation, offer the Buy X, Get Y tokens only when `actionConditionClass()` is `BundleCondition`, whatever `messagePlaceholders()` returns.
 
 ## Removing a type
 
-A discount whose stored `type` handle no longer resolves is skipped when discounts are read. It drops off the Discounts index, applies to no order, and logs a warning naming the handle. The row stays in the database, so registering the type again brings the discount back.
+The plugin skips a discount whose stored `type` handle no longer resolves. The discount is missing from the Discounts index, does not apply to orders, and logs a warning naming the handle. The row stays in the database, so registering the type again brings the discount back.
 
-Migrate existing rows to another handle before you stop registering a type, or the discount stops applying with only that log entry to explain it.
+Before you stop registering a type, migrate existing rows to another handle. Otherwise the discount stops applying, and the log entry is the only record of why.

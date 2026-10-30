@@ -4,8 +4,6 @@
 
 A Craft CMS plugin that builds multi-tier Craft Commerce **discounts** from flexible cart rules.
 
-It runs alongside Commerce's own discounts rather than replacing them. Both systems evaluate every order, and both can apply to the same cart.
-
 ## Overview
 
 - Applies a discount when the customer's cart matches rules you set on date, line items, order totals, or the customer on the order.
@@ -15,6 +13,22 @@ It runs alongside Commerce's own discounts rather than replacing them. Both syst
 - Shows the customer promotional messages that fill in live figures, such as how much more they need to spend to reach the next tier.
 - Gates a discount behind a coupon code, with bulk code generation and a per-code usage limit.
 - Controls whether tax is calculated before or after discounts, for the whole store or per discount.
+
+## How it works
+
+Create discounts under **Advanced Discounts -> Discounts**. Each time Commerce recalculates a cart, the plugin tests each enabled discount from the top of the list down, and adds an order adjustment for each one that matches. Prices stay as they are. Commerce's own discounts still apply, and both can discount the same cart.
+
+## Usage
+
+Promotional messages appear where a template asks for them:
+
+```twig
+{% for discountMessage in craft.advancedDiscounts.getMessages(cart) %}
+  <p>{{ discountMessage }}</p>
+{% endfor %}
+```
+
+This prints each message whose rules match the cart, with figures such as `{amountRemaining}` filled in.
 
 ## Requirements
 
@@ -29,46 +43,18 @@ composer require fostercommerce/advanced-discounts
 ./craft plugin/install advanced-discounts
 ```
 
-See [`docs/installation.md`](./docs/installation.md) for the full installation and configuration guide.
-
-## Discounts
-
-Discounts are created and ordered in **Advanced Discounts -> Discounts**. Order matters: discounts are processed top down, and any discount can stop processing once it matches. Each discount holds one optional set of Global Conditions, plus any number of discount groups, each pairing its own cart rules with the actions and messages they trigger.
-
-See [`docs/user-guide/discounts.md`](./docs/user-guide/discounts.md).
-
-## Conditions and actions
-
-Conditions match on date range, line items (a specific purchasable, a quantity of it, or a relation to an entry), order totals, and the order's customer. When a group's conditions match, its actions adjust the item subtotal, chosen line items, or shipping, by a flat amount or a percentage.
-
-See [`docs/user-guide/cart-conditions.md`](./docs/user-guide/cart-conditions.md) and [`docs/user-guide/cart-actions.md`](./docs/user-guide/cart-actions.md).
-
-## Promotional messages
-
-Each group can carry messages with their own display conditions, so you can tell a customer both that they have earned a discount and how far they are from the next one. Messages support tokens (`{discountAmount}`, `{amountRemaining}`, `{quantityRemaining}`) that resolve against the live cart. The plugin outputs nothing on its own, so a developer renders them from Twig.
-
-See [`docs/user-guide/messages.md`](./docs/user-guide/messages.md) and [`docs/dev-guide/displaying-messages.md`](./docs/dev-guide/displaying-messages.md).
-
-## Extending
-
-You can add a discount type of your own, with its own action rules, by implementing `DiscountTypeInterface` and registering it on `DiscountTypes::EVENT_REGISTER_DISCOUNT_TYPES`.
-
-See [`docs/dev-guide/custom-discount-types.md`](./docs/dev-guide/custom-discount-types.md).
-
-## Permissions
-
-The plugin registers no permissions of its own. Every control panel screen and action is gated on Commerce's `commerce-managePromotions` permission.
-
-See [`docs/reference/permissions.md`](./docs/reference/permissions.md).
-
 ## Documentation
 
-[Read the full documentation](./docs/index.md), including worked [recipes](./docs/recipes/site-wide-coupon.md) for coupons, timed sales, BOGOF, and tiered discounts.
+- [Getting started](https://www.fostercommerce.com/craft-cms-plugins/advanced-discounts/docs/getting-started), from install to your first discount on a cart
+- [Discounts](https://www.fostercommerce.com/craft-cms-plugins/advanced-discounts/docs/user-guide/discounts), structuring a discount into groups and tiers
+- [Cart conditions](https://www.fostercommerce.com/craft-cms-plugins/advanced-discounts/docs/user-guide/cart-conditions), the rules that decide when a discount applies
+- [Displaying promotional messages](https://www.fostercommerce.com/craft-cms-plugins/advanced-discounts/docs/dev-guide/displaying-messages), rendering messages in Twig
+- [Troubleshooting](https://www.fostercommerce.com/craft-cms-plugins/advanced-discounts/docs/user-guide/troubleshooting), why a discount isn't applying
 
 ## License
 
 Proprietary.
 
-## Credits
+---
 
-Brought to you by [Foster Commerce](https://fostercommerce.com).
+<a href="https://www.fostercommerce.com" target="_blank"><img src="./resources/img/foster-commerce.svg" alt="Foster Commerce" width="160" height="40"></a>

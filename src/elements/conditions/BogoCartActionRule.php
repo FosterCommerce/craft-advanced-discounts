@@ -14,11 +14,12 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use fostercommerce\advanceddiscounts\enums\DiscountType;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
 class BogoCartActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
+	use DiscountValueTrait;
+
 	/**
 	 * @var class-string<ElementInterface>
 	 */
@@ -70,7 +71,7 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 
 	public function earnedQuantity(Order $order): int
 	{
-		if (! $this->buyQuantity || ! $this->discountedQuantity) {
+		if (($this->buyQuantity ?? 0) < 1 || ($this->discountedQuantity ?? 0) < 1) {
 			return 0;
 		}
 
@@ -84,7 +85,7 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 
 	public function buyQuantityRemaining(Order $order): int
 	{
-		if (! $this->buyQuantity || ! $this->discountedQuantity) {
+		if (($this->buyQuantity ?? 0) < 1 || ($this->discountedQuantity ?? 0) < 1) {
 			return 0;
 		}
 
@@ -121,13 +122,12 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 
 	protected function inputHtml(): string
 	{
-		$discountTypeLabel = (DiscountType::tryFrom($this->discountType) ?? DiscountType::FlatAmount)->label();
-
 		$buyRow = Html::tag(
 			'div',
 			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.bogo.buyQuantity'), 'buyQuantity') .
 			Cp::textHtml([
 				'type' => 'number',
+				'min' => 1,
 				'id' => 'buyQuantity',
 				'name' => 'buyQuantity',
 				'value' => $this->buyQuantity,
@@ -164,6 +164,7 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.bogo.getQuantity'), 'discountedQuantity') .
 			Cp::textHtml([
 				'type' => 'number',
+				'min' => 1,
 				'id' => 'discountedQuantity',
 				'name' => 'discountedQuantity',
 				'value' => $this->discountedQuantity,
@@ -197,28 +198,7 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 
 		$discountRow = Html::tag(
 			'div',
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountTypeLabel'), 'discountType') .
-			Cp::selectHtml([
-				'id' => 'discountType',
-				'name' => 'discountType',
-				'options' => DiscountType::actionOptions(),
-				'value' => $this->discountType,
-				'inputAttributes' => [
-					'hx' => [
-						'post' => UrlHelper::actionUrl('conditions/render'),
-					],
-				],
-			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountValue'), 'discountValue') .
-			Cp::textHtml([
-				'type' => 'number',
-				'id' => 'discountValue',
-				'name' => 'discountValue',
-				'value' => $this->discountValue,
-				'autocomplete' => false,
-				'placeholder' => $discountTypeLabel,
-				'class' => 'flex-grow flex-shrink',
-			]),
+			$this->discountValueInputHtml(),
 			[
 				'class' => ['flex', 'flex-start', 'gap-s'],
 			]
@@ -260,8 +240,12 @@ class BogoCartActionRule extends BaseConditionRule implements ElementConditionRu
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['buyPurchasableType', 'buyPurchasableIds', 'buyQuantity', 'discountedPurchasableType', 'discountedPurchasableIds', 'discountedQuantity', 'repeat', 'discountType', 'discountValue'], 'safe'],
-		]);
+			[['buyPurchasableType', 'buyPurchasableIds', 'discountedPurchasableType', 'discountedPurchasableIds', 'repeat'], 'safe'],
+			[['buyQuantity', 'discountedQuantity'],
+				'integer',
+				'min' => 1,
+				'tooSmall' => Craft::t('advanced-discounts', 'rules.error.quantityMin')],
+		], $this->discountValueRules());
 	}
 
 	private function bundleSize(): int

@@ -9,13 +9,14 @@ use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
 use craft\commerce\elements\Order;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\Html;
 use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 
-class UserConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
+class UserConditionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
 	private ?ElementConditionInterface $_userCondition = null;
 
@@ -23,11 +24,6 @@ class UserConditionRule extends BaseConditionRule implements NestedConditionRule
 	{
 		$config['userCondition'] = NestedConditionConfig::extract($config, 'userCondition');
 		parent::__construct($config);
-	}
-
-	public function getNestedCondition(): ElementConditionInterface
-	{
-		return $this->getUserCondition();
 	}
 
 	public function getUserCondition(): ElementConditionInterface
@@ -78,15 +74,11 @@ class UserConditionRule extends BaseConditionRule implements NestedConditionRule
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		// A cart also recalculates from the CP, a queue job and console, where the session
-		// identity is not the shopper.
-		if (! $element instanceof Order) {
-			return false;
-		}
-
+		/** @var Order $element */
+		// Use the order's customer, since the session user is not the shopper in the CP, a queue job or the console
 		$customer = $element->getCustomer();
 
-		return $customer !== null && $this->getUserCondition()->matchElement($customer);
+		return $customer instanceof User && $this->getUserCondition()->matchElement($customer);
 	}
 
 	protected function inputHtml(): string

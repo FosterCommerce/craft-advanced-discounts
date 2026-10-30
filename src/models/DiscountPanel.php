@@ -64,7 +64,7 @@ class DiscountPanel extends Model
 	 */
 	public function setCartCondition(ElementConditionInterface|string|array|null $condition): void
 	{
-		$this->_cartCondition = $this->normalizeCondition($condition, CartCondition::class);
+		$this->_cartCondition = NestedConditionConfig::build($condition, CartCondition::class);
 	}
 
 	public function getCartActionCondition(): ElementConditionInterface
@@ -85,7 +85,7 @@ class DiscountPanel extends Model
 	 */
 	public function setCartActionCondition(ElementConditionInterface|string|array|null $condition): void
 	{
-		$this->_cartActionCondition = $this->normalizeCondition($condition, $this->actionConditionClass);
+		$this->_cartActionCondition = NestedConditionConfig::build($condition, $this->actionConditionClass);
 	}
 
 	public function getMessageCondition(): ElementConditionInterface
@@ -105,13 +105,13 @@ class DiscountPanel extends Model
 	 */
 	public function setMessageCondition(ElementConditionInterface|string|array|null $condition): void
 	{
-		$this->_messageCondition = $this->normalizeCondition($condition, MessageCondition::class);
+		$this->_messageCondition = NestedConditionConfig::build($condition, MessageCondition::class);
 	}
 
 	public function hasMessageErrors(): bool
 	{
-		foreach ($this->getMessageCondition()->getConditionRules() as $rule) {
-			if ($rule instanceof MessageActionRule && $rule->hasErrors('message')) {
+		foreach ($this->getMessageCondition()->getConditionRules() as $conditionRule) {
+			if ($conditionRule instanceof MessageActionRule && $conditionRule->hasErrors('message')) {
 				return true;
 			}
 		}
@@ -162,16 +162,16 @@ class DiscountPanel extends Model
 	public function getNonPromotableVariants(): array
 	{
 		$variantIds = [];
-		foreach ($this->getCartActionCondition()->getConditionRules() as $rule) {
-			if ($rule instanceof LineItemCartActionRule) {
-				$variantIds = array_merge($variantIds, $rule->lineItemsFilter === LineItemCartActionRule::FILTER_CART_CONDITION
+		foreach ($this->getCartActionCondition()->getConditionRules() as $conditionRule) {
+			if ($conditionRule instanceof LineItemCartActionRule) {
+				$variantIds = array_merge($variantIds, $conditionRule->lineItemsFilter === LineItemCartActionRule::FILTER_CART_CONDITION
 					? $this->getCartConditionVariantIds()
-					: Purchasables::expandToVariantIds($rule->purchasableType, $rule->purchasableIds));
-			} elseif ($rule instanceof BogoCartActionRule) {
+					: Purchasables::expandToVariantIds($conditionRule->purchasableType, $conditionRule->purchasableIds));
+			} elseif ($conditionRule instanceof BogoCartActionRule) {
 				$variantIds = array_merge(
 					$variantIds,
-					Purchasables::expandToVariantIds($rule->buyPurchasableType, $rule->buyPurchasableIds),
-					Purchasables::expandToVariantIds($rule->discountedPurchasableType, $rule->discountedPurchasableIds)
+					Purchasables::expandToVariantIds($conditionRule->buyPurchasableType, $conditionRule->buyPurchasableIds),
+					Purchasables::expandToVariantIds($conditionRule->discountedPurchasableType, $conditionRule->discountedPurchasableIds)
 				);
 			}
 		}
@@ -186,14 +186,5 @@ class DiscountPanel extends Model
 			->all();
 
 		return array_values(array_filter($variants, static fn (Variant $variant): bool => ! $variant->getIsPromotable()));
-	}
-
-	/**
-	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
-	 * @param class-string<ElementConditionInterface> $conditionClass
-	 */
-	private function normalizeCondition(ElementConditionInterface|string|array|null $condition, string $conditionClass): ElementConditionInterface
-	{
-		return NestedConditionConfig::build($condition, $conditionClass);
 	}
 }

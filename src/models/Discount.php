@@ -27,14 +27,8 @@ class Discount extends Model
 
 	public bool $stopProcessing = false;
 
-	/**
-	 * @var int Number of completed orders this discount has applied to
-	 */
 	public int $uses = 0;
 
-	/**
-	 * @var int|null Lower values are evaluated first
-	 */
 	public ?int $sortOrder = null;
 
 	public string $type = 'advanced';
@@ -126,15 +120,11 @@ class Discount extends Model
 	}
 
 	/**
-	 * @param array<int, array<string, mixed>|Coupon> $coupons
+	 * @param array<int, array<string, mixed>> $coupons
 	 */
 	public function setCoupons(array $coupons): void
 	{
-		$this->_coupons = array_values(array_filter(array_map(static function (array|Coupon $config): ?Coupon {
-			if ($config instanceof Coupon) {
-				return $config;
-			}
-
+		$this->_coupons = array_values(array_filter(array_map(static function (array $config): ?Coupon {
 			$code = trim(self::scalarString($config['code'] ?? null));
 			if ($code === '') {
 				return null;
@@ -173,14 +163,50 @@ class Discount extends Model
 		return false;
 	}
 
-	public function validatePanels(): void
+	public function validateCoupons(): void
 	{
-		foreach ($this->panels as $panel) {
-			foreach ($panel->getMessageCondition()->getConditionRules() as $rule) {
-				if ($rule instanceof MessageActionRule && ! $rule->validate(['message'])) {
-					$this->addError('panels', Craft::t('advanced-discounts', 'edit.error.messagePlaceholderUnavailable'));
+		$seenCodes = [];
+
+		foreach ($this->getCoupons() as $coupon) {
+			$normalizedCode = mb_strtolower((string) $coupon->code);
+			if (isset($seenCodes[$normalizedCode])) {
+				$this->addError('coupons', Craft::t('advanced-discounts', 'edit.error.couponDuplicate', [
+					'code' => $coupon->code,
+				]));
+				continue;
+			}
+
+			$seenCodes[$normalizedCode] = true;
+
+			if (! $coupon->validate()) {
+				foreach ($coupon->getFirstErrors() as $error) {
+					$this->addError('coupons', $error);
 				}
 			}
+		}
+	}
+
+	public function validatePanels(): void
+	{
+		$errors = [];
+
+		foreach ($this->panels as $panel) {
+			foreach ($panel->getCartActionCondition()->getConditionRules() as $actionRule) {
+				// Validate only the action values, since action rules leave the base rule's operator unset
+				if ($actionRule instanceof Model && ! $actionRule->validate(['discountValue', 'buyQuantity', 'discountedQuantity'])) {
+					array_push($errors, ...array_values($actionRule->getFirstErrors()));
+				}
+			}
+
+			foreach ($panel->getMessageCondition()->getConditionRules() as $messageRule) {
+				if ($messageRule instanceof MessageActionRule && ! $messageRule->validate(['message'])) {
+					$errors[] = Craft::t('advanced-discounts', 'edit.error.messagePlaceholderUnavailable');
+				}
+			}
+		}
+
+		foreach (array_unique($errors) as $error) {
+			$this->addError('panels', $error);
 		}
 	}
 
@@ -194,6 +220,7 @@ class Discount extends Model
 			[['name'],
 				'string',
 				'max' => 255],
+			[['coupons'], 'validateCoupons'],
 			[['panels'], 'validatePanels'],
 		]);
 	}

@@ -7,7 +7,6 @@ namespace fostercommerce\advanceddiscounts\elements\conditions;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\commerce\elements\db\OrderQuery;
 use craft\commerce\elements\Order;
 use craft\commerce\Plugin;
 use craft\elements\conditions\ElementConditionRuleInterface;
@@ -15,12 +14,12 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
-use fostercommerce\advanceddiscounts\enums\DiscountType;
 use yii\base\InvalidConfigException;
 
 class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
+	use DiscountValueTrait;
+
 	private const ANY_VALUE = '';
 
 	public string $operator = self::OPERATOR_EQ;
@@ -63,17 +62,6 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 
 	public function modifyQuery(ElementQueryInterface $query): void
 	{
-		/** @var OrderQuery $query */
-		if ($this->operator === self::OPERATOR_EQ) {
-			$handle = $this->getValues()[0] ?? self::ANY_VALUE;
-			if ($handle !== self::ANY_VALUE) {
-				$query->shippingMethodHandle($handle);
-			}
-
-			return;
-		}
-
-		$query->shippingMethodHandle($this->paramValue());
 	}
 
 	public function matchElement(ElementInterface $element): bool
@@ -116,31 +104,9 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 			$selectHtml = parent::inputHtml();
 		}
 
-		$discountTypeLabel = DiscountType::tryFrom($this->discountType)?->label() ?? '';
 
 		return $selectHtml .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountTypeLabel'), 'discountType') .
-			Cp::selectHtml([
-				'id' => 'discountType',
-				'name' => 'discountType',
-				'options' => DiscountType::actionOptions(),
-				'value' => $this->discountType,
-				'inputAttributes' => [
-					'hx' => [
-						'post' => UrlHelper::actionUrl('conditions/render'),
-					],
-				],
-			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountValue'), 'discountValue') .
-			Cp::textHtml([
-				'type' => 'number',
-				'id' => 'discountValue',
-				'name' => 'discountValue',
-				'value' => $this->discountValue,
-				'autocomplete' => false,
-				'placeholder' => $discountTypeLabel,
-				'class' => 'flex-grow flex-shrink',
-			]);
+			$this->discountValueInputHtml();
 	}
 
 	/**
@@ -149,8 +115,8 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['values', 'discountType', 'discountValue'], 'safe'],
-		]);
+			[['values'], 'safe'],
+		], $this->discountValueRules());
 	}
 
 	protected function matchValue(array|string|null $value): bool
@@ -176,7 +142,7 @@ class ShippingMethodCartActionRule extends BaseMultiSelectConditionRule implemen
 	/**
 	 * @return array<string, string>
 	 */
-	private function shippingMethodOptions(bool $includeAny = false): array
+	private function shippingMethodOptions(bool $includeAny): array
 	{
 		/** @var Plugin $commerce */
 		$commerce = Plugin::getInstance();

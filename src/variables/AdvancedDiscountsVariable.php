@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace fostercommerce\advanceddiscounts\variables;
 
 use craft\commerce\elements\Order;
-use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
+use fostercommerce\advanceddiscounts\helpers\RemainingDiscount;
 use fostercommerce\advanceddiscounts\Plugin;
 
 class AdvancedDiscountsVariable
@@ -16,24 +16,13 @@ class AdvancedDiscountsVariable
 	public function getMessages(Order $order): array
 	{
 		$messages = [];
+		$remainingDiscount = new RemainingDiscount($order);
 
-		foreach (Plugin::getInstance()->discounts->getAllDiscounts() as $discount) {
-			if (! $discount->enabled) {
-				continue;
-			}
+		foreach (Plugin::getInstance()->discounts->getMatchingDiscounts($order) as $matchingDiscount) {
+			$discountType = $matchingDiscount->getType();
+			array_push($messages, ...$discountType->getMessages($order, $matchingDiscount));
 
-			if (! $discount->matchesCouponCode($order->couponCode)) {
-				continue;
-			}
-
-			if (! PromotableThreshold::matches($discount->getGlobalCartCondition(), $order)) {
-				continue;
-			}
-
-			$discountType = $discount->getType();
-			array_push($messages, ...$discountType->getMessages($order, $discount));
-
-			if ($discount->stopProcessing && $discountType->getAdjustments($order, $discount) !== []) {
+			if ($matchingDiscount->stopProcessing && $remainingDiscount->cap($discountType->getAdjustments($order, $matchingDiscount)) !== []) {
 				break;
 			}
 		}

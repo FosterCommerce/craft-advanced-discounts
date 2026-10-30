@@ -5,9 +5,11 @@
 {% set title = 'nav.title'|t('advanced-discounts') %}
 {% set selectedSubnavItem = 'discounts' %}
 
-{% set additionalButtons %}
-	<a class="btn submit add icon" href="{{ url('advanced-discounts/new') }}">{{ 'index.newDiscount'|t('advanced-discounts') }}</a>
-{% endset %}
+{% if currentUser.can('commerce-createDiscounts') %}
+	{% set additionalButtons %}
+		<a class="btn submit add icon" href="{{ url('advanced-discounts/new') }}">{{ 'index.newDiscount'|t('advanced-discounts') }}</a>
+	{% endset %}
+{% endif %}
 
 
 {% set content %}
@@ -16,7 +18,7 @@
 {% endset %}
 
 {% js %}
-	let columns = [
+	const columns = [
 		{ name: '__slot:title', title: Craft.t('app', 'Name') },
 		{
 			name: 'type',
@@ -56,8 +58,8 @@
 		search: true,
 		checkboxes: true,
 		tableData: {{ tableData|json_encode|raw }},
-		deleteAction: 'advanced-discounts/manage/delete',
-		reorderAction: 'advanced-discounts/manage/reorder',
+		deleteAction: {{ (currentUser.can('commerce-deleteDiscounts') ? 'advanced-discounts/manage/delete' : null)|json_encode|raw }},
+		reorderAction: {{ (currentUser.can('commerce-editDiscounts') ? 'advanced-discounts/manage/reorder' : null)|json_encode|raw }},
 		reorderSuccessMessage: Craft.t('advanced-discounts', 'index.flash.reordered'),
 		reorderFailMessage: Craft.t('advanced-discounts', 'index.flash.reorderFailed'),
 	});

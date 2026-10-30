@@ -162,9 +162,7 @@ class Plugin extends BasePlugin
 			}
 		);
 
-		// Commerce nulls a coupon code it doesn't own, and only skips that when the
-		// recalculation mode is NONE. Our codes have to survive into recalculate() for
-		// the adjuster to read them.
+		// Validate without recalculating, since Commerce's coupon check removes codes it doesn't recognize
 		$savedModes = [];
 
 		Event::on(
@@ -183,7 +181,7 @@ class Plugin extends BasePlugin
 					return;
 				}
 
-				// A completed order records the code that was used, so re-checking it rewrites history.
+				// Keep a completed order's code, since it records the discount that order received
 				if (! $order->isCompleted) {
 					if (! $discount->enabled) {
 						$this->removeCouponCode($order, Craft::t('advanced-discounts', 'cart.couponUnavailable'));
@@ -196,8 +194,7 @@ class Plugin extends BasePlugin
 					}
 				}
 
-				// Keep the first mode seen: a validation another listener vetoes never reaches the
-				// restore below, and overwriting would then save NONE as the mode to restore.
+				// Keep the first mode saved. A vetoed validation skips the restore, and a second save would store NONE.
 				$id = spl_object_id($order);
 				$savedModes[$id] ??= $order->recalculationMode;
 				$order->recalculationMode = Order::RECALCULATION_MODE_NONE;
@@ -214,6 +211,7 @@ class Plugin extends BasePlugin
 				if (! isset($savedModes[$id])) {
 					return;
 				}
+
 				$order->recalculationMode = $savedModes[$id];
 				unset($savedModes[$id]);
 

@@ -8,12 +8,15 @@ use Craft;
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
 use craft\commerce\elements\conditions\orders\ItemSubtotalConditionRule;
+use craft\commerce\elements\Order;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
+use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 
-class OrderConditionRule extends BaseConditionRule implements NestedConditionRuleInterface
+class OrderConditionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
 	private ?ElementConditionInterface $_orderCondition = null;
 
@@ -23,18 +26,13 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 		parent::__construct($config);
 	}
 
-	public function getNestedCondition(): ElementConditionInterface
-	{
-		return $this->getOrderCondition();
-	}
-
 	public function getOrderCondition(): ElementConditionInterface
 	{
 		$condition = $this->_orderCondition ?? new OrderCondition();
 		$condition->mainTag = 'div';
 		$condition->name = 'orderCondition';
 
-		// Item Subtotal is the usual threshold, and an empty condition shows nothing to fill in.
+		// Start with Item Subtotal, the usual threshold, since an empty condition does not render inputs
 		if ($condition->getConditionRules() === []) {
 			$condition->setConditionRules([new ItemSubtotalConditionRule()]);
 		}
@@ -80,7 +78,7 @@ class OrderConditionRule extends BaseConditionRule implements NestedConditionRul
 
 	public function matchElement(ElementInterface $element): bool
 	{
-		return $this->getOrderCondition()->matchElement($element);
+		return $element instanceof Order && PromotableThreshold::orderConditionMatches($this, $element);
 	}
 
 	protected function inputHtml(): string

@@ -13,11 +13,12 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use fostercommerce\advanceddiscounts\enums\DiscountType;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 
 class LineItemCartActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
+	use DiscountValueTrait;
+
 	public const FILTER_ALL = 'all';
 
 	public const FILTER_SELECTED = 'matching';
@@ -90,8 +91,6 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 
 	protected function inputHtml(): string
 	{
-		$discountTypeLabel = (DiscountType::tryFrom($this->discountType) ?? DiscountType::FlatAmount)->label();
-
 		$filterOptions = [
 			self::FILTER_ALL => Craft::t('advanced-discounts', 'rules.lineItemsFilter.all'),
 			self::FILTER_SELECTED => Craft::t('advanced-discounts', 'rules.lineItemsFilter.selected'),
@@ -152,28 +151,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 						],
 					],
 				]) .
-				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountTypeLabel'), 'discountType') .
-				Cp::selectHtml([
-					'id' => 'discountType',
-					'name' => 'discountType',
-					'options' => DiscountType::actionOptions(),
-					'value' => $this->discountType,
-					'inputAttributes' => [
-						'hx' => [
-							'post' => UrlHelper::actionUrl('conditions/render'),
-						],
-					],
-				]) .
-				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountValue'), 'discountValue') .
-				Cp::textHtml([
-					'type' => 'number',
-					'id' => 'discountValue',
-					'name' => 'discountValue',
-					'value' => $this->discountValue,
-					'autocomplete' => false,
-					'placeholder' => $discountTypeLabel,
-					'class' => 'flex-grow flex-shrink',
-				]) .
+				$this->discountValueInputHtml() .
 				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.applyPer'), 'applyPer') .
 				Cp::selectHtml([
 					'id' => 'applyPer',
@@ -201,7 +179,7 @@ class LineItemCartActionRule extends BaseConditionRule implements ElementConditi
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['discountType', 'discountValue', 'lineItemsFilter', 'applyPer', 'purchasableType', 'purchasableIds'], 'safe'],
-		]);
+			[['lineItemsFilter', 'applyPer', 'purchasableType', 'purchasableIds'], 'safe'],
+		], $this->discountValueRules());
 	}
 }

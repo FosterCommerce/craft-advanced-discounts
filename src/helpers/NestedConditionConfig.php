@@ -11,8 +11,7 @@ use craft\helpers\Json;
 /**
  * Reads and builds the condition a condition rule nests inside itself.
  *
- * The condition builder posts a rule's nested condition under `attributes`, while a
- * stored config carries it at the top level, so both shapes reach the constructors.
+ * Accept both shapes: the condition builder posts a nested condition under `attributes`, and a stored config has it at the top level.
  */
 final class NestedConditionConfig
 {

@@ -10,29 +10,14 @@ use fostercommerce\advanceddiscounts\records\Coupon as CouponRecord;
 
 class Coupon extends Model
 {
-	/**
-	 * @var int|null ID
-	 */
 	public ?int $id = null;
 
-	/**
-	 * @var int|null ID of the discount this coupon belongs to
-	 */
 	public ?int $discountId = null;
 
-	/**
-	 * @var string|null The coupon code entered during checkout
-	 */
 	public ?string $code = null;
 
-	/**
-	 * @var int Number of times this coupon has been used
-	 */
 	public int $uses = 0;
 
-	/**
-	 * @var int|null Maximum number of times this coupon can be used; null for unlimited
-	 */
 	public ?int $maxUses = null;
 
 	/**
@@ -49,7 +34,9 @@ class Coupon extends Model
 				UniqueValidator::class,
 				'targetClass' => CouponRecord::class,
 				'caseInsensitive' => true],
-			[['uses', 'maxUses'], 'integer'],
+			[['uses', 'maxUses'],
+				'integer',
+				'min' => 0],
 		]);
 	}
 }

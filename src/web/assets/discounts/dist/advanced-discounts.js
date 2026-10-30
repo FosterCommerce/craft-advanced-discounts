@@ -28,23 +28,18 @@
 		},
 
 		/**
-		 * Buy X, Get Y renders the excluded-variant callout as a sibling of the rule, and it
-		 * reads as belonging to the rule.
+		 * Move the excluded-variant callout inside the Buy X, Get Y rule, since the group renders it after the condition builder.
 		 */
 		moveExcludedIntoBundle: function (scope) {
 			scope.querySelectorAll('.advanced-discount-bundle').forEach(function (bundle) {
-				const inner = bundle.querySelector('.advanced-discount-bundle-inner');
 				const trigger = bundle.querySelector(':scope > .advanced-discount-excluded-trigger');
-				const list = bundle.querySelector(':scope > .advanced-discount-excluded-list');
-
-				if (inner === null || trigger === null) {
+				if (trigger === null) {
 					return;
 				}
 
+				const inner = bundle.querySelector('.advanced-discount-bundle-inner');
 				inner.appendChild(trigger);
-				if (list !== null) {
-					inner.appendChild(list);
-				}
+				inner.appendChild(bundle.querySelector(':scope > .advanced-discount-excluded-list'));
 			});
 		},
 
@@ -53,8 +48,7 @@
 		},
 
 		/**
-		 * Garnish moves a disclosure menu out of the group it belongs to, so its items are
-		 * reached by the group's key rather than by walking up from the item.
+		 * Look up the group's menu items by its key, since Garnish renders disclosure menus outside the group.
 		 */
 		syncPanelMenu: function (panel) {
 			const key = panel.dataset.panelKey;
@@ -106,8 +100,8 @@
 		},
 
 		insertToken: function (textarea, token) {
-			const start = textarea.selectionStart ?? textarea.value.length;
-			const end = textarea.selectionEnd ?? textarea.value.length;
+			const start = textarea.selectionStart;
+			const end = textarea.selectionEnd;
 
 			textarea.value = textarea.value.slice(0, start) + token + textarea.value.slice(end);
 
@@ -130,9 +124,7 @@
 			event.preventDefault();
 
 			const textarea = $(this).closest('.advanced-discount-message').find('textarea').get(0);
-			if (textarea !== undefined) {
-				Craft.AdvancedDiscounts.insertToken(textarea, $(this).data('token'));
-			}
+			Craft.AdvancedDiscounts.insertToken(textarea, $(this).data('token'));
 		});
 
 		$(document).on('dragstart', '.advanced-discount-token-chip', function (event) {
@@ -221,16 +213,6 @@
 			Craft.AdvancedDiscounts.moveExcludedIntoBundle(container);
 		});
 
-		// Coupons
-		$(document).on('click keyup', '#requireCouponCode', function () {
-			const on = $(this).hasClass('on');
-
-			$('#coupons-container').toggleClass('hidden', !on);
-			if (on) {
-				$('#coupons-table').data('editable-table').initialize();
-			}
-		});
-
 		const generateButton = document.getElementById('generate-coupons');
 		if (generateButton !== null) {
 			let hud;
@@ -290,7 +272,7 @@
 							},
 						});
 
-						(data.coupons || []).forEach(function (code) {
+						data.coupons.forEach(function (code) {
 							editableTable.addRow();
 							couponsTable.find('tbody tr').last().find('[name$="[code]"]').val(code);
 						});

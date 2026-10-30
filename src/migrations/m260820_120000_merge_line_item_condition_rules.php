@@ -91,7 +91,7 @@ class m260820_120000_merge_line_item_condition_rules extends Migration
 	}
 
 	/**
-	 * A "Related To" rule only ever tested for presence, so it carries over with no quantity.
+	 * A "Related To" rule only tested for presence, so it migrates without a quantity.
 	 *
 	 * @param array<mixed> $config
 	 * @return array<mixed>

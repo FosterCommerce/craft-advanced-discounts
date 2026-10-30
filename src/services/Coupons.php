@@ -9,9 +9,9 @@ use craft\db\Query;
 use fostercommerce\advanceddiscounts\models\Coupon;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\records\Coupon as CouponRecord;
-use RuntimeException;
 use yii\base\Component;
 use yii\db\Expression;
+use yii\web\BadRequestHttpException;
 
 class Coupons extends Component
 {
@@ -74,11 +74,14 @@ class Coupons extends Component
 			->column();
 
 		$savedIds = [];
-		foreach ($discount->getCoupons() as $index => $coupon) {
+		foreach ($discount->getCoupons() as $coupon) {
 			$coupon->discountId = $discount->id;
 
 			if (! $this->saveCoupon($coupon)) {
-				$discount->addModelErrors($coupon, "coupons.{$index}");
+				foreach ($coupon->getFirstErrors() as $error) {
+					$discount->addError('coupons', $error);
+				}
+
 				continue;
 			}
 
@@ -92,18 +95,21 @@ class Coupons extends Component
 		return ! $discount->hasErrors();
 	}
 
-	public function saveCoupon(Coupon $coupon, bool $runValidation = true): bool
+	/**
+	 * @throws BadRequestHttpException
+	 */
+	public function saveCoupon(Coupon $coupon): bool
 	{
 		if ($coupon->id !== null) {
 			$record = CouponRecord::findOne($coupon->id);
 			if ($record === null) {
-				throw new RuntimeException("No coupon exists with ID {$coupon->id}");
+				throw new BadRequestHttpException("No coupon exists with ID {$coupon->id}");
 			}
 		} else {
 			$record = new CouponRecord();
 		}
 
-		if ($runValidation && ! $coupon->validate()) {
+		if (! $coupon->validate()) {
 			return false;
 		}
 
@@ -136,7 +142,7 @@ class Coupons extends Component
 			->update(CouponRecord::TABLE_NAME, [
 				'uses' => new Expression('[[uses]] + 1'),
 			], [
-				'code' => $code,
+				'lower([[code]])' => mb_strtolower($code),
 				'discountId' => $discountIds,
 			])
 			->execute();

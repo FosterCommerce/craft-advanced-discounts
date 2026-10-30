@@ -26,8 +26,7 @@ use Money\Money;
 /**
  * Evaluates discount conditions against the promotable portion of an order.
  *
- * Commerce order rules read whole-order totals, so a fully non-promotable cart would
- * otherwise satisfy a threshold no discountable item contributed to.
+ * Leave non-promotable line items out of every total, so a threshold counts only what can be discounted.
  *
  * Top-level cart conditions AND together. The rules nested inside a Line Items or Order
  * condition OR together, matching the “OR” the condition builder puts on its add button.
@@ -46,16 +45,16 @@ final class PromotableThreshold
 
 	public static function matches(ElementConditionInterface $condition, Order $order): bool
 	{
-		foreach ($condition->getConditionRules() as $rule) {
-			if ($rule instanceof OrderConditionRule) {
-				if (! self::orderConditionMatches($rule, $order)) {
+		foreach ($condition->getConditionRules() as $conditionRule) {
+			if ($conditionRule instanceof OrderConditionRule) {
+				if (! self::orderConditionMatches($conditionRule, $order)) {
 					return false;
 				}
-			} elseif ($rule instanceof LineItemConditionRule) {
-				if (! self::lineItemConditionMatches($rule, $order)) {
+			} elseif ($conditionRule instanceof LineItemConditionRule) {
+				if (! self::lineItemConditionMatches($conditionRule, $order)) {
 					return false;
 				}
-			} elseif ($rule instanceof ElementConditionRuleInterface && ! $rule->matchElement($order)) {
+			} elseif ($conditionRule instanceof ElementConditionRuleInterface && ! $conditionRule->matchElement($order)) {
 				return false;
 			}
 		}
@@ -65,17 +64,15 @@ final class PromotableThreshold
 
 	public static function amountRemaining(ElementConditionInterface $condition, Order $order): ?float
 	{
-		foreach ($condition->getConditionRules() as $triggerRule) {
-			if (! $triggerRule instanceof OrderConditionRule) {
+		foreach ($condition->getConditionRules() as $conditionRule) {
+			if (! $conditionRule instanceof OrderConditionRule) {
 				continue;
 			}
 
-			foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
+			foreach ($conditionRule->getOrderCondition()->getConditionRules() as $orderRule) {
 				foreach (self::VALUE_RULE_FIELDS as $ruleClass => [$orderField, $lineItemField, $appliesMinimumPrice]) {
 					if (
 						$orderRule instanceof $ruleClass
-						&& property_exists($orderRule, 'value')
-						&& property_exists($orderRule, 'operator')
 						&& $orderRule->value !== null
 						&& in_array($orderRule->operator, ['>=', '>'], true)
 					) {
@@ -83,7 +80,7 @@ final class PromotableThreshold
 						$remaining = Amounts::toMoney((float) $orderRule->value, $currency)
 							->subtract(Amounts::toMoney(self::promotableValue($order, $orderField, $lineItemField, $appliesMinimumPrice), $currency));
 
-						return max(0.0, (float) MoneyHelper::toDecimal($remaining));
+						return $remaining->isNegative() ? 0.0 : (float) MoneyHelper::toDecimal($remaining);
 					}
 				}
 			}
@@ -94,9 +91,9 @@ final class PromotableThreshold
 
 	public static function quantityRemaining(ElementConditionInterface $condition, Order $order): ?int
 	{
-		foreach ($condition->getConditionRules() as $triggerRule) {
-			if ($triggerRule instanceof OrderConditionRule) {
-				foreach ($triggerRule->getOrderCondition()->getConditionRules() as $orderRule) {
+		foreach ($condition->getConditionRules() as $conditionRule) {
+			if ($conditionRule instanceof OrderConditionRule) {
+				foreach ($conditionRule->getOrderCondition()->getConditionRules() as $orderRule) {
 					if (
 						$orderRule instanceof TotalQtyConditionRule
 						&& $orderRule->value !== null
@@ -107,8 +104,8 @@ final class PromotableThreshold
 				}
 			}
 
-			if ($triggerRule instanceof LineItemConditionRule) {
-				foreach ($triggerRule->getLineItemCondition()->getConditionRules() as $rule) {
+			if ($conditionRule instanceof LineItemConditionRule) {
+				foreach ($conditionRule->getLineItemCondition()->getConditionRules() as $rule) {
 					if (
 						$rule instanceof LineItemMatchConditionRule
 						&& $rule->quantity !== null
@@ -123,7 +120,7 @@ final class PromotableThreshold
 		return null;
 	}
 
-	private static function orderConditionMatches(OrderConditionRule $triggerRule, Order $order): bool
+	public static function orderConditionMatches(OrderConditionRule $triggerRule, Order $order): bool
 	{
 		$orderRules = $triggerRule->getOrderCondition()->getConditionRules();
 		if ($orderRules === []) {
@@ -132,6 +129,22 @@ final class PromotableThreshold
 
 		foreach ($orderRules as $orderRule) {
 			if (self::orderRuleMatches($orderRule, $order)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static function lineItemConditionMatches(LineItemConditionRule $triggerRule, Order $order): bool
+	{
+		$lineItemRules = $triggerRule->getLineItemCondition()->getConditionRules();
+		if ($lineItemRules === []) {
+			return true;
+		}
+
+		foreach ($lineItemRules as $lineItemRule) {
+			if (self::lineItemRuleMatches($lineItemRule, $order)) {
 				return true;
 			}
 		}
@@ -152,22 +165,6 @@ final class PromotableThreshold
 		}
 
 		return $orderRule instanceof ElementConditionRuleInterface && $orderRule->matchElement($order);
-	}
-
-	private static function lineItemConditionMatches(LineItemConditionRule $triggerRule, Order $order): bool
-	{
-		$lineItemRules = $triggerRule->getLineItemCondition()->getConditionRules();
-		if ($lineItemRules === []) {
-			return true;
-		}
-
-		foreach ($lineItemRules as $lineItemRule) {
-			if (self::lineItemRuleMatches($lineItemRule, $order)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private static function lineItemRuleMatches(ConditionRuleInterface $lineItemRule, Order $order): bool
@@ -209,7 +206,7 @@ final class PromotableThreshold
 	}
 
 	/**
-	 * Mirrors `craft\commerce\elements\Order::getTotalPrice()`.
+	 * Apply the store's minimum total price strategy to a promotable total.
 	 */
 	private static function applyMinimumTotalPrice(Order $order, Money $value): Money
 	{
@@ -240,11 +237,9 @@ final class PromotableThreshold
 	}
 
 	/**
-	 * Mirrors the operator handling in `craft\base\conditions\BaseNumberConditionRule::matchValue`,
-	 * against the promotable total rather than the rule's own attribute.
+	 * Compare a promotable total against a number rule's operator and values.
 	 *
-	 * Every operator the CP offers has to be handled here. An unhandled one is a rule the
-	 * store admin can build and that silently never matches.
+	 * Handle every operator the CP offers, or a rule the admin builds never matches.
 	 */
 	private static function compare(float $value, string $operator, ?string $min, ?string $max): bool
 	{
@@ -260,15 +255,15 @@ final class PromotableThreshold
 		}
 
 		if ($operator === 'between') {
-			if (empty($min) && empty($max)) {
+			if (($min === '' || $min === '0') && ($max === '' || $max === '0')) {
 				return true;
 			}
 
-			if (! empty($min) && $value < (float) $min) {
+			if ($min !== '' && $min !== '0' && $value < (float) $min) {
 				return false;
 			}
 
-			return ! (! empty($max) && $value > (float) $max);
+			return ! ($max !== '' && $max !== '0' && $value > (float) $max);
 		}
 
 		if ($min === '') {

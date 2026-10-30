@@ -13,11 +13,14 @@ use craft\helpers\AdminTable;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\web\Controller;
+use DateTime;
+use Exception;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -65,7 +68,7 @@ class ManageController extends Controller
 			'coupons' => $couponCounts[$discount->id] ?? 0,
 			'timesUsed' => $discount->uses,
 			'stopProcessing' => $discount->stopProcessing,
-			'dateCreated' => $discount->dateCreated !== null ? $formatter->asDate($discount->dateCreated, Locale::LENGTH_SHORT) : '',
+			'dateCreated' => $discount->dateCreated instanceof DateTime ? $formatter->asDate($discount->dateCreated, Locale::LENGTH_SHORT) : '',
 		], $discounts);
 
 		return $this->renderTemplate('advanced-discounts/index', [
@@ -132,8 +135,14 @@ class ManageController extends Controller
 		]);
 	}
 
+	/**
+	 * @throws ForbiddenHttpException
+	 * @throws NotFoundHttpException
+	 */
 	public function actionEdit(?int $id = null): Response
 	{
+		$this->requirePermission($id === null ? 'commerce-createDiscounts' : 'commerce-editDiscounts');
+
 		Craft::$app->getView()->registerTranslations('advanced-discounts', [
 			'edit.coupons.generateCount',
 			'edit.coupons.generateFormat',
@@ -149,10 +158,10 @@ class ManageController extends Controller
 		}
 
 		$typeOptions = [];
-		foreach (Plugin::getInstance()->discountTypes->getAllDiscountTypeInstances() as $type) {
+		foreach (Plugin::getInstance()->discountTypes->getAllDiscountTypeInstances() as $discountType) {
 			$typeOptions[] = [
-				'value' => $type::handle(),
-				'label' => $type::displayName(),
+				'value' => $discountType::handle(),
+				'label' => $discountType::displayName(),
 			];
 		}
 
@@ -203,7 +212,13 @@ class ManageController extends Controller
 
 		/** @var CommercePlugin $commerce */
 		$commerce = CommercePlugin::getInstance();
-		$coupons = $commerce->getCoupons()->generateCouponCodes($count, $format, $existingCodes);
+		try {
+			$coupons = $commerce->getCoupons()->generateCouponCodes($count, $format, $existingCodes);
+		} catch (Exception $exception) {
+			return $this->asFailure(Craft::t('advanced-discounts', 'edit.coupons.generateFailed', [
+				'message' => $exception->getMessage(),
+			]));
+		}
 
 		return $this->asSuccess(data: [
 			'coupons' => $coupons,
@@ -239,6 +254,8 @@ class ManageController extends Controller
 		$this->requirePostRequest();
 		$this->requireAcceptsJson();
 
+		$this->requirePermission('commerce-editDiscounts');
+
 		$ids = Json::decode($this->stringParam('ids', '[]'));
 
 		if (! is_array($ids) || ! Plugin::getInstance()->discounts->reorderDiscounts(array_map('intval', $ids))) {
@@ -252,6 +269,7 @@ class ManageController extends Controller
 	{
 		$this->requirePostRequest();
 		$this->requireAcceptsJson();
+		$this->requirePermission('commerce-deleteDiscounts');
 
 		$id = $this->intParam('id', 0);
 
@@ -274,6 +292,8 @@ class ManageController extends Controller
 
 		$discount = new Discount();
 		$discount->id = is_numeric($id) ? (int) $id : null;
+		$this->requirePermission($discount->id === null ? 'commerce-createDiscounts' : 'commerce-editDiscounts');
+
 		$discount->name = $this->stringParam('name', '');
 		$discount->requireCouponCode = (bool) $this->request->getBodyParam('requireCouponCode');
 		$discount->setCoupons(is_array($coupons) ? $coupons : []);

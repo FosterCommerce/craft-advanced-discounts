@@ -7,7 +7,7 @@
     "email": "support@fostercommerce.com",
     "issues": "https://github.com/FosterCommerce/craft-advanced-discounts/issues?state=open",
     "source": "https://github.com/FosterCommerce/craft-advanced-discounts",
-    "docs": "https://github.com/FosterCommerce/craft-advanced-discounts",
+    "docs": "https://www.fostercommerce.com/craft-cms-plugins/advanced-discounts/docs",
     "rss": "https://github.com/FosterCommerce/craft-advanced-discounts/releases.atom"
   },
   "require": {
@@ -33,7 +33,7 @@
     "handle": "advanced-discounts",
     "name": "Advanced Discounts",
     "developer": "Foster Commerce",
-    "documentationUrl": "https://github.com/FosterCommerce/craft-advanced-discounts"
+    "documentationUrl": "https://www.fostercommerce.com/craft-cms-plugins/advanced-discounts/docs"
   },
   "config": {
     "sort-packages": true,

@@ -2,24 +2,34 @@
 
 How to tell a customer they are close to, or have reached, a discount threshold.
 
-Each message carries its own show-when rules, added under **Create rules to determine when to show this message**, that decide when it appears. Leave them empty and the message follows its group instead, appearing whenever the group's [Cart Conditions](cart-conditions.md) match.
+Each message has its own show-when rules, added under **Create rules to determine when to show this message**. With no show-when rules, the message follows its group instead, and appears whenever the group's [Cart Conditions](cart-conditions.md) match.
 
-Show-when rules replace that fallback rather than narrowing it, so a message can appear for a tier the customer has not reached yet. The discount still has to be enabled, have its coupon requirement met, and pass its Global Conditions.
+Show-when rules replace that fallback rather than narrowing it, so a message can appear for a tier the customer has not reached yet. The discount still has to be enabled, have its coupon requirement met, and pass its Global Cart Conditions.
+
+To show a message only between two amounts, add two show-when rules, each its own **Order** condition: for example, **Item Subtotal** **is greater than or equals** \$10,000, and **Item Subtotal** **is less than** \$15,000. Separate conditions must all match. Two rules inside one **Order** condition need only one match.
+
+## Messages and the stop processing switches
+
+**Stop Processing Further Groups** does not hide messages. A group skipped by a higher tier still shows its messages when their rules match. In a tiered sale, give each tier's messages an upper limit, so a cart at the top tier does not also show the lower tiers' messages.
+
+**Stop Processing Further Discounts** hides the messages of the discounts below it, but only when its own discount adds an adjustment to the order.
 
 ## Tokens
 
-Tokens in the message text are replaced with live cart figures when the message is shown. Drag a token chip into the message, or click it to insert it at the cursor.
+The plugin replaces tokens in the message text with live cart figures. Drag a token chip into the message, or click it to insert it at the cursor.
 
 | Token | Value |
 |---|---|
 | `{discountAmount}` | The first action's discount value in this group, as a percentage or an amount. |
 | `{amountRemaining}` | Requires an Order cart condition set to "at least" or "more than" a money total. Renders the amount left to reach it, counting only discountable items. |
 | `{quantityRemaining}` | Requires an Order or Line Items cart condition set to "at least" or "more than" a quantity. Renders the items left to reach it, counting only discountable items. |
-| `{buyQuantityRemaining}` | Items left to add before the next Buy X, Get Y reward is earned. |
-| `{discountedQuantity}` | How many items the Buy X, Get Y reward gives each time it is earned. |
+| `{buyQuantityRemaining}` | Buy X, Get Y only. Items left to add before the next reward is earned. |
+| `{discountedQuantity}` | Buy X, Get Y only. How many items the reward gives each time it is earned. |
 
-See the [tiered sale recipe](../recipes/tiered-sale.md) for messages that use these tokens.
+A token the group cannot work out renders as an empty string. Saving an **Advanced** discount with a Buy X, Get Y token fails validation.
+
+For messages that use these tokens, see the [tiered sale recipe](../recipes/tiered-sale.md).
 
 ## Getting messages onto the storefront
 
-The plugin does not output messages anywhere on its own. A developer has to add them to your cart and checkout templates. See [displaying promotional messages](../dev-guide/displaying-messages.md).
+Messages appear only where a template calls `craft.advancedDiscounts.getMessages()` or `getMessage()`. See [displaying promotional messages](../dev-guide/displaying-messages.md).

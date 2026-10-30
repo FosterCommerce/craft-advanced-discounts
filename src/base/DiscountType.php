@@ -84,10 +84,8 @@ abstract class DiscountType implements DiscountTypeInterface
 				continue;
 			}
 
-			if ($panel->getCartActionCondition()->getConditionRules() !== []) {
-				$name = $panel->name !== '' ? $panel->name : $discount->name;
-				array_push($adjustments, ...$this->buildPanelAdjustments($discount, $panel, $order, $name));
-			}
+			$name = $panel->name !== '' ? $panel->name : $discount->name;
+			array_push($adjustments, ...$this->buildPanelAdjustments($discount, $panel, $order, $name));
 
 			if ($panel->stopProcessing) {
 				break;
@@ -109,7 +107,11 @@ abstract class DiscountType implements DiscountTypeInterface
 			$groupApplies = PromotableThreshold::matches($panel->getCartCondition(), $order);
 
 			foreach ($panel->getMessageCondition()->getConditionRules() as $rule) {
-				if (! $rule instanceof MessageActionRule || $rule->message === '') {
+				if (! $rule instanceof MessageActionRule) {
+					continue;
+				}
+
+				if ($rule->message === '') {
 					continue;
 				}
 
@@ -138,23 +140,23 @@ abstract class DiscountType implements DiscountTypeInterface
 		$actionRules = $panel->getCartActionCondition()->getConditionRules();
 		$includeRuleLabel = count($actionRules) > 1;
 
-		foreach ($actionRules as $rule) {
-			$name = $includeRuleLabel ? $adjustmentName . ': ' . $rule->getLabel() : $adjustmentName;
+		foreach ($actionRules as $actionRule) {
+			$name = $includeRuleLabel ? $adjustmentName . ': ' . $actionRule->getLabel() : $adjustmentName;
 
-			if ($rule instanceof OrderCartActionRule) {
+			if ($actionRule instanceof OrderCartActionRule) {
 				$ruleHandle = 'order';
-				$adjustment = $this->buildOrderAdjustment($rule, $order, $name);
-				$ruleAdjustments = $adjustment !== null ? [$adjustment] : [];
-			} elseif ($rule instanceof ShippingMethodCartActionRule) {
+				$adjustment = $this->buildOrderAdjustment($actionRule, $order, $name);
+				$ruleAdjustments = $adjustment instanceof OrderAdjustment ? [$adjustment] : [];
+			} elseif ($actionRule instanceof ShippingMethodCartActionRule) {
 				$ruleHandle = 'shipping';
-				$adjustment = $this->buildShippingAdjustment($rule, $order, $name);
-				$ruleAdjustments = $adjustment !== null ? [$adjustment] : [];
-			} elseif ($rule instanceof LineItemCartActionRule) {
+				$adjustment = $this->buildShippingAdjustment($actionRule, $order, $name);
+				$ruleAdjustments = $adjustment instanceof OrderAdjustment ? [$adjustment] : [];
+			} elseif ($actionRule instanceof LineItemCartActionRule) {
 				$ruleHandle = 'lineItem';
-				$ruleAdjustments = $this->buildLineItemAdjustments($rule, $panel, $order, $name);
-			} elseif ($rule instanceof BogoCartActionRule) {
+				$ruleAdjustments = $this->buildLineItemAdjustments($actionRule, $panel, $order, $name);
+			} elseif ($actionRule instanceof BogoCartActionRule) {
 				$ruleHandle = 'bogo';
-				$ruleAdjustments = $this->buildBogoAdjustments($rule, $order, $name);
+				$ruleAdjustments = $this->buildBogoAdjustments($actionRule, $order, $name);
 			} else {
 				continue;
 			}
@@ -166,8 +168,8 @@ abstract class DiscountType implements DiscountTypeInterface
 			$snapshot = [
 				'advancedDiscountId' => $discount->id,
 				'rule' => $ruleHandle,
-				'discountType' => $rule->discountType,
-				'discountValue' => $rule->discountValue,
+				'discountType' => $actionRule->discountType,
+				'discountValue' => $actionRule->discountValue,
 				'requireCouponCode' => $discount->requireCouponCode,
 				'couponCode' => $discount->requireCouponCode ? $order->couponCode : null,
 			];
@@ -206,11 +208,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 		$discount = $this->discountMoney($promotableSubtotal, $rule->discountType, $rule->discountValue);
 
-		$adjustment = new OrderAdjustment();
-		$adjustment->type = 'discount';
-		$adjustment->name = $discountName;
-		$adjustment->amount = -$this->toFloat($discount);
-		$adjustment->orderId = $order->id;
+		$adjustment = $this->newAdjustment($order, $discountName, $discount);
 		$adjustment->sourceSnapshot = [
 			'discountedPurchasableIds' => $discountedPurchasableIds,
 		];
@@ -235,13 +233,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 		$discount = $this->discountMoney($this->toMoney($shippingCost, $order), $rule->discountType, $rule->discountValue);
 
-		$adjustment = new OrderAdjustment();
-		$adjustment->type = 'discount';
-		$adjustment->name = $discountName;
-		$adjustment->amount = -$this->toFloat($discount);
-		$adjustment->orderId = $order->id;
-
-		return $adjustment;
+		return $this->newAdjustment($order, $discountName, $discount);
 	}
 
 	/**
@@ -260,7 +252,11 @@ abstract class DiscountType implements DiscountTypeInterface
 
 		foreach ($order->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable === null || ! $lineItem->getIsPromotable()) {
+			if ($purchasable === null) {
+				continue;
+			}
+
+			if (! $lineItem->getIsPromotable()) {
 				continue;
 			}
 
@@ -278,22 +274,10 @@ abstract class DiscountType implements DiscountTypeInterface
 				$discount = $this->discountMoney($base, $rule->discountType, $rule->discountValue);
 			} else {
 				$quantityFactor = $rule->applyPer === LineItemCartActionRule::APPLY_PER_PURCHASABLE ? $lineItem->qty : 1;
-				$flat = $this->toMoney($rule->discountValue, $order)->multiply((string) $quantityFactor);
-				$discount = $flat->greaterThan($base) ? $base : $flat;
+				$discount = $this->toMoney($rule->discountValue, $order)->multiply((string) $quantityFactor);
 			}
 
-			$adjustment = new OrderAdjustment();
-			$adjustment->type = 'discount';
-			$adjustment->name = $discountName;
-			$adjustment->amount = -$this->toFloat($discount);
-			$adjustment->orderId = $order->id;
-			$adjustment->lineItemId = $lineItem->id;
-			$adjustment->setLineItem($lineItem);
-			$adjustment->sourceSnapshot = [
-				'discountedPurchasableIds' => [$lineItem->purchasableId],
-			];
-
-			$adjustments[] = $adjustment;
+			$adjustments[] = $this->newAdjustment($order, $discountName, $discount, $lineItem);
 		}
 
 		return $adjustments;
@@ -317,7 +301,15 @@ abstract class DiscountType implements DiscountTypeInterface
 
 		foreach ($order->getLineItems() as $lineItem) {
 			$purchasable = $lineItem->getPurchasable();
-			if ($purchasable === null || ! $lineItem->getIsPromotable() || ! Purchasables::matches($purchasable, $rule->discountedPurchasableType, $rule->discountedPurchasableIds)) {
+			if ($purchasable === null) {
+				continue;
+			}
+
+			if (! $lineItem->getIsPromotable()) {
+				continue;
+			}
+
+			if (! Purchasables::matches($purchasable, $rule->discountedPurchasableType, $rule->discountedPurchasableIds)) {
 				continue;
 			}
 
@@ -346,21 +338,29 @@ abstract class DiscountType implements DiscountTypeInterface
 		foreach ($amountsByLineItem as $key => $discount) {
 			$lineItem = $lineItemsByKey[$key];
 
-			$adjustment = new OrderAdjustment();
-			$adjustment->type = 'discount';
-			$adjustment->name = $discountName;
-			$adjustment->amount = -$this->toFloat($discount);
-			$adjustment->orderId = $order->id;
+			$adjustments[] = $this->newAdjustment($order, $discountName, $discount, $lineItem);
+		}
+
+		return $adjustments;
+	}
+
+	private function newAdjustment(Order $order, string $name, Money $discount, ?LineItem $lineItem = null): OrderAdjustment
+	{
+		$adjustment = new OrderAdjustment();
+		$adjustment->type = 'discount';
+		$adjustment->name = $name;
+		$adjustment->amount = -$this->toFloat($discount);
+		$adjustment->orderId = $order->id;
+
+		if ($lineItem instanceof LineItem) {
 			$adjustment->lineItemId = $lineItem->id;
 			$adjustment->setLineItem($lineItem);
 			$adjustment->sourceSnapshot = [
 				'discountedPurchasableIds' => [$lineItem->purchasableId],
 			];
-
-			$adjustments[] = $adjustment;
 		}
 
-		return $adjustments;
+		return $adjustment;
 	}
 
 	private function toMoney(float $value, Order $order): Money
@@ -374,9 +374,7 @@ abstract class DiscountType implements DiscountTypeInterface
 			return $base->multiply((string) $discountValue)->divide('100');
 		}
 
-		$flat = Amounts::toMoney($discountValue, $base->getCurrency()->getCode());
-
-		return $flat->greaterThan($base) ? $base : $flat;
+		return Amounts::toMoney($discountValue, $base->getCurrency()->getCode());
 	}
 
 	private function toFloat(Money $money): float
@@ -388,18 +386,18 @@ abstract class DiscountType implements DiscountTypeInterface
 	{
 		$placeholders = [];
 
-		foreach ($panel->getCartActionCondition()->getConditionRules() as $rule) {
-			if (($rule instanceof OrderCartActionRule || $rule instanceof LineItemCartActionRule || $rule instanceof BogoCartActionRule || $rule instanceof ShippingMethodCartActionRule) && $rule->discountValue !== null) {
-				$placeholders['{discountAmount}'] = $rule->discountType === DiscountValueType::Percentage->value
-					? $rule->discountValue . '%'
-					: Craft::$app->getFormatter()->asCurrency($rule->discountValue, $order->paymentCurrency);
+		foreach ($panel->getCartActionCondition()->getConditionRules() as $conditionRule) {
+			if (($conditionRule instanceof OrderCartActionRule || $conditionRule instanceof LineItemCartActionRule || $conditionRule instanceof BogoCartActionRule || $conditionRule instanceof ShippingMethodCartActionRule) && $conditionRule->discountValue !== null) {
+				$placeholders['{discountAmount}'] = $conditionRule->discountType === DiscountValueType::Percentage->value
+					? $conditionRule->discountValue . '%'
+					: MoneyHelper::toString(Amounts::toMoney($conditionRule->discountValue, (string) $order->currency));
 				break;
 			}
 		}
 
 		$amountRemaining = PromotableThreshold::amountRemaining($panel->getCartCondition(), $order);
 		if ($amountRemaining !== null) {
-			$placeholders['{amountRemaining}'] = Craft::$app->getFormatter()->asCurrency($amountRemaining, $order->paymentCurrency);
+			$placeholders['{amountRemaining}'] = MoneyHelper::toString(Amounts::toMoney($amountRemaining, (string) $order->currency));
 		}
 
 		$quantityRemaining = PromotableThreshold::quantityRemaining($panel->getCartCondition(), $order);
@@ -408,7 +406,7 @@ abstract class DiscountType implements DiscountTypeInterface
 		}
 
 		$bogoRule = $this->firstBogoRule($panel);
-		if ($bogoRule !== null) {
+		if ($bogoRule instanceof BogoCartActionRule) {
 			$placeholders['{buyQuantityRemaining}'] = $bogoRule->buyQuantityRemaining($order);
 			// One message has to read correctly both before and after the customer qualifies.
 			$placeholders['{discountedQuantity}'] = (int) $bogoRule->discountedQuantity;
@@ -418,7 +416,7 @@ abstract class DiscountType implements DiscountTypeInterface
 
 		$unresolved = array_diff_key(self::MESSAGE_PLACEHOLDERS, $placeholders);
 		if ($unresolved !== []) {
-			$message = str_replace(array_keys($unresolved), '', $message);
+			return str_replace(array_keys($unresolved), '', $message);
 		}
 
 		return $message;
@@ -426,9 +424,9 @@ abstract class DiscountType implements DiscountTypeInterface
 
 	private function firstBogoRule(DiscountPanel $panel): ?BogoCartActionRule
 	{
-		foreach ($panel->getCartActionCondition()->getConditionRules() as $rule) {
-			if ($rule instanceof BogoCartActionRule) {
-				return $rule;
+		foreach ($panel->getCartActionCondition()->getConditionRules() as $conditionRule) {
+			if ($conditionRule instanceof BogoCartActionRule) {
+				return $conditionRule;
 			}
 		}
 

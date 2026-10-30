@@ -1,73 +1,66 @@
 # Discounts
 
-How discounts are created, ordered, and structured. **Advanced Discounts -> Discounts** lists every discount, searchable and sortable.
+How to create, order, and structure discounts. **Advanced Discounts -> Discounts** lists every discount in the order the plugin evaluates them, with a search field.
 
 ![The Discounts index](../../resources/img/discounts-index.png)
 
-A discount holds one optional set of Global Conditions and any number of groups. Each group pairs its own cart rules with the actions and messages they trigger, so one discount can carry a whole tiered sale: 10% off at \$100, 15% at \$200, 20% at \$500.
+A discount holds one optional set of Global Cart Conditions and any number of groups. Each group pairs its own cart rules with the actions and messages they trigger. One discount can hold a whole tiered sale: 10% off at \$100, 15% at \$200, 20% at \$500.
 
 ![Example of a multi-tiered sale discount](../../resources/img/multi-tier-sale.png)
 
 ## Creating a discount
 
-Click **New discount** at the top right of the index.
+Click **New discount**.
 
-Order matters. Discounts run top down. Drag to reorder on the index.
+The plugin saves a new discount at the top of the list, where it is evaluated first. Discounts are evaluated top down. To change the order, drag discounts on the index.
 
-### Discount Name
+### Name
 
-Shown in the cart when the discount applies.
+Names the adjustment on the order, unless the group sets its own **Discount Name**.
 
-### Coupon Codes
+### Require Coupon Code
 
-Turn on **Require Coupon Code** to gate the discount behind a code. See [Coupon Codes](coupons.md).
+Turn on **Require Coupon Code** to gate the discount behind a code. See [coupon codes](coupons.md).
 
-### Discount Type
+### Type
 
 **Advanced** covers standard sales and promotions.
 
-**Buy X, Get Y** covers "buy one, get one free" style offers. Set which product or combination of products triggers the promotion, then which products get discounted.
+**Buy X, Get Y** covers "buy one, get one free" style offers. Choose the products the customer buys and the products they get. The plugin counts the chosen buy products together.
+
+Changing **Type** replaces the groups with a new, empty set for that type. Switching back before you save restores the earlier groups. When you click **Save discount**, the plugin keeps only the groups of the selected type.
 
 ### Tax Basis
 
-Whether tax is calculated before or after the discount comes off. Defaults to **Use plugin default**. See [Installation](../installation.md#configure).
+Sets whether tax is calculated before or after the discount comes off. Default: **Use plugin default**. See the [configuration reference](../reference/configuration.md#tax-basis).
 
 ### Stop Processing Further Discounts
 
-When this discount matches and applies, no discount below it is evaluated.
+When this discount applies, the plugin skips the Advanced Discounts discounts below it. Commerce's own discounts still apply.
 
 ## Conditions
 
-Conditions decide when a discount applies to the cart. There are two kinds: Global Conditions, and the [Cart Conditions](cart-conditions.md) inside each group.
+Conditions decide when a discount applies to the cart. There are two kinds: Global Cart Conditions, and the [Cart Conditions](cart-conditions.md) inside each group.
 
-### Global Conditions
+### Global Cart Conditions
 
-Global Conditions gate the whole discount, whatever its groups say. A date range covering the first week of August is the typical case.
-
-Choose from:
-
-- **Date Range**. Criteria based on the date.
-- **Line Items**. Criteria based on the order's line items.
-- **Order**. Criteria based on the order totals.
-- **User**. Criteria based on the order's customer.
-
-They are optional, and you can define more than one.
+Global Cart Conditions gate the whole discount, whatever its groups say. For example, a date range covering the first week of August. They are optional, and you can add more than one. They offer the same rules as a group's Cart Conditions.
 
 ### Cart Conditions
 
-Cart Conditions are evaluated only once the Global Conditions have been met. See [Cart Conditions](cart-conditions.md) for the rules on offer and how they combine.
+The plugin tests a group's Cart Conditions only after the discount's Global Cart Conditions match. For the rules on offer and how they combine, see [cart conditions](cart-conditions.md).
 
 ## Discount groups
 
-Click **+ Add group** below the last group to add another.
+To add a group, click **Add group**.
 
 ![An empty discount group](../../resources/img/discount-panel-empty.png)
 
-**Discount Name** on the group overrides the discount's own name on the order when this group applies.
+**Discount Name** on the group replaces the discount's own name on the order when this group applies.
 
 [Cart Conditions](cart-conditions.md) set the rules.
 
-[Cart Actions](cart-actions.md) define what happens when those rules match.
+[Cart Actions](cart-actions.md) set what the group discounts when those rules match.
 
 [Messages](messages.md) tell the customer they are close to, or have reached, the threshold.
 
@@ -75,11 +68,11 @@ Click **+ Add group** below the last group to add another.
 
 ### Group controls
 
-Every group has a bar across the top holding its controls: the actions menu on the right, and a handle for dragging the group to a new position.
+Each group's actions menu holds these controls. You can also drag a group to a new position.
 
-- **Collapse** and **Expand** hide and show the group's body, which keeps a discount with several tiers readable. Double-clicking the bar does the same.
-- **Disable** takes the group out of the discount: it produces no discount and no messages, whatever its conditions say. Disabling collapses the group and marks it with a gray dot. **Enable** brings it back.
-- **Move up** and **Move down** reorder groups without dragging. Order decides which group wins when **Stop Processing Further Groups** is on.
-- **Delete** removes the group from the screen. It leaves the discount when you save.
+- **Collapse** and **Open** hide and show the group's body. Double-clicking the group's bar does the same.
+- **Disable** takes the group out of the discount: it does not discount the order or show messages, whatever its conditions say. Disabling collapses the group and marks it with a gray dot. **Enable** turns the group back on.
+- **Move up** and **Move down** reorder groups. Order decides which group wins when **Stop Processing Further Groups** is on.
+- **Delete** removes the group from the screen. The group is removed from the discount when you click **Save discount**.
 
 ![A collapsed discount group](../../resources/img/discount-panel-collapsed.png)

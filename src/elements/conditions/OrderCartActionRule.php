@@ -9,13 +9,12 @@ use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
-use fostercommerce\advanceddiscounts\enums\DiscountType;
 
 class OrderCartActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
+	use DiscountValueTrait;
+
 	public string $discountType = 'flatAmount';
 
 	public ?float $discountValue = null;
@@ -52,32 +51,9 @@ class OrderCartActionRule extends BaseConditionRule implements ElementConditionR
 
 	protected function inputHtml(): string
 	{
-		$discountTypeLabel = (DiscountType::tryFrom($this->discountType) ?? DiscountType::FlatAmount)->label();
-
 		return Html::tag(
 			'div',
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountTypeLabel'), 'discountType') .
-			Cp::selectHtml([
-				'id' => 'discountType',
-				'name' => 'discountType',
-				'options' => DiscountType::actionOptions(),
-				'value' => $this->discountType,
-				'inputAttributes' => [
-					'hx' => [
-						'post' => UrlHelper::actionUrl('conditions/render'),
-					],
-				],
-			]) .
-			Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.discountValue'), 'discountValue') .
-			Cp::textHtml([
-				'type' => 'number',
-				'id' => 'discountValue',
-				'name' => 'discountValue',
-				'value' => $this->discountValue,
-				'autocomplete' => false,
-				'placeholder' => $discountTypeLabel,
-				'class' => 'flex-grow flex-shrink',
-			]),
+			$this->discountValueInputHtml(),
 			[
 				'class' => ['flex', 'flex-start', 'flex-grow'],
 			]
@@ -89,8 +65,6 @@ class OrderCartActionRule extends BaseConditionRule implements ElementConditionR
 	 */
 	protected function defineRules(): array
 	{
-		return array_merge(parent::defineRules(), [
-			[['discountType', 'discountValue'], 'safe'],
-		]);
+		return array_merge(parent::defineRules(), $this->discountValueRules());
 	}
 }

@@ -10,7 +10,7 @@ use fostercommerce\advanceddiscounts\enums\TaxBasis;
 class Settings extends Model
 {
 	/**
-	 * @var string Not typed as the enum: Craft assigns plugin settings straight from project config.
+	 * @var string A string rather than the enum, since project config stores plain values
 	 */
 	public string $taxBasis = 'afterDiscount';
 
