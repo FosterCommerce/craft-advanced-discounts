@@ -99,6 +99,18 @@
 			panel.querySelector('[data-disclosure-trigger]').focus();
 		},
 
+		// Text inputs for every site share the form, so only the requested site's inputs are shown
+		showSiteText: function (scope) {
+			const sitePicker = document.getElementById('site-text-site');
+			if (sitePicker === null) {
+				return;
+			}
+
+			scope.querySelectorAll('[data-site-text]').forEach(function (input) {
+				input.classList.toggle('hidden', input.dataset.siteText !== sitePicker.value);
+			});
+		},
+
 		insertToken: function (textarea, token) {
 			const start = textarea.selectionStart;
 			const end = textarea.selectionEnd;
@@ -123,7 +135,7 @@
 
 			event.preventDefault();
 
-			const textarea = $(this).closest('.advanced-discount-message').find('textarea').get(0);
+			const textarea = $(this).closest('.advanced-discount-message').find('textarea:visible').get(0);
 			Craft.AdvancedDiscounts.insertToken(textarea, $(this).data('token'));
 		});
 
@@ -211,6 +223,14 @@
 
 			Craft.AdvancedDiscounts.groupDragSort.addItems(group);
 			Craft.AdvancedDiscounts.moveExcludedIntoBundle(container);
+			Craft.AdvancedDiscounts.showSiteText(group);
+		});
+
+		Craft.AdvancedDiscounts.showSiteText(document);
+
+		// Condition rules re-render through htmx, so their inputs need the requested site applied again
+		document.addEventListener('htmx:afterSettle', function (event) {
+			Craft.AdvancedDiscounts.showSiteText(event.target);
 		});
 
 		const generateButton = document.getElementById('generate-coupons');
@@ -328,6 +348,7 @@
 				htmx.process(container);
 
 				Craft.AdvancedDiscounts.initGroups();
+				Craft.AdvancedDiscounts.showSiteText(container);
 			});
 		}
 	});

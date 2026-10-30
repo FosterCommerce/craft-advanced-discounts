@@ -10,14 +10,18 @@ use craft\commerce\elements\Variant;
 use craft\commerce\Plugin as CommercePlugin;
 use craft\commerce\services\Coupons as CommerceCoupons;
 use craft\helpers\AdminTable;
+use craft\helpers\Cp;
 use craft\helpers\Json;
+use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
+use craft\models\Site;
 use craft\web\Controller;
 use DateTime;
 use Exception;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
+use fostercommerce\advanceddiscounts\helpers\SiteText;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
 use yii\web\ForbiddenHttpException;
@@ -58,10 +62,14 @@ class ManageController extends Controller
 		$formatter = Craft::$app->getFormatter();
 		$couponCounts = Plugin::getInstance()->coupons->getCouponCountsByDiscountId();
 		$discounts = Plugin::getInstance()->discounts->getAllDiscounts();
+		// Carry the requested site into each discount's link and name
+		$requestedSite = Craft::$app->getIsMultiSite() ? Cp::requestedSite() : null;
 		$tableData = array_map(static fn (Discount $discount): array => [
 			'id' => $discount->id,
-			'url' => "advanced-discounts/{$discount->id}",
-			'title' => $discount->name,
+			'url' => UrlHelper::cpUrl("advanced-discounts/{$discount->id}", $requestedSite instanceof Site ? [
+				'site' => $requestedSite->handle,
+			] : []),
+			'title' => $requestedSite instanceof Site ? $discount->getNameForSite($requestedSite) : $discount->name,
 			'status' => $discount->enabled,
 			'type' => $discount->getType()::displayName(),
 			'requireCouponCode' => $discount->requireCouponCode,
@@ -295,6 +303,7 @@ class ManageController extends Controller
 		$this->requirePermission($discount->id === null ? 'commerce-createDiscounts' : 'commerce-editDiscounts');
 
 		$discount->name = $this->stringParam('name', '');
+		$discount->siteNames = SiteText::filter($this->request->getBodyParam('siteNames'));
 		$discount->requireCouponCode = (bool) $this->request->getBodyParam('requireCouponCode');
 		$discount->setCoupons(is_array($coupons) ? $coupons : []);
 		$discount->enabled = (bool) $this->request->getBodyParam('enabled');

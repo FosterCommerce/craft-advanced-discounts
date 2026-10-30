@@ -5,6 +5,19 @@
 {% set title = 'nav.title'|t('advanced-discounts') %}
 {% set selectedSubnavItem = 'discounts' %}
 
+{% set requestedSite = craft.app.isMultiSite ? craft.cp.requestedSite : null %}
+{% if requestedSite %}
+	{% set crumbs = (crumbs ?? [])|unshift({
+		id: 'site-crumb',
+		icon: 'world',
+		label: requestedSite.name|t('site'),
+		menu: {
+			items: siteMenuItems(null, requestedSite),
+			label: 'Select site'|t('app'),
+		},
+	}) %}
+{% endif %}
+
 {% if currentUser.can('commerce-createDiscounts') %}
 	{% set additionalButtons %}
 		<a class="btn submit add icon" href="{{ url('advanced-discounts/new') }}">{{ 'index.newDiscount'|t('advanced-discounts') }}</a>

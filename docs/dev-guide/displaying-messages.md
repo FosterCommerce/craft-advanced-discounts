@@ -13,6 +13,8 @@ Both methods take a Commerce order, either the cart or a completed order, and ev
 | `craft.advancedDiscounts.getMessages(order)` | An array of message strings, in display order. Empty when no message qualifies. |
 | `craft.advancedDiscounts.getMessage(order)` | The first string from that array, or `null`. |
 
+Each string uses the message text for the order's site, or the primary site's text where that site has none. See [text for each site](../user-guide/discounts.md#text-for-each-site).
+
 Strings come back with their [tokens](../user-guide/messages.md#tokens) already replaced. `{amountRemaining}` and `{discountAmount}` are formatted in the order's payment currency.
 
 ## Example

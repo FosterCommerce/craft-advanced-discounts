@@ -10,6 +10,7 @@ use craft\db\Query;
 use craft\helpers\Json;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
+use fostercommerce\advanceddiscounts\helpers\SiteText;
 use fostercommerce\advanceddiscounts\models\Coupon;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\Plugin;
@@ -201,6 +202,7 @@ class Discounts extends Component
 		$record->type = $discount->type;
 		$record->settings = [
 			'taxBasis' => $discount->taxBasis?->value,
+			'siteNames' => $discount->siteNames,
 			'globalCartCondition' => $discount->getGlobalCartCondition()->getConfig(),
 			'panels' => array_map(static fn ($panel): array => $panel->getConfig(), $discount->panels),
 		];
@@ -277,6 +279,7 @@ class Discounts extends Component
 		$discount->taxBasis = is_string($settings['taxBasis'] ?? null)
 			? TaxBasis::tryFrom($settings['taxBasis'])
 			: null;
+		$discount->siteNames = SiteText::filter($settings['siteNames'] ?? null);
 		$discount->setGlobalCartCondition($settings['globalCartCondition'] ?? []);
 		$discount->setPanels($settings['panels'] ?? []);
 

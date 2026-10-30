@@ -76,3 +76,26 @@ Each group's actions menu holds these controls. You can also drag a group to a n
 - **Delete** removes the group from the screen. The group is removed from the discount when you click **Save discount**.
 
 ![A collapsed discount group](../../resources/img/discount-panel-collapsed.png)
+
+## Text for each site
+
+On a multi-site install, three fields can be set for each site: the discount's **Name**, each group's **Discount Name**, and each [message](messages.md). These fields show Craft's translation icon. Every other setting, including groups, conditions, actions, and coupons, is shared by all sites. A group added or deleted while editing one site is added to or deleted from every site.
+
+To edit a site's text, choose the site from the site menu at the top left of **Advanced Discounts -> Discounts** or of a discount. The site stays selected as you move between the index and a discount, and the index lists each discount's name for that site.
+
+**New discount** opens on the primary site, because the primary site's **Name** is required.
+
+### Blank text uses the primary site's text
+
+When a site's field is blank, that site uses the primary site's text, which the field shows as its placeholder. A blank field keeps following the primary text: after you edit the primary **Message**, every site without its own message shows the new wording.
+
+Text you enter for a site does not change when the primary text changes. When you change the primary wording, update each site's text as well.
+
+The order's site sets which text the customer sees. For the name on the order's adjustment, the plugin uses the first of these that is set:
+
+1. The group's **Discount Name** for the order's site.
+2. The group's **Discount Name** on the primary site.
+3. The discount's **Name** for the order's site.
+4. The discount's **Name** on the primary site.
+
+A completed order keeps the adjustment name it was placed with.

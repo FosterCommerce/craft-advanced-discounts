@@ -1,10 +1,23 @@
 {% extends '_layouts/cp' %}
 
 {% set fullPageForm = true %}
+{# Conditions and actions apply to every site. The site menu only picks which site's text to edit. #}
+{% set requestedSite = craft.app.isMultiSite ? craft.cp.requestedSite : null %}
 {% set crumbs = [
-    { label: 'nav.title'|t('advanced-discounts'), url: url('advanced-discounts') },
+    { label: 'nav.title'|t('advanced-discounts'), url: url('advanced-discounts', requestedSite ? { site: requestedSite.handle } : {}) },
 ] %}
-{% set title = discount.id ? discount.name : 'edit.createTitle'|t('advanced-discounts') %}
+{% if requestedSite %}
+    {% set crumbs = crumbs|unshift({
+        id: 'site-crumb',
+        icon: 'world',
+        label: requestedSite.name|t('site'),
+        menu: {
+            items: siteMenuItems(null, requestedSite),
+            label: 'Select site'|t('app'),
+        },
+    }) %}
+{% endif %}
+{% set title = discount.id ? (requestedSite ? discount.getNameForSite(requestedSite) : discount.name) : 'edit.createTitle'|t('advanced-discounts') %}
 {% import '_includes/forms.twig' as forms %}
 
 {% do view.registerAssetBundle('fostercommerce\\advanceddiscounts\\web\\assets\\discounts\\DiscountsAsset') %}
@@ -15,12 +28,17 @@
 
 {% block content %}
     {{ actionInput('advanced-discounts/manage/save') }}
-    {{ redirectInput('advanced-discounts/{id}') }}
+    {{ redirectInput('advanced-discounts/{id}' ~ (requestedSite ? '?site=' ~ requestedSite.handle : '')) }}
 
     {% if discount.id %}
         <input type="hidden" name="id" value="{{ discount.id }}">
     {% endif %}
 
+    {% if requestedSite %}
+        <input type="hidden" id="site-text-site" value="{{ requestedSite.uid }}">
+    {% endif %}
+
+    {# Keep the Name field visible while it has an error, so the error shows on any site #}
     {{ forms.textField({
         label: 'edit.name'|t('advanced-discounts'),
         id: 'name',
@@ -31,8 +49,26 @@
             data: {lpignore: 'true'},
         },
         required: true,
-        errors: discount.getErrors('name'),
+        errors: discount.getErrors('name')|merge(discount.getErrors('siteNames')),
+        siteId: craft.app.sites.primarySite.id,
+        fieldAttributes: discount.hasErrors('name') or discount.hasErrors('siteNames') ? {} : { data: { 'site-text': craft.app.sites.primarySite.uid } },
     }) }}
+    {% if craft.app.isMultiSite %}
+        {% for site in craft.app.sites.allSites|filter(site => not site.primary) %}
+            {{ forms.textField({
+                label: 'edit.name'|t('advanced-discounts'),
+                name: 'siteNames[' ~ site.uid ~ ']',
+                value: discount.siteNames[site.uid] ?? '',
+                placeholder: discount.name,
+                maxlength: 255,
+                inputAttributes: {
+                    data: {lpignore: 'true'},
+                },
+                siteId: site.id,
+                fieldAttributes: { class: ['hidden'], data: { 'site-text': site.uid } },
+            }) }}
+        {% endfor %}
+    {% endif %}
 
     {{ forms.lightswitchField({
         label: 'index.column.requireCouponCode'|t('advanced-discounts'),
@@ -148,7 +184,7 @@
 {% block details %}
     <div class="meta">
         {{ forms.lightswitchField({
-            label: 'Enabled'|t('app'),
+            label: 'Enable this discount'|t('commerce'),
             id: 'enabled',
             name: 'enabled',
             on: discount.enabled,

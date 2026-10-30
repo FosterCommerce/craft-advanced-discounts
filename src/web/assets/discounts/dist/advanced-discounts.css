@@ -113,6 +113,11 @@
 	padding: 8px;
 }
 
+/* Hidden fields for the other sites follow the visible one, so it would otherwise keep a field's bottom margin */
+.advanced-discount-message-inputs > .field {
+	margin-bottom: 0;
+}
+
 .advanced-discount-message-instructions {
 	margin: 10px 0 4px;
 }

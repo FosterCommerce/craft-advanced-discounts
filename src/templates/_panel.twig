@@ -71,7 +71,23 @@
             instructions: 'group.name.instructions'|t('advanced-discounts'),
             name: 'panels[' ~ panel.key ~ '][name]',
             value: panel.name,
+            siteId: craft.app.sites.primarySite.id,
+            fieldAttributes: { data: { 'site-text': craft.app.sites.primarySite.uid } },
         }) }}
+        {% if craft.app.isMultiSite %}
+            {% for site in craft.app.sites.allSites|filter(site => not site.primary) %}
+                {{ forms.textField({
+                    label: 'group.name'|t('advanced-discounts'),
+                    instructions: 'group.name.instructions'|t('advanced-discounts'),
+                    name: 'panels[' ~ panel.key ~ '][siteNames][' ~ site.uid ~ ']',
+                    value: panel.siteNames[site.uid] ?? '',
+                    placeholder: panel.name,
+                    maxlength: 255,
+                    siteId: site.id,
+                    fieldAttributes: { class: ['hidden'], data: { 'site-text': site.uid } },
+                }) }}
+            {% endfor %}
+        {% endif %}
 
         {% set cartCondition %}
             <div class="advanced-discount-cart-condition">
