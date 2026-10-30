@@ -7,12 +7,14 @@ namespace fostercommerce\advanceddiscounts\models;
 use Craft;
 use craft\base\Model;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\models\Site;
 use DateTime;
 use fostercommerce\advanceddiscounts\base\DiscountTypeInterface;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
+use fostercommerce\advanceddiscounts\helpers\SiteText;
 use fostercommerce\advanceddiscounts\Plugin;
 
 class Discount extends Model
@@ -20,6 +22,11 @@ class Discount extends Model
 	public ?int $id = null;
 
 	public string $name = '';
+
+	/**
+	 * @var array<string, string> Names for sites other than the primary site, keyed by site UID
+	 */
+	public array $siteNames = [];
 
 	public bool $requireCouponCode = false;
 
@@ -82,6 +89,11 @@ class Discount extends Model
 		$this->_globalCartCondition = NestedConditionConfig::build($condition, CartCondition::class);
 	}
 
+	public function getNameForSite(Site $site): string
+	{
+		return $this->siteNames[$site->uid] ?? $this->name;
+	}
+
 	/**
 	 * @param array<int, array<string, mixed>> $panels
 	 */
@@ -95,6 +107,7 @@ class Discount extends Model
 		$this->panels = array_map(function (array $config): DiscountPanel {
 			$panel = $this->newPanel();
 			$panel->name = is_string($config['name'] ?? null) ? $config['name'] : '';
+			$panel->siteNames = SiteText::filter($config['siteNames'] ?? null);
 			$panel->enabled = (bool) ($config['enabled'] ?? true);
 			$panel->stopProcessing = (bool) ($config['stopProcessing'] ?? false);
 			$panel->setCartCondition(NestedConditionConfig::extract($config, 'cartCondition'));
@@ -191,6 +204,10 @@ class Discount extends Model
 		$errors = [];
 
 		foreach ($this->panels as $panel) {
+			if (! $panel->validate(['siteNames'])) {
+				array_push($errors, ...array_values($panel->getFirstErrors()));
+			}
+
 			foreach ($panel->getCartActionCondition()->getConditionRules() as $actionRule) {
 				// Validate only the action values, since action rules leave the base rule's operator unset
 				if ($actionRule instanceof Model && ! $actionRule->validate(['discountValue', 'buyQuantity', 'discountedQuantity'])) {
@@ -220,6 +237,12 @@ class Discount extends Model
 			[['name'],
 				'string',
 				'max' => 255],
+			[['siteNames'],
+				'each',
+				'rule' => [
+					'string',
+					'max' => 255,
+				]],
 			[['coupons'], 'validateCoupons'],
 			[['panels'], 'validatePanels'],
 		]);

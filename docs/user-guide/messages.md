@@ -14,6 +14,10 @@ To show a message only between two amounts, add two show-when rules, each its ow
 
 **Stop Processing Further Discounts** hides the messages of the discounts below it, but only when its own discount adds an adjustment to the order.
 
+## Messages for each site
+
+On a multi-site install, each message can have its own text for each site, and a blank message uses the primary site's message. Tokens work the same in every site's message. For how site text works, see [text for each site](discounts.md#text-for-each-site).
+
 ## Tokens
 
 The plugin replaces tokens in the message text with live cart figures. Drag a token chip into the message, or click it to insert it at the cursor.

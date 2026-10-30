@@ -8,6 +8,7 @@ use craft\base\Model;
 use craft\commerce\elements\Variant;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\StringHelper;
+use craft\models\Site;
 use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\CartActionCondition;
@@ -25,6 +26,11 @@ class DiscountPanel extends Model
 	public string $key = '';
 
 	public string $name = '';
+
+	/**
+	 * @var array<string, string> Names for sites other than the primary site, keyed by site UID
+	 */
+	public array $siteNames = [];
 
 	public bool $enabled = true;
 
@@ -108,6 +114,11 @@ class DiscountPanel extends Model
 		$this->_messageCondition = NestedConditionConfig::build($condition, MessageCondition::class);
 	}
 
+	public function getNameForSite(Site $site): string
+	{
+		return $this->siteNames[$site->uid] ?? $this->name;
+	}
+
 	public function hasMessageErrors(): bool
 	{
 		foreach ($this->getMessageCondition()->getConditionRules() as $conditionRule) {
@@ -126,6 +137,7 @@ class DiscountPanel extends Model
 	{
 		return [
 			'name' => $this->name,
+			'siteNames' => $this->siteNames,
 			'enabled' => $this->enabled,
 			'stopProcessing' => $this->stopProcessing,
 			'cartCondition' => $this->getCartCondition()->getConfig(),
@@ -186,5 +198,20 @@ class DiscountPanel extends Model
 			->all();
 
 		return array_values(array_filter($variants, static fn (Variant $variant): bool => ! $variant->getIsPromotable()));
+	}
+
+	/**
+	 * @return array<int, mixed>
+	 */
+	protected function defineRules(): array
+	{
+		return array_merge(parent::defineRules(), [
+			[['siteNames'],
+				'each',
+				'rule' => [
+					'string',
+					'max' => 255,
+				]],
+		]);
 	}
 }

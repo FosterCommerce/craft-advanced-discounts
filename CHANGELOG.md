@@ -1,6 +1,10 @@
 # Release Notes for Advanced Discounts
 
-## Unreleased
+## 1.2.0 - 2026-10-30
+
+### Added
+- Added per-site text for discount names, group names, and messages on multi-site installs.
+- Added a site menu to the Discounts index and discount edit pages.
 
 ### Changed
 - Discount values can no longer be negative, percentage discounts can no longer exceed 100, and Buy X, Get Y quantities must be at least 1.

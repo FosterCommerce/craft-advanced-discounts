@@ -9,6 +9,7 @@ use craft\commerce\elements\Order;
 use craft\commerce\models\LineItem;
 use craft\commerce\models\OrderAdjustment;
 use craft\helpers\MoneyHelper;
+use craft\models\Site;
 use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\LineItemCartActionRule;
@@ -74,6 +75,7 @@ abstract class DiscountType implements DiscountTypeInterface
 	public function getAdjustments(Order $order, Discount $discount): array
 	{
 		$adjustments = [];
+		$site = $this->orderSite($order);
 
 		foreach ($discount->panels as $panel) {
 			if (! $panel->enabled) {
@@ -84,7 +86,8 @@ abstract class DiscountType implements DiscountTypeInterface
 				continue;
 			}
 
-			$name = $panel->name !== '' ? $panel->name : $discount->name;
+			$panelName = $panel->getNameForSite($site);
+			$name = $panelName !== '' ? $panelName : $discount->getNameForSite($site);
 			array_push($adjustments, ...$this->buildPanelAdjustments($discount, $panel, $order, $name));
 
 			if ($panel->stopProcessing) {
@@ -98,6 +101,7 @@ abstract class DiscountType implements DiscountTypeInterface
 	public function getMessages(Order $order, Discount $discount): array
 	{
 		$messages = [];
+		$site = $this->orderSite($order);
 
 		foreach ($discount->panels as $panel) {
 			if (! $panel->enabled) {
@@ -111,7 +115,8 @@ abstract class DiscountType implements DiscountTypeInterface
 					continue;
 				}
 
-				if ($rule->message === '') {
+				$message = $rule->getMessageForSite($site);
+				if ($message === '') {
 					continue;
 				}
 
@@ -124,7 +129,7 @@ abstract class DiscountType implements DiscountTypeInterface
 					continue;
 				}
 
-				$messages[] = $this->resolvePlaceholders($rule->message, $panel, $order);
+				$messages[] = $this->resolvePlaceholders($message, $panel, $order);
 			}
 		}
 
@@ -431,5 +436,13 @@ abstract class DiscountType implements DiscountTypeInterface
 		}
 
 		return null;
+	}
+
+	/**
+	 * Use the order's site, since a CP or queue recalculation runs on the primary site.
+	 */
+	private function orderSite(Order $order): Site
+	{
+		return $order->getOrderSite() ?? Craft::$app->getSites()->getCurrentSite();
 	}
 }

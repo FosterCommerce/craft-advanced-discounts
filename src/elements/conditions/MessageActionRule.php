@@ -12,12 +12,19 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\models\Site;
 use fostercommerce\advanceddiscounts\base\DiscountType;
 use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
+use fostercommerce\advanceddiscounts\helpers\SiteText;
 
 class MessageActionRule extends BaseConditionRule implements ElementConditionRuleInterface
 {
 	public string $message = '';
+
+	/**
+	 * @var array<string, string> Messages for sites other than the primary site, keyed by site UID
+	 */
+	private array $_siteMessages = [];
 
 	private ?ElementConditionInterface $_messageCondition = null;
 
@@ -48,6 +55,24 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 		$this->_messageCondition = NestedConditionConfig::build($condition, CartCondition::class);
 	}
 
+	/**
+	 * @return array<string, string>
+	 */
+	public function getSiteMessages(): array
+	{
+		return $this->_siteMessages;
+	}
+
+	public function setSiteMessages(mixed $siteMessages): void
+	{
+		$this->_siteMessages = SiteText::filter($siteMessages);
+	}
+
+	public function getMessageForSite(Site $site): string
+	{
+		return $this->_siteMessages[$site->uid] ?? $this->message;
+	}
+
 	public function getLabel(): string
 	{
 		return Craft::t('advanced-discounts', 'rules.message');
@@ -74,16 +99,18 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 	{
 		return array_merge(parent::getConfig(), [
 			'message' => $this->message,
+			'siteMessages' => $this->_siteMessages,
 			'messageCondition' => $this->_messageCondition?->getConfig() ?? [],
 		]);
 	}
 
 	/**
-	 * @return string[] Placeholder tokens used in `message` that don't apply to this discount type.
+	 * @return string[] Placeholder tokens used in any site's message that don't apply to this discount type.
 	 */
 	public function getInapplicablePlaceholders(): array
 	{
-		if ($this->message === '') {
+		$messages = implode("\n", [$this->message, ...array_values($this->_siteMessages)]);
+		if (trim($messages) === '') {
 			return [];
 		}
 
@@ -93,7 +120,7 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 
 		return array_values(array_filter(
 			array_keys($inapplicable),
-			fn (string $token): bool => str_contains($this->message, $token)
+			fn (string $token): bool => str_contains($messages, $token)
 		));
 	}
 
@@ -113,21 +140,9 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 
 		return Html::tag(
 			'div',
-			Html::tag(
-				'div',
-				Html::hiddenLabel(Craft::t('advanced-discounts', 'rules.message'), 'message') .
-				Cp::textareaHtml([
-					'id' => 'message',
-					'name' => 'message',
-					'value' => $this->message,
-					'placeholder' => Craft::t('advanced-discounts', 'rules.message.placeholder'),
-					'class' => 'flex-grow',
-					'rows' => 3,
-				]),
-				[
-					'class' => ['flex', 'flex-start', 'flex-grow'],
-				]
-			) .
+			Html::tag('div', $this->messageInputsHtml(), [
+				'class' => ['flex-grow', 'advanced-discount-message-inputs'],
+			]) .
 			($this->hasErrors('message')
 				? Craft::$app->getView()->renderTemplate('_includes/forms/errorList.twig', [
 					'errors' => $this->getErrors('message'),
@@ -175,8 +190,50 @@ class MessageActionRule extends BaseConditionRule implements ElementConditionRul
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
-			[['message', 'messageCondition'], 'safe'],
+			[['message', 'siteMessages', 'messageCondition'], 'safe'],
 			[['message'], 'validateMessagePlaceholders'],
+		]);
+	}
+
+	private function messageInputsHtml(): string
+	{
+		$sites = Craft::$app->getSites();
+		$primarySite = $sites->getPrimarySite();
+		$html = $this->messageInputHtml($primarySite, 'message', $this->message, Craft::t('advanced-discounts', 'rules.message.placeholder'));
+
+		if (! Craft::$app->getIsMultiSite()) {
+			return $html;
+		}
+
+		$otherSites = array_filter($sites->getAllSites(), static fn (Site $site): bool => ! $site->primary);
+		foreach ($otherSites as $otherSite) {
+			// Show the primary message as the placeholder, since a blank site message uses it
+			$html .= $this->messageInputHtml($otherSite, "siteMessages[{$otherSite->uid}]", $this->_siteMessages[$otherSite->uid] ?? '', $this->message);
+		}
+
+		return $html;
+	}
+
+	private function messageInputHtml(Site $site, string $name, string $value, string $placeholder): string
+	{
+		$id = $site->primary ? 'message' : "message-{$site->id}";
+
+		return Cp::fieldHtml(Cp::textareaHtml([
+			'id' => $id,
+			'name' => $name,
+			'value' => $value,
+			'placeholder' => $placeholder,
+			'rows' => 3,
+		]), [
+			'id' => $id,
+			'label' => Craft::t('advanced-discounts', 'rules.message'),
+			'siteId' => $site->id,
+			'fieldClass' => array_filter(['flex-grow', $site->primary ? null : 'hidden']),
+			'fieldAttributes' => [
+				'data' => [
+					'site-text' => $site->uid,
+				],
+			],
 		]);
 	}
 }
