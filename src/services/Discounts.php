@@ -62,7 +62,7 @@ class Discounts extends Component
 				continue;
 			}
 
-			if (! PromotableThreshold::matches($discount->getGlobalCartCondition(), $order)) {
+			if (! PromotableThreshold::matches($discount->getGlobalCartCondition(), $order, $discount->getProductCondition())) {
 				continue;
 			}
 
@@ -204,6 +204,7 @@ class Discounts extends Component
 			'taxBasis' => $discount->taxBasis?->value,
 			'siteNames' => $discount->siteNames,
 			'globalCartCondition' => $discount->getGlobalCartCondition()->getConfig(),
+			'productCondition' => $discount->getProductCondition()->getConfig(),
 			'panels' => array_map(static fn ($panel): array => $panel->getConfig(), $discount->panels),
 		];
 
@@ -281,6 +282,7 @@ class Discounts extends Component
 			: null;
 		$discount->siteNames = SiteText::filter($settings['siteNames'] ?? null);
 		$discount->setGlobalCartCondition($settings['globalCartCondition'] ?? []);
+		$discount->setProductCondition($settings['productCondition'] ?? []);
 		$discount->setPanels($settings['panels'] ?? []);
 
 		return $discount;

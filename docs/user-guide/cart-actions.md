@@ -4,7 +4,7 @@ Actions set what a discount group discounts when its [Cart Conditions](cart-cond
 
 An **Advanced** discount offers three actions. A **Buy X, Get Y** discount offers one, covered under [Buy X, Get Y](#buy-x-get-y).
 
-Every action skips line items whose variants are not promotable. See [excluded variants](excluded-variants.md).
+Every action skips line items whose variants are not promotable. See [excluded variants](excluded-variants.md). Item Subtotal and Line Items also skip line items that do not match the discount's [Global Product Conditions](discounts.md#global-product-conditions).
 
 A discount value can't be negative, and a percentage can't be more than 100.
 
@@ -44,6 +44,8 @@ A flat amount never takes a line below zero. With \$20 off a \$12 line, the cust
 Discounts what the customer is charged for shipping, by a flat amount or a percentage of the total shipping cost.
 
 Choose which shipping methods qualify: **Any**, or a specific set with **is one of** and **is not one of**. If the order's shipping is already free, the action does not add an adjustment.
+
+With [Global Product Conditions](discounts.md#global-product-conditions), the action also needs at least one matching line item in the cart.
 
 ## Using more than one action
 

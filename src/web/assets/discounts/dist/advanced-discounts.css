@@ -235,3 +235,15 @@
 .fc-plugin-credit:hover .fc-fc-logo path[fill="#D8AF7C"] {
 	fill: #d8af7c;
 }
+
+/* Label each Global Product Conditions row after the first, since those rows OR together */
+.condition-main:has(> input[name$="[class]"][value$="GlobalProductCondition"]) > .condition > .condition-rule + .condition-rule::before {
+	content: var(--advanced-discount-or-label);
+	display: block;
+	width: 100%;
+	text-transform: uppercase;
+	font-size: 10px;
+	padding: 0 7px;
+	background-color: var(--gray-100);
+	border-radius: var(--small-border-radius);
+}

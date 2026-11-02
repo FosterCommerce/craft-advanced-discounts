@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace fostercommerce\advanceddiscounts\models;
 
+use Craft;
 use craft\base\Model;
 use craft\commerce\elements\Variant;
 use craft\elements\conditions\ElementConditionInterface;
@@ -206,6 +207,9 @@ class DiscountPanel extends Model
 	protected function defineRules(): array
 	{
 		return array_merge(parent::defineRules(), [
+			[['name'],
+				'required',
+				'message' => Craft::t('advanced-discounts', 'edit.error.groupNameRequired')],
 			[['siteNames'],
 				'each',
 				'rule' => [

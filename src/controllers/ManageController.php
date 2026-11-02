@@ -18,6 +18,7 @@ use craft\models\Site;
 use craft\web\Controller;
 use DateTime;
 use Exception;
+use fostercommerce\advanceddiscounts\discounttypes\AdvancedDiscountType;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
@@ -178,6 +179,7 @@ class ManageController extends Controller
 			'isNewDiscount' => $discount->id === null,
 			'typeOptions' => $typeOptions,
 			'taxBasisOptions' => TaxBasis::options(),
+			'advancedTypeHandle' => AdvancedDiscountType::handle(),
 			'typeSettingsHtml' => $discount->getType()->getSettingsHtml($discount),
 		]);
 	}
@@ -295,6 +297,7 @@ class ManageController extends Controller
 		$id = $this->request->getBodyParam('id');
 		$coupons = $this->request->getBodyParam('coupons');
 		$globalCartCondition = $this->request->getBodyParam('globalCartCondition');
+		$productCondition = $this->request->getBodyParam('productCondition');
 		$panels = $this->request->getBodyParam('panels');
 		$taxBasis = $this->request->getBodyParam('taxBasis');
 
@@ -311,6 +314,7 @@ class ManageController extends Controller
 		$discount->type = $this->stringParam('type', 'advanced');
 		$discount->taxBasis = is_string($taxBasis) ? TaxBasis::tryFrom($taxBasis) : null;
 		$discount->setGlobalCartCondition(is_array($globalCartCondition) || is_string($globalCartCondition) ? $globalCartCondition : null);
+		$discount->setProductCondition(is_array($productCondition) || is_string($productCondition) ? $productCondition : null);
 		$discount->setPanels(is_array($panels) ? $panels : []);
 
 		if (! Plugin::getInstance()->discounts->saveDiscount($discount)) {

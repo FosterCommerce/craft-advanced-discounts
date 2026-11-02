@@ -71,6 +71,7 @@
             instructions: 'group.name.instructions'|t('advanced-discounts'),
             name: 'panels[' ~ panel.key ~ '][name]',
             value: panel.name,
+            required: true,
             siteId: craft.app.sites.primarySite.id,
             fieldAttributes: { data: { 'site-text': craft.app.sites.primarySite.uid } },
         }) }}

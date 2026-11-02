@@ -59,7 +59,7 @@ If the filtered adjustments do not add up to the order's total discount, another
 Two more fields come from the adjustment itself rather than the snapshot:
 
 - `amount` is negative. Add it to a running total rather than subtracting it.
-- `name` is the group's **Discount Name**, or the discount's own name when the group does not set one. When a group holds more than one cart action, each adjustment name ends with its rule label, such as `Summer Sale: Item Subtotal` and `Summer Sale: Shipping`.
+- `name` is the group's **Discount Name**. A group saved before that field was required can be blank, and then `name` is the discount's own name. When a group holds more than one cart action, each adjustment name ends with its rule label, such as `Summer Sale: Item Subtotal` and `Summer Sale: Shipping`.
 
 ## Where each rule attaches
 
