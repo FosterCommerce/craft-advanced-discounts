@@ -183,6 +183,10 @@ abstract class DiscountType implements DiscountTypeInterface
 				'couponCode' => $discount->requireCouponCode ? $order->couponCode : null,
 			];
 
+			if ($actionRule instanceof LineItemCartActionRule) {
+				$snapshot['applyPer'] = $actionRule->applyPer;
+			}
+
 			foreach ($ruleAdjustments as $ruleAdjustment) {
 				$ruleAdjustment->sourceSnapshot = array_merge($ruleAdjustment->sourceSnapshot, $snapshot);
 			}

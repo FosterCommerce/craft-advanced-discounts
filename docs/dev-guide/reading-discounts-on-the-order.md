@@ -55,6 +55,7 @@ If the filtered adjustments do not add up to the order's total discount, another
 | `requireCouponCode` | Whether the discount is gated behind a code. |
 | `couponCode` | The code the customer entered, or `null` when the discount is not gated. |
 | `discountedPurchasableIds` | The purchasables the adjustment covers. Absent on `shipping`. |
+| `applyPer` | Only on `lineItem`: the action's [Apply per](../user-guide/cart-actions.md#apply-per), `lineItem` or `purchasable`. Ignored for `percentage`. |
 
 Two more fields come from the adjustment itself rather than the snapshot:
 
