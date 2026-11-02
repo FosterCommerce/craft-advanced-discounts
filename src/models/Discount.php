@@ -10,8 +10,11 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\models\Site;
 use DateTime;
 use fostercommerce\advanceddiscounts\base\DiscountTypeInterface;
+use fostercommerce\advanceddiscounts\discounttypes\AdvancedDiscountType;
 use fostercommerce\advanceddiscounts\elements\conditions\CartCondition;
+use fostercommerce\advanceddiscounts\elements\conditions\GlobalProductCondition;
 use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
+use fostercommerce\advanceddiscounts\elements\conditions\NestedElementConditionRule;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\NestedConditionConfig;
 use fostercommerce\advanceddiscounts\helpers\SiteText;
@@ -53,6 +56,8 @@ class Discount extends Model
 
 	private ?ElementConditionInterface $_globalCartCondition = null;
 
+	private ?ElementConditionInterface $_productCondition = null;
+
 	/**
 	 * @var Coupon[]|null
 	 */
@@ -87,6 +92,25 @@ class Discount extends Model
 	public function setGlobalCartCondition(ElementConditionInterface|string|array|null $condition): void
 	{
 		$this->_globalCartCondition = NestedConditionConfig::build($condition, CartCondition::class);
+	}
+
+	public function getProductCondition(): ElementConditionInterface
+	{
+		// Limit Advanced discounts only, since Buy X, Get Y chooses its own products
+		$condition = $this->type === AdvancedDiscountType::handle() ? $this->_productCondition : null;
+		$condition ??= new GlobalProductCondition();
+		$condition->mainTag = 'div';
+		$condition->name = 'productCondition';
+
+		return $condition;
+	}
+
+	/**
+	 * @param ElementConditionInterface|string|array<string, mixed>|null $condition
+	 */
+	public function setProductCondition(ElementConditionInterface|string|array|null $condition): void
+	{
+		$this->_productCondition = NestedConditionConfig::build($condition, GlobalProductCondition::class);
 	}
 
 	public function getNameForSite(Site $site): string
@@ -199,12 +223,22 @@ class Discount extends Model
 		}
 	}
 
+	public function validateProductCondition(): void
+	{
+		foreach ($this->getProductCondition()->getConditionRules() as $conditionRule) {
+			if ($conditionRule instanceof NestedElementConditionRule && $conditionRule->getElementCondition()->getConditionRules() === []) {
+				$this->addError('productCondition', Craft::t('advanced-discounts', 'edit.error.productConditionRowEmpty'));
+				return;
+			}
+		}
+	}
+
 	public function validatePanels(): void
 	{
 		$errors = [];
 
 		foreach ($this->panels as $panel) {
-			if (! $panel->validate(['siteNames'])) {
+			if (! $panel->validate(['name', 'siteNames'])) {
 				array_push($errors, ...array_values($panel->getFirstErrors()));
 			}
 
@@ -244,6 +278,7 @@ class Discount extends Model
 					'max' => 255,
 				]],
 			[['coupons'], 'validateCoupons'],
+			[['productCondition'], 'validateProductCondition'],
 			[['panels'], 'validatePanels'],
 		]);
 	}

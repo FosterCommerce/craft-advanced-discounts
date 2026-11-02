@@ -8,6 +8,7 @@ use Craft;
 use craft\commerce\elements\Order;
 use craft\commerce\models\LineItem;
 use craft\commerce\models\OrderAdjustment;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\MoneyHelper;
 use craft\models\Site;
 use fostercommerce\advanceddiscounts\elements\conditions\BogoCartActionRule;
@@ -76,13 +77,14 @@ abstract class DiscountType implements DiscountTypeInterface
 	{
 		$adjustments = [];
 		$site = $this->orderSite($order);
+		$productCondition = $discount->getProductCondition();
 
 		foreach ($discount->panels as $panel) {
 			if (! $panel->enabled) {
 				continue;
 			}
 
-			if (! PromotableThreshold::matches($panel->getCartCondition(), $order)) {
+			if (! PromotableThreshold::matches($panel->getCartCondition(), $order, $productCondition)) {
 				continue;
 			}
 
@@ -102,13 +104,14 @@ abstract class DiscountType implements DiscountTypeInterface
 	{
 		$messages = [];
 		$site = $this->orderSite($order);
+		$productCondition = $discount->getProductCondition();
 
 		foreach ($discount->panels as $panel) {
 			if (! $panel->enabled) {
 				continue;
 			}
 
-			$groupApplies = PromotableThreshold::matches($panel->getCartCondition(), $order);
+			$groupApplies = PromotableThreshold::matches($panel->getCartCondition(), $order, $productCondition);
 
 			foreach ($panel->getMessageCondition()->getConditionRules() as $rule) {
 				if (! $rule instanceof MessageActionRule) {
@@ -122,14 +125,14 @@ abstract class DiscountType implements DiscountTypeInterface
 
 				$messageCondition = $rule->getMessageCondition();
 				$shows = $messageCondition->getConditionRules() !== []
-					? PromotableThreshold::matches($messageCondition, $order)
+					? PromotableThreshold::matches($messageCondition, $order, $productCondition)
 					: $groupApplies;
 
 				if (! $shows) {
 					continue;
 				}
 
-				$messages[] = $this->resolvePlaceholders($message, $panel, $order);
+				$messages[] = $this->resolvePlaceholders($message, $panel, $order, $productCondition);
 			}
 		}
 
@@ -143,6 +146,7 @@ abstract class DiscountType implements DiscountTypeInterface
 	{
 		$adjustments = [];
 		$actionRules = $panel->getCartActionCondition()->getConditionRules();
+		$productCondition = $discount->getProductCondition();
 		$includeRuleLabel = count($actionRules) > 1;
 
 		foreach ($actionRules as $actionRule) {
@@ -150,15 +154,15 @@ abstract class DiscountType implements DiscountTypeInterface
 
 			if ($actionRule instanceof OrderCartActionRule) {
 				$ruleHandle = 'order';
-				$adjustment = $this->buildOrderAdjustment($actionRule, $order, $name);
+				$adjustment = $this->buildOrderAdjustment($actionRule, $order, $name, $productCondition);
 				$ruleAdjustments = $adjustment instanceof OrderAdjustment ? [$adjustment] : [];
 			} elseif ($actionRule instanceof ShippingMethodCartActionRule) {
 				$ruleHandle = 'shipping';
-				$adjustment = $this->buildShippingAdjustment($actionRule, $order, $name);
+				$adjustment = $this->buildShippingAdjustment($actionRule, $order, $name, $productCondition);
 				$ruleAdjustments = $adjustment instanceof OrderAdjustment ? [$adjustment] : [];
 			} elseif ($actionRule instanceof LineItemCartActionRule) {
 				$ruleHandle = 'lineItem';
-				$ruleAdjustments = $this->buildLineItemAdjustments($actionRule, $panel, $order, $name);
+				$ruleAdjustments = $this->buildLineItemAdjustments($actionRule, $panel, $order, $name, $productCondition);
 			} elseif ($actionRule instanceof BogoCartActionRule) {
 				$ruleHandle = 'bogo';
 				$ruleAdjustments = $this->buildBogoAdjustments($actionRule, $order, $name);
@@ -179,6 +183,10 @@ abstract class DiscountType implements DiscountTypeInterface
 				'couponCode' => $discount->requireCouponCode ? $order->couponCode : null,
 			];
 
+			if ($actionRule instanceof LineItemCartActionRule) {
+				$snapshot['applyPer'] = $actionRule->applyPer;
+			}
+
 			foreach ($ruleAdjustments as $ruleAdjustment) {
 				$ruleAdjustment->sourceSnapshot = array_merge($ruleAdjustment->sourceSnapshot, $snapshot);
 			}
@@ -189,7 +197,7 @@ abstract class DiscountType implements DiscountTypeInterface
 		return $adjustments;
 	}
 
-	private function buildOrderAdjustment(OrderCartActionRule $rule, Order $order, string $discountName): ?OrderAdjustment
+	private function buildOrderAdjustment(OrderCartActionRule $rule, Order $order, string $discountName, ElementConditionInterface $productCondition): ?OrderAdjustment
 	{
 		if (! $rule->discountValue) {
 			return null;
@@ -199,7 +207,7 @@ abstract class DiscountType implements DiscountTypeInterface
 		$discountedPurchasableIds = [];
 
 		foreach ($order->getLineItems() as $lineItem) {
-			if (! $lineItem->getIsPromotable()) {
+			if (! PromotableThreshold::isPromotable($lineItem, $productCondition)) {
 				continue;
 			}
 
@@ -221,13 +229,22 @@ abstract class DiscountType implements DiscountTypeInterface
 		return $adjustment;
 	}
 
-	private function buildShippingAdjustment(ShippingMethodCartActionRule $rule, Order $order, string $discountName): ?OrderAdjustment
+	private function buildShippingAdjustment(ShippingMethodCartActionRule $rule, Order $order, string $discountName, ElementConditionInterface $productCondition): ?OrderAdjustment
 	{
 		if (! $rule->discountValue) {
 			return null;
 		}
 
 		if (! $rule->matchElement($order)) {
+			return null;
+		}
+
+		// Skip shipping on carts with no line item for the products this discount is limited to
+		$matchingLineItems = array_filter(
+			$order->getLineItems(),
+			static fn (LineItem $lineItem): bool => PromotableThreshold::isPromotable($lineItem, $productCondition)
+		);
+		if ($productCondition->getConditionRules() !== [] && $matchingLineItems === []) {
 			return null;
 		}
 
@@ -244,7 +261,7 @@ abstract class DiscountType implements DiscountTypeInterface
 	/**
 	 * @return OrderAdjustment[]
 	 */
-	private function buildLineItemAdjustments(LineItemCartActionRule $rule, DiscountPanel $panel, Order $order, string $discountName): array
+	private function buildLineItemAdjustments(LineItemCartActionRule $rule, DiscountPanel $panel, Order $order, string $discountName, ElementConditionInterface $productCondition): array
 	{
 		if (! $rule->discountValue) {
 			return [];
@@ -261,7 +278,7 @@ abstract class DiscountType implements DiscountTypeInterface
 				continue;
 			}
 
-			if (! $lineItem->getIsPromotable()) {
+			if (! PromotableThreshold::isPromotable($lineItem, $productCondition)) {
 				continue;
 			}
 
@@ -387,7 +404,7 @@ abstract class DiscountType implements DiscountTypeInterface
 		return (float) MoneyHelper::toDecimal($money);
 	}
 
-	private function resolvePlaceholders(string $message, DiscountPanel $panel, Order $order): string
+	private function resolvePlaceholders(string $message, DiscountPanel $panel, Order $order, ElementConditionInterface $productCondition): string
 	{
 		$placeholders = [];
 
@@ -400,12 +417,12 @@ abstract class DiscountType implements DiscountTypeInterface
 			}
 		}
 
-		$amountRemaining = PromotableThreshold::amountRemaining($panel->getCartCondition(), $order);
+		$amountRemaining = PromotableThreshold::amountRemaining($panel->getCartCondition(), $order, $productCondition);
 		if ($amountRemaining !== null) {
 			$placeholders['{amountRemaining}'] = MoneyHelper::toString(Amounts::toMoney($amountRemaining, (string) $order->currency));
 		}
 
-		$quantityRemaining = PromotableThreshold::quantityRemaining($panel->getCartCondition(), $order);
+		$quantityRemaining = PromotableThreshold::quantityRemaining($panel->getCartCondition(), $order, $productCondition);
 		if ($quantityRemaining !== null) {
 			$placeholders['{quantityRemaining}'] = $quantityRemaining;
 		}

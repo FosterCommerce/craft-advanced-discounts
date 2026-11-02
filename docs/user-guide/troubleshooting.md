@@ -18,6 +18,8 @@ Work down this list.
 
 **The totals are lower than the cart looks.** Conditions test totals without non-promotable variants, so a cart can show more on screen than it counts for. Quantity conditions and Buy X, Get Y triggers skip those units too. See [excluded variants](excluded-variants.md).
 
+**The line items do not match Global Product Conditions.** Only matching line items count toward the discount's conditions. See [Global Product Conditions](discounts.md#global-product-conditions).
+
 **The action names products that are not in the cart.** A Line Items action set to **Selected line items** only discounts the products picked there. **Same line items as cart conditions** follows the group's conditions instead. See [cart actions](cart-actions.md).
 
 **The discount type is no longer registered.** If a discount was saved with a type from a module that has since been removed, the discount is missing from the index and does not apply to orders. The log names the missing handle. See [adding a discount type](../dev-guide/custom-discount-types.md).

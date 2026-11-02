@@ -32,7 +32,7 @@ Tests the order's totals. Choose from:
 - **Total price**. The same figure, floored by the store's minimum total price strategy, such as never below \$0 or never below shipping cost.
 - **Total quantity**. The total number of items in the cart.
 
-Totals leave out non-promotable variants. See [excluded variants](excluded-variants.md).
+Totals leave out non-promotable variants. See [excluded variants](excluded-variants.md). With [Global Product Conditions](discounts.md#global-product-conditions), totals also leave out line items that do not match.
 
 ## User
 

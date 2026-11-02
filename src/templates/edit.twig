@@ -152,11 +152,33 @@
         name: 'type',
         options: typeOptions,
         value: discount.type,
+        toggle: true,
+        targetPrefix: 'type-',
     }) }}
 
-    <div id="type-settings">
-        {{ typeSettingsHtml|raw }}
-    </div>
+    {% set productCondition %}
+        {{ discount.productCondition.getBuilderHtml()|raw }}
+    {% endset %}
+
+    {{ forms.field({
+        label: 'edit.globalProductConditions'|t('advanced-discounts'),
+        instructions: 'edit.globalProductConditions.instructions'|t('advanced-discounts'),
+        errors: discount.getErrors('productCondition'),
+        fieldAttributes: {
+            id: "type-#{advancedTypeHandle}",
+            class: discount.type != advancedTypeHandle ? ['hidden'] : [],
+        },
+    }, productCondition) }}
+
+    {% set typeSettings %}
+        <div id="type-settings">
+            {{ typeSettingsHtml|raw }}
+        </div>
+    {% endset %}
+
+    {{ forms.field({
+        label: 'edit.groups'|t('advanced-discounts'),
+    }, typeSettings) }}
 
 
     <div class="pane tip">

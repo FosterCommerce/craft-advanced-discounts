@@ -61,7 +61,7 @@ A message is in the array when all of the following hold.
 5. The message text is not empty.
 6. Its own show-when rules match. A message without show-when rules follows its group's **Cart Conditions**.
 
-Steps 3 and 6 test totals without non-promotable line items, the same as the discount itself. A cart made up mostly of non-promotable variants might not meet a threshold its on-screen total suggests.
+Steps 3 and 6 test totals without non-promotable line items, and without line items that fail the discount's Global Product Conditions, the same as the discount itself. A cart made up mostly of non-promotable variants might not meet a threshold its on-screen total suggests.
 
 ## Ordering
 

@@ -4,7 +4,7 @@ How to create, order, and structure discounts. **Advanced Discounts -> Discounts
 
 ![The Discounts index](../../resources/img/discounts-index.png)
 
-A discount holds one optional set of Global Cart Conditions and any number of groups. Each group pairs its own cart rules with the actions and messages they trigger. One discount can hold a whole tiered sale: 10% off at \$100, 15% at \$200, 20% at \$500.
+A discount holds optional Global Cart Conditions, optional Global Product Conditions, and any number of groups. Each group pairs its own cart rules with the actions and messages they trigger. One discount can hold a whole tiered sale: 10% off at \$100, 15% at \$200, 20% at \$500.
 
 ![Example of a multi-tiered sale discount](../../resources/img/multi-tier-sale.png)
 
@@ -16,7 +16,7 @@ The plugin saves a new discount at the top of the list, where it is evaluated fi
 
 ### Name
 
-Names the adjustment on the order, unless the group sets its own **Discount Name**.
+Names the discount in the control panel. Customers see each group's **Discount Name** instead.
 
 ### Require Coupon Code
 
@@ -28,7 +28,7 @@ Turn on **Require Coupon Code** to gate the discount behind a code. See [coupon 
 
 **Buy X, Get Y** covers "buy one, get one free" style offers. Choose the products the customer buys and the products they get. The plugin counts the chosen buy products together.
 
-Changing **Type** replaces the groups with a new, empty set for that type. Switching back before you save restores the earlier groups. When you click **Save discount**, the plugin keeps only the groups of the selected type.
+Changing **Type** replaces the groups with a new, empty set for that type. Switching back before you save restores the earlier groups. When you click **Save discount**, the plugin keeps only the groups of the selected type. Saving a type other than **Advanced** clears Global Product Conditions.
 
 ### Tax Basis
 
@@ -40,11 +40,21 @@ When this discount applies, the plugin skips the Advanced Discounts discounts be
 
 ## Conditions
 
-Conditions decide when a discount applies to the cart. There are two kinds: Global Cart Conditions, and the [Cart Conditions](cart-conditions.md) inside each group.
+Global Cart Conditions and each group's [Cart Conditions](cart-conditions.md) decide when a discount applies. Global Product Conditions decide which line items the discount covers.
 
 ### Global Cart Conditions
 
 Global Cart Conditions gate the whole discount, whatever its groups say. For example, a date range covering the first week of August. They are optional, and you can add more than one. They offer the same rules as a group's Cart Conditions.
+
+### Global Product Conditions
+
+Global Product Conditions limit an **Advanced** discount to line items for matching products or variants. The field appears only when **Type** is **Advanced**, because Buy X, Get Y names its own products. Click **Limit to**, choose **Products** or **Variants**, then add rules for that type. The rules include Commerce's own, one for each field, and **Product** or **Variant** to choose items directly. For example, choose **Products** and add a rule for the field that marks parts.
+
+To add another row, click **OR**. A line item matches when any row matches it. Each row needs at least one rule.
+
+Only matching line items count toward the discount's conditions and the amounts in its messages. Only matching line items get the discount. A **Shipping** action takes its discount off the whole shipping cost, and only when the cart has at least one matching line item. Line items that do not match can still get later discounts, unless this discount has **Stop Processing Further Discounts** on.
+
+To cover every product, leave Global Product Conditions empty.
 
 ### Cart Conditions
 
@@ -56,7 +66,7 @@ To add a group, click **Add group**.
 
 ![An empty discount group](../../resources/img/discount-panel-empty.png)
 
-**Discount Name** on the group replaces the discount's own name on the order when this group applies.
+**Discount Name** names the adjustment on the order when this group applies. Every group needs one, so the discount's own name stays internal.
 
 [Cart Conditions](cart-conditions.md) set the rules.
 
@@ -95,7 +105,7 @@ The order's site sets which text the customer sees. For the name on the order's 
 
 1. The group's **Discount Name** for the order's site.
 2. The group's **Discount Name** on the primary site.
-3. The discount's **Name** for the order's site.
-4. The discount's **Name** on the primary site.
+
+A group saved before **Discount Name** was required can still be blank. It shows the discount's **Name** until you give it one.
 
 A completed order keeps the adjustment name it was placed with.

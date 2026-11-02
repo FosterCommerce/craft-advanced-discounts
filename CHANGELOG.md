@@ -1,5 +1,14 @@
 # Release Notes for Advanced Discounts
 
+## Unreleased
+
+### Added
+- Added Global Product Conditions to Advanced discounts, which limit a discount to matching products or variants.
+- Added `applyPer` to the source snapshot of Line Items adjustments, for telling a per-unit flat amount from a per-line one.
+
+### Changed
+- Groups now require a Discount Name, so the discount's own name stays internal. A group saved without one shows the discount's name until it gets one.
+
 ## 1.2.0 - 2026-10-30
 
 ### Added
