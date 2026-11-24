@@ -30,7 +30,7 @@ The plugin evaluates every order, and Commerce's own discounts still apply. A Co
 
 **Stop Processing Further Discounts only stops this plugin's discounts.** Commerce's own discounts still apply.
 
-**Both write adjustments of type `discount`.** Only this plugin's adjustments have `advancedDiscountId` in their snapshot, which is how a template tells them apart. See [reading discounts on the order](../dev-guide/reading-discounts-on-the-order.md).
+**Both write `discount` adjustments, apart from this plugin's Shipping actions.** Only this plugin's adjustments have `advancedDiscountId` in their snapshot, which is how a template tells them apart. For **Shipping** actions, see [Shipping Discounts](../reference/configuration.md#shipping-discounts). See [reading discounts on the order](../dev-guide/reading-discounts-on-the-order.md).
 
 **Coupon codes are separate sets.** See [coupon codes](coupons.md#what-the-customer-sees).
 

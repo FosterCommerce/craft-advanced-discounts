@@ -80,6 +80,10 @@ final class PromotableThreshold
 						$currency = (string) $order->currency;
 						$remaining = Amounts::toMoney((float) $orderRule->value, $currency)
 							->subtract(Amounts::toMoney(self::promotableValue($order, $orderField, $lineItemField, $appliesMinimumPrice, $productCondition), $currency));
+						// A strict threshold needs one more minor unit, since an equal value doesn’t match
+						if ($orderRule->operator === '>') {
+							$remaining = $remaining->add(new Money(1, $remaining->getCurrency()));
+						}
 
 						return $remaining->isNegative() ? 0.0 : (float) MoneyHelper::toDecimal($remaining);
 					}
@@ -100,7 +104,7 @@ final class PromotableThreshold
 						&& $orderRule->value !== null
 						&& in_array($orderRule->operator, ['>=', '>'], true)
 					) {
-						return max(0, (int) $orderRule->value - self::promotableQty($order, $productCondition));
+						return max(0, (int) $orderRule->value + ($orderRule->operator === '>' ? 1 : 0) - self::promotableQty($order, $productCondition));
 					}
 				}
 			}
@@ -112,7 +116,7 @@ final class PromotableThreshold
 						&& $rule->quantity !== null
 						&& in_array($rule->operator, ['>=', '>'], true)
 					) {
-						return max(0, $rule->quantity - $rule->matchedQuantity(self::promotableLineItems($order, $productCondition)));
+						return max(0, $rule->quantity + ($rule->operator === '>' ? 1 : 0) - $rule->matchedQuantity(self::promotableLineItems($order, $productCondition)));
 					}
 				}
 			}

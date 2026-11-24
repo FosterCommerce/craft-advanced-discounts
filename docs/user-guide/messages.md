@@ -25,8 +25,8 @@ The plugin replaces tokens in the message text with live cart figures. Drag a to
 | Token | Value |
 |---|---|
 | `{discountAmount}` | The first action's discount value in this group, as a percentage or an amount. |
-| `{amountRemaining}` | Requires an Order cart condition set to "at least" or "more than" a money total. Renders the amount left to reach it, counting only discountable items. |
-| `{quantityRemaining}` | Requires an Order or Line Items cart condition set to "at least" or "more than" a quantity. Renders the items left to reach it, counting only discountable items. |
+| `{amountRemaining}` | Requires an Order cart condition set to "is greater than or equals" or "is greater than" a money total. Renders the amount left to reach it, counting only discountable items. |
+| `{quantityRemaining}` | Requires an Order condition set to "is greater than or equals" or "is greater than" a quantity, or a Quantity rule set to "at least" or "more than". Renders the items left to reach it, counting only discountable items. |
 | `{buyQuantityRemaining}` | Buy X, Get Y only. Items left to add before the next reward is earned. |
 | `{discountedQuantity}` | Buy X, Get Y only. How many items the reward gives each time it is earned. |
 

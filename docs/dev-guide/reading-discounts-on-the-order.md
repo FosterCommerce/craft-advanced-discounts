@@ -8,20 +8,22 @@ Show a customer which discount reduced what, rather than a single lump sum.
 ) %}
 ```
 
-The plugin does not change prices. Every discount it applies is a Commerce [order adjustment](https://craftcms.com/docs/commerce/5.x/system/orders-carts.html#order-adjustments), so the order keeps its original subtotal, shipping cost, and tax lines. Each adjustment has a snapshot describing the rule that produced it.
+The plugin does not change prices. Every discount it applies is a Commerce [order adjustment](https://craftcms.com/docs/commerce/5.x/extend/adjusters.html), with a snapshot describing the rule that produced it.
 
 ## Finding this plugin's adjustments
 
 Commerce's own discounts also use the adjustment type `discount`, so filtering on type alone mixes the two together. Every adjustment from this plugin has `advancedDiscountId` in its source snapshot. Commerce's own discount adjustments do not set it.
 
+With the [Shipping Discounts](../reference/configuration.md#shipping-discounts) setting on **Reduce the shipping cost**, the default for new installs, a **Shipping** action writes a negative `shipping` adjustment instead. It lowers `totalShippingCost`, and `totalDiscount` leaves it out.
+
 `cart.adjustments` returns every adjustment on the order, including those attached to line items. `lineItem.adjustments` returns only that line item's.
 
-If the filtered adjustments do not add up to the order's total discount, another discount, such as one of Commerce's own, applies to the order. To see every adjustment, drop the filter.
+If this plugin's `discount` adjustments add up to less than `order.totalDiscount`, another discount, such as one of Commerce's own, applies to the order. To see every adjustment, drop the filter.
 
 ## Example
 
 1. Loop over the line items and show each line's own adjustments from the plugin.
-2. Show the order-level adjustments from the plugin, the ones without a `lineItemId`.
+2. Show the order-level adjustments from the plugin, the ones without a `lineItemId`. Filter on type `discount`. Under **Reduce the shipping cost**, `order.totalShippingCost` already includes the shipping discount.
 
 ```twig
 {% for lineItem in cart.lineItems %}
@@ -38,7 +40,9 @@ If the filtered adjustments do not add up to the order's total discount, another
 {% endfor %}
 
 {% for adjustment in cart.adjustments|filter(
-  adjustment => (adjustment.sourceSnapshot.advancedDiscountId ?? false) and adjustment.lineItemId is null
+  adjustment => (adjustment.sourceSnapshot.advancedDiscountId ?? false)
+    and adjustment.lineItemId is null
+    and adjustment.type == 'discount'
 ) %}
   <p>{{ adjustment.name }}: {{ adjustment.amount|commerceCurrency(cart.currency) }}</p>
 {% endfor %}
@@ -82,4 +86,4 @@ An order has one coupon code at most, so every gated adjustment on an order repe
 
 ## Tax
 
-The **Tax Basis** setting decides whether the plugin's adjustments are applied before or after tax. With **Before discounts**, the plugin adds its adjustments after tax is calculated. See the [configuration reference](../reference/configuration.md#tax-basis).
+With **Before discounts** [Tax Basis](../reference/configuration.md#tax-basis), the plugin adds its adjustments after Commerce calculates tax.

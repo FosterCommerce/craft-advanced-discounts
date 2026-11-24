@@ -14,12 +14,12 @@ Goal: a coupon code that takes 10% off every product in the cart, and stops the 
 
 5. Leave **Global Cart Conditions** empty, since the code is the only restriction.
 6. Leave **Type** on **Advanced**.
-7. Give the group a **Discount Name**. The customer sees this name in the checkout once the coupon applies.
+7. Give the group a **Discount Name**, which names the adjustment on the order.
 8. Skip **Cart Conditions**. Under **Cart Actions**, add a **Line Items** action. Leave **Apply to** on **All line items**, choose **Discount a percentage**, enter 10, and leave **Apply per** on **Per line item**.
 
    ![Setting the Cart Actions](../../resources/img/demo-coupon-big10-actions.png)
 
-9. Skip **Messages**. The customer already sees the coupon applied in the cart.
+9. Skip **Messages**.
 
    ![Set up for a 10% off coupon](../../resources/img/demo-big10-coupon-setup.png)
 

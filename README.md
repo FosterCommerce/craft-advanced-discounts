@@ -2,25 +2,25 @@
 
 # Advanced Discounts
 
-A Craft CMS plugin that builds multi-tier Craft Commerce **discounts** from flexible cart rules.
+Build tiered, conditional, and buy-one-get-one discounts from cart rules.
 
 ## Overview
 
-- Applies a discount when the customer's cart matches rules you set on date, line items, order totals, or the customer on the order.
-- Stacks multiple tiers inside one discount, each with its own rules and reward (10% off at \$100, 15% at \$200, 20% at \$500).
-- Discounts an item subtotal, specific line items, or shipping, by a flat amount or a percentage.
-- Runs "Buy One Get One Free" style promotions where one product in the cart discounts another.
-- Shows the customer promotional messages that fill in live figures, such as how much more they need to spend to reach the next tier.
-- Gates a discount behind a coupon code, with bulk code generation and a per-code usage limit.
-- Controls whether tax is calculated before or after discounts, for the whole store or per discount.
+- Build tiers into one discount, each with its own cart rules and reward: 10% off at \$100, 15% at \$200, 20% at \$500.
+- Show customers messages in your cart template, with live figures such as how much more to spend for the next tier.
+- Run "buy one, get one free" promotions, where buying one product discounts another.
+- Require a coupon code, with bulk code generation and a usage limit per code.
+- Limit a discount to matching products or variants.
+- Start a new discount from a preset: free items, free shipping, or a free order.
+- Choose whether Commerce calculates tax before or after discounts, and whether a shipping discount lowers the shipping cost or shows as its own discount line.
 
 ## How it works
 
-Create discounts under **Advanced Discounts -> Discounts**. Each time Commerce recalculates a cart, the plugin tests each enabled discount from the top of the list down, and adds an order adjustment for each one that matches. Prices stay as they are. Commerce's own discounts still apply, and both can discount the same cart.
+Create discounts under **Advanced Discounts -> Discounts**. Each time Commerce recalculates a cart, the plugin tests each enabled discount from the top of the list down, and adds order adjustments for each one that matches. Prices stay as they are. Commerce's own discounts still apply, and both can discount the same cart.
 
 ## Usage
 
-Promotional messages appear where a template asks for them:
+Promotional messages appear where a template calls `getMessages()`:
 
 ```twig
 {% for discountMessage in craft.advancedDiscounts.getMessages(cart) %}

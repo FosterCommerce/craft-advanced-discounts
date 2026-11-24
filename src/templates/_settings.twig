@@ -13,4 +13,13 @@
     value: settings.taxBasis,
 }) }}
 
+{{ forms.selectField({
+    label: 'settings.shippingDiscounts'|t('advanced-discounts'),
+    instructions: 'settings.shippingDiscounts.instructions'|t('advanced-discounts'),
+    id: 'shippingDiscounts',
+    name: 'shippingDiscounts',
+    options: shippingDiscountsOptions,
+    value: settings.shippingDiscounts,
+}) }}
+
 {% include 'advanced-discounts/_includes/plugin-footer' %}

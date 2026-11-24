@@ -20,6 +20,7 @@ use DateTime;
 use Exception;
 use fostercommerce\advanceddiscounts\discounttypes\AdvancedDiscountType;
 use fostercommerce\advanceddiscounts\elements\conditions\BundleCondition;
+use fostercommerce\advanceddiscounts\enums\DiscountPreset;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\helpers\SiteText;
@@ -159,8 +160,9 @@ class ManageController extends Controller
 			'edit.coupons.generate',
 		]);
 
+		$preset = DiscountPreset::tryFrom($this->stringParam('preset', ''));
 		$discount = Craft::$app->getUrlManager()->getRouteParams()['discount']
-			?? ($id !== null ? Plugin::getInstance()->discounts->getDiscountById($id) : new Discount());
+			?? ($id !== null ? Plugin::getInstance()->discounts->getDiscountById($id) : ($preset?->createDiscount() ?? new Discount()));
 
 		if ($discount === null) {
 			throw new NotFoundHttpException(Craft::t('advanced-discounts', 'edit.error.notFound'));
@@ -177,6 +179,8 @@ class ManageController extends Controller
 		return $this->renderTemplate('advanced-discounts/edit', [
 			'discount' => $discount,
 			'isNewDiscount' => $discount->id === null,
+			'preset' => $preset?->value,
+			'presetOptions' => DiscountPreset::options(),
 			'typeOptions' => $typeOptions,
 			'taxBasisOptions' => TaxBasis::options(),
 			'advancedTypeHandle' => AdvancedDiscountType::handle(),

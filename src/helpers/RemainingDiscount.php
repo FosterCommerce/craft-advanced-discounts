@@ -30,7 +30,7 @@ final class RemainingDiscount
 	{
 		$this->currency = (string) $order->currency;
 		$this->promotable = $this->toMoney(0);
-		$this->shipping = $this->toMoney($order->getTotalShippingCost());
+		$this->shipping = Amounts::shippingCost($order);
 
 		foreach ($order->getLineItems() as $lineItem) {
 			if ($lineItem->getIsPromotable()) {

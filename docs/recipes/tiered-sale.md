@@ -19,15 +19,15 @@ Each tier is one group inside a single discount, with its own conditions, action
 
    ![Setting the first group title](../../resources/img/demo-multi-tier-first-group-title.png)
 
-5. Under **Cart Conditions**, add an **Order** condition with an **Item Subtotal** rule set to **is greater than or equals** \$15,000.
+5. Under **Cart Conditions**, add an **Order** condition and set its **Item Subtotal** rule to **is greater than or equals** \$15,000.
 
    ![Set up the cart conditions for the group](../../resources/img/demo-multi-tier-group-cart-conditions.png)
 
-6. Under **Cart Actions**, add an action giving 12% off.
+6. Under **Cart Actions**, add **Line Items**. Leave **Apply to** on **All line items**, choose **Discount a percentage**, and enter 12.
 
    ![Set up the cart actions for this group](../../resources/img/demo-multi-tier-group-actions.png)
 
-7. Add a message telling the customer they have qualified for 12% off.
+7. Add a message telling the customer they have qualified for 12% off. Leave it without show-when rules, so it shows whenever the group applies.
 
    ![Show the customer a message indicating their discount](../../resources/img/demo-multi-tier-group-qualifying-message.png)
 
@@ -43,7 +43,7 @@ Each tier is one group inside a single discount, with its own conditions, action
 
     ![The completed first group](../../resources/img/demo-multi-tier-first-group.png)
 
-11. Click **Add group** for each remaining tier, in descending order. Give each lower tier's qualifying message show-when rules with an upper limit, such as **Item Subtotal** **is less than** \$15,000 on the 10% tier. **Stop Processing Further Groups** does not hide messages.
+11. Click **Add group** for each remaining tier, in descending order. Give each lower tier's qualifying message show-when rules for both bounds, each its own **Order** condition, such as **Item Subtotal** **is greater than or equals** \$10,000 and **is less than** \$15,000 on the 10% tier. **Stop Processing Further Groups** does not hide messages.
 12. Click **Save discount**.
 
 ![Sale with multiple tiers of discount](../../resources/img/multi-tier-sale.png)
