@@ -1,6 +1,6 @@
 # Advanced Discounts documentation
 
-Build Craft Commerce discounts from cart rules, with tiers, coupon codes, and promotional messages.
+Build tiered, conditional, and buy-one-get-one discounts from cart rules.
 
 ## Where to go
 

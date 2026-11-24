@@ -18,7 +18,7 @@ Codes are unique across every discount, not only this one, and a code can't appe
 
 ## Uses and limits
 
-**Uses** counts completed orders the discount applied to. The count goes up when the order completes, so a code in an abandoned cart does not count against its limit.
+**Uses** counts completed orders that used this code. The count goes up when the order completes, so a code in an abandoned cart does not count against its limit.
 
 Leave **Max Uses** blank for unlimited. Once a code's uses equal **Max Uses**, the code stops working.
 

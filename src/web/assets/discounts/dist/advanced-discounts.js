@@ -307,6 +307,18 @@
 			});
 		}
 
+		// Reload the page to build the preset discount on the server
+		const presetSelect = document.getElementById('preset');
+		if (presetSelect !== null) {
+			presetSelect.addEventListener('change', function () {
+				const url = new URL(presetSelect.dataset.url);
+				if (presetSelect.value !== '') {
+					url.searchParams.set('preset', presetSelect.value);
+				}
+				window.location.href = url.toString();
+			});
+		}
+
 		// Discount type switcher
 		const typeSelect = document.getElementById('type');
 		if (typeSelect !== null) {

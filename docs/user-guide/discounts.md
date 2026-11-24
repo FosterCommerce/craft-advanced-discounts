@@ -1,6 +1,6 @@
 # Discounts
 
-How to create, order, and structure discounts. **Advanced Discounts -> Discounts** lists every discount in the order the plugin evaluates them, with a search field.
+How to create, order, and structure discounts. **Advanced Discounts -> Discounts** lists every discount in the order the plugin evaluates them.
 
 ![The Discounts index](../../resources/img/discounts-index.png)
 
@@ -12,7 +12,25 @@ A discount holds optional Global Cart Conditions, optional Global Product Condit
 
 Click **New discount**.
 
-The plugin saves a new discount at the top of the list, where it is evaluated first. Discounts are evaluated top down. To change the order, drag discounts on the index.
+The plugin adds a new discount to the top of the list and evaluates discounts top down. To change the order, drag discounts on the index.
+
+### Start from a preset
+
+To fill a new discount with a ready-made setup, choose one from **Start from a preset**. Every field stays editable.
+
+| Preset | Cart Actions |
+|---|---|
+| **Free items** | **Line Items**, all line items, 100% |
+| **Free shipping** | **Shipping**, **Any** method, 100% |
+| **Free order** | **Line Items**, all line items, 100%, plus **Shipping** 100% |
+
+Each preset is an **Advanced** discount with one group, no conditions, and **Require Coupon Code** off. The group's **Discount Name** is the preset's name, which customers see on the order. Saved as is, the discount applies to every cart. Add a coupon code or conditions to limit it.
+
+Each preset fills the discount's **Name** and the group's **Discount Name** with the preset's name.
+
+Under **Before discounts** [Tax Basis](../reference/configuration.md#tax-basis), **Free items** and **Free order** still charge tax, because the discount comes off after tax.
+
+Choosing a preset reloads the page, which clears fields already filled in.
 
 ### Name
 
@@ -44,11 +62,11 @@ Global Cart Conditions and each group's [Cart Conditions](cart-conditions.md) de
 
 ### Global Cart Conditions
 
-Global Cart Conditions gate the whole discount, whatever its groups say. For example, a date range covering the first week of August. They are optional, and you can add more than one. They offer the same rules as a group's Cart Conditions.
+Global Cart Conditions gate the whole discount, such as a date range covering the first week of August. They are optional, and you can add more than one. They use the same rules as a group's Cart Conditions.
 
 ### Global Product Conditions
 
-Global Product Conditions limit an **Advanced** discount to line items for matching products or variants. The field appears only when **Type** is **Advanced**, because Buy X, Get Y names its own products. Click **Limit to**, choose **Products** or **Variants**, then add rules for that type. The rules include Commerce's own, one for each field, and **Product** or **Variant** to choose items directly. For example, choose **Products** and add a rule for the field that marks parts.
+Global Product Conditions limit an **Advanced** discount to line items for matching products or variants. The field appears only when **Type** is **Advanced**, because Buy X, Get Y names its own products. Click **Limit to**, choose **Products** or **Variants**, then add rules for that type. The rules include Commerce's product or variant rules, one rule per custom field, and **Product** or **Variant** for choosing items directly. For example, choose **Products** and add a rule for the field that marks parts.
 
 To add another row, click **OR**. A line item matches when any row matches it. Each row needs at least one rule.
 
@@ -58,7 +76,7 @@ To cover every product, leave Global Product Conditions empty.
 
 ### Cart Conditions
 
-The plugin tests a group's Cart Conditions only after the discount's Global Cart Conditions match. For the rules on offer and how they combine, see [cart conditions](cart-conditions.md).
+The plugin tests a group's Cart Conditions only after the discount's Global Cart Conditions match. For the rules and how they combine, see [cart conditions](cart-conditions.md).
 
 ## Discount groups
 
@@ -66,7 +84,7 @@ To add a group, click **Add group**.
 
 ![An empty discount group](../../resources/img/discount-panel-empty.png)
 
-**Discount Name** names the adjustment on the order when this group applies. Every group needs one, so the discount's own name stays internal.
+**Discount Name** names the adjustment on the order when this group applies. Every group needs one.
 
 [Cart Conditions](cart-conditions.md) set the rules.
 
@@ -80,7 +98,7 @@ To add a group, click **Add group**.
 
 Each group's actions menu holds these controls. You can also drag a group to a new position.
 
-- **Collapse** and **Open** hide and show the group's body. Double-clicking the group's bar does the same.
+- **Collapse** and **Open** hide and show the group's body.
 - **Disable** takes the group out of the discount: it does not discount the order or show messages, whatever its conditions say. Disabling collapses the group and marks it with a gray dot. **Enable** turns the group back on.
 - **Move up** and **Move down** reorder groups. Order decides which group wins when **Stop Processing Further Groups** is on.
 - **Delete** removes the group from the screen. The group is removed from the discount when you click **Save discount**.
@@ -91,7 +109,7 @@ Each group's actions menu holds these controls. You can also drag a group to a n
 
 On a multi-site install, three fields can be set for each site: the discount's **Name**, each group's **Discount Name**, and each [message](messages.md). These fields show Craft's translation icon. Every other setting, including groups, conditions, actions, and coupons, is shared by all sites. A group added or deleted while editing one site is added to or deleted from every site.
 
-To edit a site's text, choose the site from the site menu at the top left of **Advanced Discounts -> Discounts** or of a discount. The site stays selected as you move between the index and a discount, and the index lists each discount's name for that site.
+To edit a site's text, choose the site from the site menu on **Advanced Discounts -> Discounts** or of a discount. The site stays selected as you move between the index and a discount, and the index lists each discount's name for that site.
 
 **New discount** opens on the primary site, because the primary site's **Name** is required.
 
@@ -105,7 +123,6 @@ The order's site sets which text the customer sees. For the name on the order's 
 
 1. The group's **Discount Name** for the order's site.
 2. The group's **Discount Name** on the primary site.
-
-A group saved before **Discount Name** was required can still be blank. It shows the discount's **Name** until you give it one.
+3. The discount's **Name** for the order's site, for a group saved before **Discount Name** was required.
 
 A completed order keeps the adjustment name it was placed with.

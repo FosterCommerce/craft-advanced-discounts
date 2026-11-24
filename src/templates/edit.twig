@@ -23,6 +23,17 @@
 {% do view.registerAssetBundle('fostercommerce\\advanceddiscounts\\web\\assets\\discounts\\DiscountsAsset') %}
 
 {% block actionButton %}
+    {% if isNewDiscount %}
+        {{ forms.select({
+            id: 'preset',
+            options: [{ label: 'edit.preset.blank'|t('advanced-discounts'), value: '' }]|merge(presetOptions),
+            value: preset,
+            inputAttributes: {
+                aria: { label: 'edit.preset'|t('advanced-discounts') },
+                data: { url: url('advanced-discounts/new', requestedSite ? { site: requestedSite.handle } : {}) },
+            },
+        }) }}
+    {% endif %}
     <button type="submit" class="btn submit">{{ 'edit.save'|t('advanced-discounts') }}</button>
 {% endblock %}
 
@@ -40,6 +51,7 @@
 
     {# Keep the Name field visible while it has an error, so the error shows on any site #}
     {{ forms.textField({
+        first: true,
         label: 'edit.name'|t('advanced-discounts'),
         id: 'name',
         name: 'name',
@@ -56,6 +68,7 @@
     {% if craft.app.isMultiSite %}
         {% for site in craft.app.sites.allSites|filter(site => not site.primary) %}
             {{ forms.textField({
+                first: true,
                 label: 'edit.name'|t('advanced-discounts'),
                 name: 'siteNames[' ~ site.uid ~ ']',
                 value: discount.siteNames[site.uid] ?? '',

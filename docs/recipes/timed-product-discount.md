@@ -8,12 +8,12 @@ Goal: 5% off a chosen set of products for one week, without a coupon code.
    ![Setting the date range](../../resources/img/demo-global-date-range.png)
 
 3. Give the group a **Discount Name**, "5% off tees".
-4. Under **Cart Conditions**, add **Line Items**, then add a **Quantity** rule.
+4. Under **Cart Conditions**, add **Line Items**. It starts with a **Quantity** rule.
 
    ![Choose which products qualify for the discount](../../resources/img/demo-selecting-products.png)
 
-5. Click **Choose** and pick a product. To apply the discount only once the customer has 2 or more of the item, set the quantity to 2.
-6. For each other product you want to include, click **+ OR** and pick it.
+5. Set the rule's type to **Product**, click **Choose**, and pick a product. To apply the discount only once the customer has 2 or more of the item, set the quantity to 2.
+6. For each other product you want to include, click **OR** and pick it.
 
    ![Quantity rules for each product](../../resources/img/demo-has-purchasable-condition.png)
 

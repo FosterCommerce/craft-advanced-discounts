@@ -1,13 +1,18 @@
 # Release Notes for Advanced Discounts
 
-## Unreleased
+## 1.3.0 - 2026-11-24
 
 ### Added
-- Added Global Product Conditions to Advanced discounts, which limit a discount to matching products or variants.
+- Added a “Shipping Discounts” setting, for choosing whether a Shipping action reduces the shipping cost or shows as a discount. Existing installs keep showing it as a discount.
+- Added presets for free items, free shipping, and a free order to new discounts.
+- Added “Global Product Conditions” to Advanced discounts, for limiting a discount to matching products or variants.
 - Added `applyPer` to the source snapshot of Line Items adjustments, for telling a per-unit flat amount from a per-line one.
 
 ### Changed
-- Groups now require a Discount Name, so the discount's own name stays internal. A group saved without one shows the discount's name until it gets one.
+- Saving a discount now requires a “Discount Name” on each group.
+
+### Fixed
+- Fixed a bug where `{amountRemaining}` and `{quantityRemaining}` showed 0 at a threshold set to “is greater than” or “more than”, while the group didn’t apply yet.
 
 ## 1.2.0 - 2026-10-30
 

@@ -17,6 +17,7 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use fostercommerce\advanceddiscounts\adjusters\AfterTaxDiscountAdjuster;
 use fostercommerce\advanceddiscounts\adjusters\DiscountAdjuster;
+use fostercommerce\advanceddiscounts\enums\ShippingDiscounts;
 use fostercommerce\advanceddiscounts\enums\TaxBasis;
 use fostercommerce\advanceddiscounts\models\Settings;
 use fostercommerce\advanceddiscounts\services\Coupons;
@@ -40,7 +41,7 @@ class Plugin extends BasePlugin
 
 	public bool $hasCpSettings = true;
 
-	public string $schemaVersion = '1.1.0';
+	public string $schemaVersion = '1.2.0';
 
 	/**
 	 * @return array<string, mixed>
@@ -127,6 +128,7 @@ class Plugin extends BasePlugin
 		return Craft::$app->view->renderTemplate('advanced-discounts/_settings.twig', [
 			'settings' => $this->getSettings(),
 			'taxBasisOptions' => TaxBasis::options(),
+			'shippingDiscountsOptions' => ShippingDiscounts::options(),
 		]);
 	}
 

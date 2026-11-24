@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace fostercommerce\advanceddiscounts\base;
 
 use Craft;
+use craft\commerce\adjusters\Shipping as ShippingAdjuster;
 use craft\commerce\elements\Order;
 use craft\commerce\models\LineItem;
 use craft\commerce\models\OrderAdjustment;
@@ -18,11 +19,13 @@ use fostercommerce\advanceddiscounts\elements\conditions\MessageActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\OrderCartActionRule;
 use fostercommerce\advanceddiscounts\elements\conditions\ShippingMethodCartActionRule;
 use fostercommerce\advanceddiscounts\enums\DiscountType as DiscountValueType;
+use fostercommerce\advanceddiscounts\enums\ShippingDiscounts;
 use fostercommerce\advanceddiscounts\helpers\Amounts;
 use fostercommerce\advanceddiscounts\helpers\PromotableThreshold;
 use fostercommerce\advanceddiscounts\helpers\Purchasables;
 use fostercommerce\advanceddiscounts\models\Discount;
 use fostercommerce\advanceddiscounts\models\DiscountPanel;
+use fostercommerce\advanceddiscounts\Plugin;
 use Money\Money;
 
 abstract class DiscountType implements DiscountTypeInterface
@@ -248,14 +251,21 @@ abstract class DiscountType implements DiscountTypeInterface
 			return null;
 		}
 
-		$shippingCost = $order->getTotalShippingCost();
-		if ($shippingCost <= 0) {
+		$shippingCost = Amounts::shippingCost($order);
+		if (! $shippingCost->isPositive()) {
 			return null;
 		}
 
-		$discount = $this->discountMoney($this->toMoney($shippingCost, $order), $rule->discountType, $rule->discountValue);
+		$discount = $this->discountMoney($shippingCost, $rule->discountType, $rule->discountValue);
+		$adjustment = $this->newAdjustment($order, $discountName, $discount);
 
-		return $this->newAdjustment($order, $discountName, $discount);
+		/** @var Plugin $plugin */
+		$plugin = Plugin::getInstance();
+		if ($plugin->getSettings()->getShippingDiscounts() === ShippingDiscounts::Shipping) {
+			$adjustment->type = ShippingAdjuster::ADJUSTMENT_TYPE;
+		}
+
+		return $adjustment;
 	}
 
 	/**

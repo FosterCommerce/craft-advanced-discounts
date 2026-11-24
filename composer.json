@@ -1,6 +1,6 @@
 {
   "name": "fostercommerce/advanced-discounts",
-  "description": "Advanced Discounts for Craft Commerce",
+  "description": "Build tiered, conditional, and buy-one-get-one discounts from cart rules.",
   "type": "craft-plugin",
   "license": "proprietary",
   "support": {

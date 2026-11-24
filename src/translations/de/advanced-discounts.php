@@ -32,6 +32,11 @@ return [
 	'conditions.or' => 'ODER',
 	'conditions.order' => 'Bestellung',
 
+	// Presets
+	'preset.freeItems' => 'Free items',
+	'preset.freeOrder' => 'Free order',
+	'preset.freeShipping' => 'Free shipping',
+
 	// Cart action rules
 	'rules.applyPer' => 'Anwenden pro',
 	'rules.applyPer.lineItem' => 'Pro Artikelposition',
@@ -67,18 +72,18 @@ return [
 
 	// Discount types
 	'discountType.advanced' => 'Erweitert',
-	'discountType.advanced.actionInstructions' => 'Applied when the customer matches the rules above.',
+	'discountType.advanced.actionInstructions' => 'Applied when the cart matches this group’s Cart Conditions.',
 	'discountType.advanced.actionLabel' => 'Warenkorb-Aktionen',
 	'discountType.buyXGetY' => 'Kaufe X, erhalte Y',
 	'discountType.buyXGetY.actionInstructions' => 'Choose the items the customer buys and the items they get.',
 	'discountType.buyXGetY.actionLabel' => 'Kaufe X, erhalte Y',
 
 	// Message placeholders
-	'messagePlaceholders.amountRemaining' => 'Requires an Order cart condition set to “at least” or “more than” a money total. Renders the amount left to reach it, counting only discountable items.',
+	'messagePlaceholders.amountRemaining' => 'Requires an Order cart condition set to “is greater than or equals” or “is greater than” a money total. Renders the amount left to reach it, counting only discountable items.',
 	'messagePlaceholders.buyQuantityRemaining' => 'Items left to add before the next Buy X, Get Y reward is earned.',
 	'messagePlaceholders.discountAmount' => 'The first action’s discount value in this group, as a percentage or an amount.',
 	'messagePlaceholders.discountedQuantity' => 'How many items the Buy X, Get Y reward gives each time it is earned.',
-	'messagePlaceholders.quantityRemaining' => 'Requires an Order or Line Items cart condition set to “at least” or “more than” a quantity. Renders the items left to reach it, counting only discountable items.',
+	'messagePlaceholders.quantityRemaining' => 'Requires an Order condition set to “is greater than or equals” or “is greater than” a quantity, or a Quantity rule set to “at least” or “more than”. Renders the items left to reach it, counting only discountable items.',
 
 	// Discounts index
 	'index.column.coupons' => 'Coupons',
@@ -136,7 +141,9 @@ return [
 	'edit.notes.ordering' => 'Groups apply top to bottom. Turn on “Stop Processing Further Groups” to make tiers, so only the first matching group applies.',
 	'edit.notes.tiers' => 'For tiers, order groups from the highest threshold to the lowest.',
 	'edit.notes.title' => 'Helpful notes',
-	'edit.requireCouponCode.instructions' => 'Off applies to every applicable order (like a sale). On requires one of the coupon codes below to be entered at checkout.',
+	'edit.preset' => 'Start from',
+	'edit.preset.blank' => 'Start from a preset',
+	'edit.requireCouponCode.instructions' => 'Off, the discount applies to every order matching its rules. On, the customer must enter one of the coupon codes below.',
 	'edit.save' => 'Rabatt speichern',
 	'edit.stopProcessing' => 'Stop Processing Further Discounts',
 	'edit.stopProcessing.instructions' => 'Wenn dieser Rabatt gilt, werden die darunterliegenden Rabatte übersprungen.',
@@ -155,10 +162,10 @@ return [
 	'group.cartConditions' => 'Warenkorb-Bedingungen',
 	'group.cartConditions.instructions' => 'Regeln, die festlegen, wann diese Gruppe gilt.',
 	'group.messages' => 'Nachrichten',
-	'group.messages.instructions' => 'Shown to customers when they match certain conditions.',
+	'group.messages.instructions' => 'Text for the customer. A message without rules shows when this group applies.',
 	'group.name' => 'Discount Name',
 	'group.name.instructions' => 'Der Name, den Kunden auf der Bestellung sehen, wenn diese Gruppe greift.',
-	'group.nonPromotable.intro' => 'These selected variants will not be discounted.',
+	'group.nonPromotable.intro' => 'These selected variants are not discounted.',
 	'group.nonPromotable.many' => '{count} variants not promotable',
 	'group.nonPromotable.one' => '1 variant not promotable',
 	'group.nonPromotable.title' => 'Not promotable',
@@ -166,6 +173,10 @@ return [
 	'group.stopProcessing.instructions' => 'Wenn diese Gruppe gilt, werden die darunterliegenden Gruppen übersprungen.',
 
 	// Plugin settings
+	'settings.shippingDiscounts' => 'Shipping Discounts',
+	'settings.shippingDiscounts.discount' => 'Show as a discount',
+	'settings.shippingDiscounts.instructions' => 'Reduce the shipping cost lowers the order’s shipping charge. Show as a discount keeps the full charge and adds a discount line.',
+	'settings.shippingDiscounts.shipping' => 'Reduce the shipping cost',
 	'settings.taxBasis' => 'Steuerbemessung',
 	'settings.taxBasis.afterDiscount' => 'Nach Rabatten',
 	'settings.taxBasis.beforeDiscount' => 'Vor Rabatten',

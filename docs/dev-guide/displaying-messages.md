@@ -6,7 +6,7 @@ Fetch the messages a store admin has set up on a discount, with their tokens fil
 {% set discountMessages = craft.advancedDiscounts.getMessages(cart) %}
 ```
 
-Both methods take a Commerce order, either the cart or a completed order, and evaluate every discount against it when called.
+Both methods take a Commerce order, either the cart or a completed order.
 
 | Call | Returns |
 |---|---|
@@ -15,7 +15,7 @@ Both methods take a Commerce order, either the cart or a completed order, and ev
 
 Each string uses the message text for the order's site, or the primary site's text where that site has none. See [text for each site](../user-guide/discounts.md#text-for-each-site).
 
-Strings come back with their [tokens](../user-guide/messages.md#tokens) already replaced. `{amountRemaining}` and `{discountAmount}` are formatted in the order's payment currency.
+Strings come back with their [tokens](../user-guide/messages.md#tokens) already replaced. `{amountRemaining}` and `{discountAmount}` are formatted in `order.currency`, the store currency.
 
 ## Example
 

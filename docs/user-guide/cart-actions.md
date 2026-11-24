@@ -2,21 +2,23 @@
 
 Actions set what a discount group discounts when its [Cart Conditions](cart-conditions.md) match.
 
-An **Advanced** discount offers three actions. A **Buy X, Get Y** discount offers one, covered under [Buy X, Get Y](#buy-x-get-y).
+An **Advanced** discount has three actions. A **Buy X, Get Y** discount has one, covered under [Buy X, Get Y](#buy-x-get-y).
 
 Every action skips line items whose variants are not promotable. See [excluded variants](excluded-variants.md). Item Subtotal and Line Items also skip line items that do not match the discount's [Global Product Conditions](discounts.md#global-product-conditions).
 
 A discount value can't be negative, and a percentage can't be more than 100.
 
-When several discounts apply, each one takes at most what is left of the line, the item subtotal, or shipping, after the discounts before it. With **Before discounts** [Tax Basis](../reference/configuration.md#tax-basis), Commerce's own discounts apply first and count too. The plugin does not take a line or shipping below zero.
+When several discounts apply, each one takes at most what is left of the line, the item subtotal, or shipping, after the discounts before it. Commerce's own discounts apply first, and count toward what is left. The plugin does not take a line or shipping below zero.
 
 ## Item Subtotal
 
-Discounts the cart as a whole, by a flat amount or a percentage.
+Discounts the cart as a whole, by a flat amount or a percentage. Use it for a flat amount off the order, such as \$20 off orders over \$100. For a percentage, use **Line Items** on all line items.
 
 The discount is worked out from the item subtotal of promotable line items, leaving out shipping and tax. If no line item is promotable, Item Subtotal does not add an adjustment.
 
 Item Subtotal adds one adjustment to the order, not to a line. Per-line breakdowns in your templates do not include this adjustment.
+
+With Commerce's tax engine and **After discounts** [Tax Basis](../reference/configuration.md#tax-basis), an Item Subtotal discount does not lower tax. The exception is a tax rate whose **Taxable Subject** is the order total taxable price. **Line Items** lowers tax on each line, for the same total.
 
 ## Line Items
 
@@ -44,6 +46,8 @@ A flat amount never takes a line below zero. With \$20 off a \$12 line, the cust
 Discounts what the customer is charged for shipping, by a flat amount or a percentage of the total shipping cost.
 
 Choose which shipping methods qualify: **Any**, or a specific set with **is one of** and **is not one of**. If the order's shipping is already free, the action does not add an adjustment.
+
+Depending on the [Shipping Discounts](../reference/configuration.md#shipping-discounts) setting, the action either lowers the order's shipping cost or adds a discount and keeps the full shipping cost.
 
 With [Global Product Conditions](discounts.md#global-product-conditions), the action also needs at least one matching line item in the cart.
 

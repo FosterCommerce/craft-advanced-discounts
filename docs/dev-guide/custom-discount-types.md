@@ -1,6 +1,8 @@
 # Adding a discount type
 
-Build a discount type of your own, alongside the **Advanced** and **Buy X, Get Y** types the plugin ships. A discount type determines which action rules a group offers and how those rules become order adjustments.
+Build a discount type of your own, alongside the **Advanced** and **Buy X, Get Y** types the plugin ships. A discount type determines which action rules a group has and how those rules become order adjustments.
+
+Global Product Conditions apply only to the **Advanced** type.
 
 ## The contract
 
@@ -10,7 +12,7 @@ Extend `fostercommerce\advanceddiscounts\base\DiscountType`, which implements `D
 |---|---|
 | `handle()` | Stored on the discount row. Must be stable, because existing discounts reference it. |
 | `displayName()` | Label in the **Type** dropdown. |
-| `actionConditionClass()` | The `ElementCondition` subclass listing the action rules a group offers. |
+| `actionConditionClass()` | The `ElementCondition` subclass listing the action rules a group lists. |
 | `actionLabel()` | Field label above the action condition builder. |
 | `actionInstructions()` | Instructions under that label. |
 
@@ -18,7 +20,7 @@ Override `getAdjustments(Order $order, Discount $discount): array` when your rul
 
 ## Minimal example
 
-A type offering only a shipping action:
+A type with only a shipping action:
 
 ```php
 <?php
@@ -59,7 +61,7 @@ class FreightDiscountType extends DiscountType
 }
 ```
 
-The condition class listing the rules the group offers:
+The condition class listing the rules the group lists:
 
 ```php
 <?php
@@ -107,7 +109,7 @@ The type appears in the **Type** dropdown on the discount edit screen. See [even
 
 ## Message placeholders
 
-`DiscountType::MESSAGE_PLACEHOLDERS` lists every token a message can use. `messagePlaceholders()` sets the tokens listed in the **Message placeholders** pane. The token chips under each message, and save validation, offer the Buy X, Get Y tokens only when `actionConditionClass()` is `BundleCondition`, whatever `messagePlaceholders()` returns.
+`DiscountType::MESSAGE_PLACEHOLDERS` lists every token a message can use. `messagePlaceholders()` sets the tokens listed in the **Message placeholders** pane. The token chips under each message include the Buy X, Get Y tokens only when `actionConditionClass()` is `BundleCondition`. Save validation follows the same rule, whatever `messagePlaceholders()` returns.
 
 ## Removing a type
 
